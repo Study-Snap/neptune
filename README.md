@@ -8,11 +8,7 @@
 <div align="center">
 
 [![Status](https://img.shields.io/badge/status-active-success.svg)]()
-![Build and Push Docker](https://github.com/Study-Snap/neptune/workflows/Build%20and%20Push%20Docker/badge.svg)
-![Lint and Scan Docker](https://github.com/Study-Snap/neptune/workflows/Lint%20and%20Scan%20Docker/badge.svg)
-![E2E and Coverage](https://github.com/Study-Snap/neptune/workflows/E2E%20and%20Coverage/badge.svg)
-![Unit Tests](https://github.com/Study-Snap/neptune/workflows/Unit%20Tests/badge.svg)
-[![License](https://img.shields.io/badge/license-Apache2.0-blue.svg)](/LICENSE)
+[![Lint and Unit Tests](https://github.com/Study-Snap/neptune/actions/workflows/test-unit-source.yml/badge.svg)](https://github.com/Study-Snap/neptune/actions/workflows/test-unit-source.yml)
 
 </div>
 
