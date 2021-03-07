@@ -1,5 +1,4 @@
-# Development Setup for working on Neptune
-# Note: set network mode to host if working without application in compose
+# Development Setup for performing E2E tests on Neptune
 version: "3.4"
 services:
   notedb:

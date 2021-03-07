@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (cicd): All Github CI/CD workflows
 - (dev): Development strategy using docker-compose with prerequisites
 - (notes): Notes module started
+- (docs): Added documentation
+
+### Modified
+
+- (cicd): Fixed name and created `docker-compose.text.yml` for e2e testing environment setup.
 
 ### Removed
 
