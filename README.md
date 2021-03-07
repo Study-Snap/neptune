@@ -9,6 +9,7 @@
 
 [![Status](https://img.shields.io/badge/status-active-success.svg)]()
 [![Lint and Unit Tests](https://github.com/Study-Snap/neptune/actions/workflows/test-unit-source.yml/badge.svg)](https://github.com/Study-Snap/neptune/actions/workflows/test-unit-source.yml)
+[![License](https://img.shields.io/badge/license-Apache2.0-blue.svg)](/LICENSE)
 
 </div>
 
