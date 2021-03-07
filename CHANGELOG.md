@@ -8,3 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [1.0.0]
+
+### Added
+
+- (cicd): All Github CI/CD workflows
+- (dev): Development strategy using docker-compose with prerequisites
+- (notes): Notes module started
+
+### Removed
+
+- (dev): Removed all the old stuff from bootstrapped project.

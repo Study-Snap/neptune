@@ -11,7 +11,6 @@ const appConfig: IConfig = {
 	development: {
 		listenPort: process.env.PORT || 5555,
 		maxRequests: parseInt(process.env.MAX_REQUESTS) || 250,
-		authBaseURL: process.env.AUTH_BASE_URL || 'https://sykesdev.ca/api/auth',
 		dbDialect: process.env.DB_DIALECT || 'postgres',
 		dbHost: process.env.DB_HOST || 'localhost',
 		dbPort: process.env.DB_PORT || 5432,
@@ -24,7 +23,6 @@ const appConfig: IConfig = {
 	test: {
 		listenPort: process.env.PORT || 5555,
 		maxRequests: 999,
-		authBaseURL: process.env.AUTH_BASE_URL || 'https://sykesdev.ca/api/auth',
 		dbDialect: process.env.DB_DIALECT || 'postgres',
 		dbHost: process.env.DB_HOST || 'localhost',
 		dbPort: process.env.DB_PORT || 7654,
@@ -37,7 +35,6 @@ const appConfig: IConfig = {
 	production: {
 		listenPort: process.env.PORT || 5555,
 		maxRequests: parseInt(process.env.MAX_REQUESTS) || 250,
-		authBaseURL: process.env.AUTH_BASE_URL || 'https://sykesdev.ca/api/auth',
 		dbDialect: process.env.DB_DIALECT || 'postgres',
 		dbHost: process.env.DB_HOST,
 		dbPort: process.env.DB_PORT || 5432,

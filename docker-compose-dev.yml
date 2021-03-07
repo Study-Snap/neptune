@@ -39,6 +39,7 @@ services:
       DB_HOST: authdb
       DB_USER_DATABASE: studysnap_authdb
       JWT_SECRET: dev
+      JWT_ACCESS_TOKEN_EXPIRE_TIME: 8h
     depends_on:
       - authdb
     ports:

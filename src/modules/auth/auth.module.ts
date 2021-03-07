@@ -15,8 +15,6 @@ const config: IConfigAttributes = getConfig()
 			secret: config.jwtSecret
 		})
 	],
-	providers: [
-		JwtStrategy
-	]
+	providers: [JwtStrategy]
 })
 export class AuthModule {}
