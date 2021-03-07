@@ -17,7 +17,7 @@ const appConfig: IConfig = {
 		dbPort: process.env.DB_PORT || 5432,
 		dbUsername: process.env.DB_USER,
 		dbPassword: process.env.DB_PASS,
-		dbNoteDatabase: process.env.DB_USER_DATABASE || 'studysnap_db',
+		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_notedb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
 		jwtSecret: process.env.JWT_SECRET || 'dev_secret_do_change_in_prod'
 	},
@@ -30,7 +30,7 @@ const appConfig: IConfig = {
 		dbPort: process.env.DB_PORT || 7654,
 		dbUsername: process.env.DB_USER,
 		dbPassword: process.env.DB_PASS,
-		dbNoteDatabase: process.env.DB_USER_DATABASE || 'studysnap_testdb',
+		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_testdb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
 		jwtSecret: process.env.JWT_SECRET || 'test_secret'
 	},
@@ -43,7 +43,7 @@ const appConfig: IConfig = {
 		dbPort: process.env.DB_PORT || 5432,
 		dbUsername: process.env.DB_USER,
 		dbPassword: process.env.DB_PASS,
-		dbNoteDatabase: process.env.DB_USER_DATABASE || 'studysnap_db',
+		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_notedb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 5,
 		jwtSecret: process.env.JWT_SECRET
 	}
