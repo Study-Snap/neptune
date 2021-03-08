@@ -31,10 +31,10 @@ async function bootstrap() {
 		.setTitle('StudySnap Neptune')
 		.setDescription('Documentation for the StudySnap Neptune API')
 		.setVersion(PROJECT_VERSION)
-		.addTag('auth')
+		.addTag('notes')
 		.build()
 	const document = SwaggerModule.createDocument(app, swaggerConfig)
-	SwaggerModule.setup('api/auth/docs', app, document, {
+	SwaggerModule.setup('api/notes/docs', app, document, {
 		swaggerOptions: {
 			supportedSubmitMethods: []
 		}
