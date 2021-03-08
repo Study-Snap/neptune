@@ -3,10 +3,10 @@ version: "3.4"
 services:
   notedb:
     image: postgres:13.1
-    container_name: studysnap_notedb
+    container_name: studysnap_testdb
     restart: on-failure
     environment:
-      POSTGRES_DB: studysnap_notedb
+      POSTGRES_DB: studysnap_testdb
       POSTGRES_USER: studysnap
       POSTGRES_PASSWORD: snapstudy
     ports:
@@ -38,7 +38,7 @@ services:
       DB_HOST: authdb
       DB_USER_DATABASE: studysnap_authdb
       JWT_SECRET: dev
-      JWT_ACCESS_TOKEN_EXPIRE_TIME: 8h
+      JWT_ACCESS_TOKEN_EXPIRE_TIME: 999m
     depends_on:
       - authdb
     ports:

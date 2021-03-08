@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (dev): Development strategy using docker-compose with prerequisites
 - (notes): Notes module started
 - (docs): Added documentation
+- (tests): Implemented E2E tests and coverage
 
 ### Modified
 

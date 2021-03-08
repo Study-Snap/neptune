@@ -1,5 +1,5 @@
 import { Controller, Get, Request } from '@nestjs/common'
-import { JwtAuth } from 'src/common/decorators/jwt-auth.decorator'
+import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 
 @Controller('/api/notes')
 export class NotesController {

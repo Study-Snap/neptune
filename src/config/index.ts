@@ -30,7 +30,7 @@ const appConfig: IConfig = {
 		dbPassword: process.env.DB_PASS,
 		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_testdb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
-		jwtSecret: process.env.JWT_SECRET || 'test_secret'
+		jwtSecret: process.env.JWT_SECRET || 'dev'
 	},
 	production: {
 		listenPort: process.env.PORT || 5555,
