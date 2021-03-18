@@ -1,3 +1,4 @@
+import { NotesRepository } from './modules/notes/notes.repository'
 import { NotesModule } from './modules/notes/notes.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { Module } from '@nestjs/common'

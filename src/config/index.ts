@@ -18,7 +18,8 @@ const appConfig: IConfig = {
 		dbPassword: process.env.DB_PASS,
 		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_notedb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
-		jwtSecret: process.env.JWT_SECRET || 'dev_secret_do_change_in_prod'
+		jwtSecret: process.env.JWT_SECRET || 'dev_secret_do_change_in_prod',
+		fileStorageLocation: process.env.FILE_STORE
 	},
 	test: {
 		listenPort: process.env.PORT || 5555,
@@ -30,7 +31,8 @@ const appConfig: IConfig = {
 		dbPassword: process.env.DB_PASS,
 		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_testdb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
-		jwtSecret: process.env.JWT_SECRET || 'dev'
+		jwtSecret: process.env.JWT_SECRET || 'dev',
+		fileStorageLocation: process.env.FILE_STORE || '/tmp'
 	},
 	production: {
 		listenPort: process.env.PORT || 5555,
@@ -42,7 +44,8 @@ const appConfig: IConfig = {
 		dbPassword: process.env.DB_PASS,
 		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_notedb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 5,
-		jwtSecret: process.env.JWT_SECRET
+		jwtSecret: process.env.JWT_SECRET,
+		fileStorageLocation: process.env.FILE_STORE
 	}
 }
 

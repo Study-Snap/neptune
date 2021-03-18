@@ -1,3 +1,6 @@
+# Development / Testing
+tmp/
+
 # compiled output
 /dist
 /node_modules

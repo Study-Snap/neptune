@@ -47,8 +47,8 @@ describe('Neptune', () => {
 	describe('NotesController', () => {
 		const NOTE_BASE_URL = '/api/notes'
 
-		describe('Test authenticated call', () => {
-			it('should get a 200 response with a valid access token', async () => {
+		describe('Authenticated Endpoints', () => {
+			it('/test: should get a 200 response with a valid access token', async () => {
 				const res = await request(app.getHttpServer())
 					.get(`${NOTE_BASE_URL}/test`)
 					.set('Authorization', `Bearer ${jwtToken}`)
@@ -57,7 +57,7 @@ describe('Neptune', () => {
 				expect(res.body).not.toBeUndefined()
 			})
 
-			it('should be unauthorized with invalid access token', async () => {
+			it('/test: should be unauthorized with invalid access token', async () => {
 				const res = await request(app.getHttpServer())
 					.get(`${NOTE_BASE_URL}/test`)
 					.set('Authorization', 'Bearer bad_token')
@@ -65,6 +65,18 @@ describe('Neptune', () => {
 				expect(res.status).toBe(HttpStatus.UNAUTHORIZED)
 				expect(res.body.statusCode).toBe(401)
 			})
+		})
+
+		describe('Note Creation', () => {
+			it('should create a new note with valid inputs', async () => {
+				// TODO
+			})
+
+			it('should fail to create a new note if a file is not provided', async () => {
+				// TODO
+			})
+
+			// TODO: To be continued...
 		})
 	})
 
