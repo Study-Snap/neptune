@@ -2,7 +2,7 @@ import { NotesModule } from './modules/notes/notes.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { Module } from '@nestjs/common'
 import { SequelizeModule } from '@nestjs/sequelize'
-import { Dialect } from 'sequelize/types'
+import { Dialect } from 'sequelize'
 import { getConfig } from './config'
 import { IConfigAttributes } from './common/interfaces/config/app-config.interface'
 

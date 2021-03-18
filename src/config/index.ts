@@ -11,39 +11,36 @@ const appConfig: IConfig = {
 	development: {
 		listenPort: process.env.PORT || 5555,
 		maxRequests: parseInt(process.env.MAX_REQUESTS) || 250,
-		authBaseURL: process.env.AUTH_BASE_URL || 'https://sykesdev.ca/api/auth',
 		dbDialect: process.env.DB_DIALECT || 'postgres',
 		dbHost: process.env.DB_HOST || 'localhost',
 		dbPort: process.env.DB_PORT || 5432,
 		dbUsername: process.env.DB_USER,
 		dbPassword: process.env.DB_PASS,
-		dbNoteDatabase: process.env.DB_USER_DATABASE || 'studysnap_db',
+		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_notedb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
 		jwtSecret: process.env.JWT_SECRET || 'dev_secret_do_change_in_prod'
 	},
 	test: {
 		listenPort: process.env.PORT || 5555,
 		maxRequests: 999,
-		authBaseURL: process.env.AUTH_BASE_URL || 'https://sykesdev.ca/api/auth',
 		dbDialect: process.env.DB_DIALECT || 'postgres',
 		dbHost: process.env.DB_HOST || 'localhost',
 		dbPort: process.env.DB_PORT || 7654,
 		dbUsername: process.env.DB_USER,
 		dbPassword: process.env.DB_PASS,
-		dbNoteDatabase: process.env.DB_USER_DATABASE || 'studysnap_testdb',
+		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_testdb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
-		jwtSecret: process.env.JWT_SECRET || 'test_secret'
+		jwtSecret: process.env.JWT_SECRET || 'dev'
 	},
 	production: {
 		listenPort: process.env.PORT || 5555,
 		maxRequests: parseInt(process.env.MAX_REQUESTS) || 250,
-		authBaseURL: process.env.AUTH_BASE_URL || 'https://sykesdev.ca/api/auth',
 		dbDialect: process.env.DB_DIALECT || 'postgres',
 		dbHost: process.env.DB_HOST,
 		dbPort: process.env.DB_PORT || 5432,
 		dbUsername: process.env.DB_USER,
 		dbPassword: process.env.DB_PASS,
-		dbNoteDatabase: process.env.DB_USER_DATABASE || 'studysnap_db',
+		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_notedb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 5,
 		jwtSecret: process.env.JWT_SECRET
 	}

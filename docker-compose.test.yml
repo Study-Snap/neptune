@@ -1,0 +1,54 @@
+# Development Setup for performing E2E tests on Neptune
+version: "3.4"
+services:
+  notedb:
+    image: postgres:13.1
+    container_name: studysnap_testdb
+    restart: on-failure
+    environment:
+      POSTGRES_DB: studysnap_testdb
+      POSTGRES_USER: studysnap
+      POSTGRES_PASSWORD: snapstudy
+    ports:
+      - "8888:5432"
+    volumes:
+      - notedb_data:/var/lib/postgresql/data
+    networks:
+      - nep-dev-network
+  authdb:
+    image: postgres:13.1
+    container_name: studysnap_authdb
+    restart: on-failure
+    environment:
+      POSTGRES_DB: studysnap_authdb
+      POSTGRES_USER: studysnap
+      POSTGRES_PASSWORD: snapstudy
+    volumes:
+      - authdb_data:/var/lib/postgresql/data
+    networks:
+      - nep-dev-network
+  authentication:
+    image: studysnap/authentication:1.x
+    container_name: authentication
+    restart: on-failure
+    environment:
+      PORT: 5555
+      DB_USER: studysnap
+      DB_PASS: snapstudy
+      DB_HOST: authdb
+      DB_USER_DATABASE: studysnap_authdb
+      JWT_SECRET: dev
+      JWT_ACCESS_TOKEN_EXPIRE_TIME: 999m
+    depends_on:
+      - authdb
+    ports:
+      - 5555:5555
+    networks:
+      - nep-dev-network
+
+networks:
+  nep-dev-network:
+    driver: bridge
+volumes:
+  notedb_data:
+  authdb_data:
