@@ -14,8 +14,12 @@ import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { Note } from './models/notes.model'
 import { NotesService } from './notes.service'
-import { v4 as uuid } from 'uuid'
-import { IFileWithId } from 'src/common/interfaces/common'
+import { diskStorage } from 'multer'
+import { editFileName } from './helper'
+import { IConfigAttributes } from 'src/common/interfaces/config/app-config.interface'
+import { getConfig } from 'src/config'
+
+const config: IConfigAttributes = getConfig()
 
 @Controller('/api/notes')
 export class NotesController {
@@ -37,22 +41,35 @@ export class NotesController {
 	}
 
 	@JwtAuth()
-	@UseInterceptors(FileInterceptor('file'))
 	@Post()
-	async createNote(
-		@Request() req,
-		@UploadedFile() file: Express.Multer.File,
-		@Body() createDto: CreateNoteDto
-	): Promise<Note> {
+	async createNote(@Request() req, @Body() createDto: CreateNoteDto): Promise<Note> {
+		const authorId = req.user.id
+
+		// Create the note in the notes database with file reference
+		return this.notesService.createNoteWithFile(createDto, authorId, 5)
+	}
+
+	@JwtAuth()
+	@UseInterceptors(
+		FileInterceptor('file', {
+			storage: diskStorage({
+				destination: config.fileStorageLocation,
+				filename: editFileName
+			})
+		})
+	)
+	@Post('file')
+	async createNoteFile(@Request() req: Express.Request, @UploadedFile() file: Express.Multer.File): Promise<object> {
 		if (!file) {
-			throw new BadRequestException('You must include a file to create a note.')
+			throw new BadRequestException('You must include a file')
 		}
 
-		// TODO: Fix file and body at same time issue
-		const authorId = req.user.id
-		const fileWithId: IFileWithId = { id: uuid(), data: file }
-
-		// Create the note
-		return this.notesService.createNoteWithFile(createDto, fileWithId, authorId, 5)
+		// Return the uploaded file ID and type
+		return {
+			statusCode: 201,
+			fileId: file.filename.split('.')[0],
+			fileType: file.filename.split('.')[1],
+			message: 'File was successfully uploaded to cloud storage'
+		}
 	}
 }

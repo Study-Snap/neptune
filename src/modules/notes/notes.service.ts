@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { IFileWithId } from 'src/common/interfaces/common'
 import { CreateNoteDto } from './dto/create-note.dto'
-import { calculateReadTimeMinutes, extractBodyFromFile } from './helper'
+import { calculateReadTimeMinutes, createEmptyRatings, extractBodyFromFile } from './helper'
 import { NotesRepository } from './notes.repository'
 import { Note } from './models/notes.model'
+import { IConfigAttributes } from 'src/common/interfaces/config/app-config.interface'
+import { getConfig } from 'src/config'
+import { existsSync } from 'fs'
+
+const config: IConfigAttributes = getConfig()
 
 @Injectable()
 export class NotesService {
@@ -19,28 +23,24 @@ export class NotesService {
 		return note
 	}
 
-	async createNoteWithFile(
-		data: CreateNoteDto,
-		file: IFileWithId,
-		authorId: number,
-		ratingsSize?: number
-	): Promise<Note> {
-		const body = await extractBodyFromFile(file.data)
-		const readTime = await calculateReadTimeMinutes(body)
+	async createNoteWithFile(data: CreateNoteDto, authorId: number, ratingsSize?: number): Promise<Note> {
+		const noteFile = `${data.fileId}.${data.fileType}`
+		const fileStat = existsSync(`${config.fileStorageLocation}/${noteFile}`)
 
-		let ratings = []
-		if (ratingsSize) {
-			ratings = [
-				...Array(ratingsSize).keys()
-			]
+		if (!fileStat) {
+			throw new NotFoundException('Could not find a file with that ID')
 		}
+
+		const body = await extractBodyFromFile(noteFile)
+		const readTime = await calculateReadTimeMinutes(body)
+		const ratings = createEmptyRatings(ratingsSize)
 
 		// Create the note in the database
 		return this.notesRepository.createNote(
 			data.title,
 			authorId,
 			data.keywords,
-			file.id,
+			data.fileId,
 			body,
 			data.shortDescription,
 			data.isPublic,

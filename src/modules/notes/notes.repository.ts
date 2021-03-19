@@ -27,6 +27,8 @@ export class NotesRepository {
 		timeLength?: number,
 		bibtextCitation?: string
 	): Promise<Note | undefined> {
+		console.log(fileUri)
+
 		return this.noteModel.create(
 			{
 				title,
@@ -41,7 +43,7 @@ export class NotesRepository {
 				isPublic,
 				downloadAvailable
 			},
-			{ validate: true }
+			{ validate: false }
 		)
 	}
 }

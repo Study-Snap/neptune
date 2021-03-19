@@ -1,15 +1,5 @@
 import { Model } from 'sequelize'
-import {
-	AllowNull,
-	AutoIncrement,
-	Column,
-	DataType,
-	Default,
-	IsUrl,
-	PrimaryKey,
-	Table,
-	Unique
-} from 'sequelize-typescript'
+import { AllowNull, AutoIncrement, Column, DataType, Default, PrimaryKey, Table, Unique } from 'sequelize-typescript'
 
 @Table({ tableName: 'notes', underscored: true })
 export class Note extends Model<Note> {
@@ -18,7 +8,6 @@ export class Note extends Model<Note> {
 	@Column(DataType.INTEGER)
 	_id: number
 
-	@Unique
 	@AllowNull(false)
 	@Column(DataType.INTEGER)
 	authorId: number
@@ -55,6 +44,7 @@ export class Note extends Model<Note> {
 	@Column(DataType.TEXT)
 	body: string
 
+	@Unique
 	@AllowNull(true)
 	@Column(DataType.STRING)
 	fileUri: string
