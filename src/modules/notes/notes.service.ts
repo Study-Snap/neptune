@@ -23,6 +23,16 @@ export class NotesService {
 		return note
 	}
 
+	async getNotesWithTitle(title: string): Promise<Note[]> {
+		const notes: Note[] = await this.notesRepository.findNotesMatchesTitle(title)
+
+		if (!notes) {
+			throw new NotFoundException(`Could not find any notes containing the title: ${title}`)
+		}
+
+		return notes
+	}
+
 	async updateNoteWithId(authorId: number, id: number, data: object): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 

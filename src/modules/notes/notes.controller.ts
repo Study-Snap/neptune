@@ -39,8 +39,13 @@ export class NotesController {
 	}
 
 	@Get(':id')
-	async getNote(@Param('id') id): Promise<Note> {
+	async getNote(@Param('id') id: number): Promise<Note> {
 		return this.notesService.getNoteWithId(id)
+	}
+
+	@Get('/all/:title')
+	async getNotesWithTitle(@Param('title') title: string): Promise<Note[]> {
+		return this.notesService.getNotesWithTitle(title)
 	}
 
 	@JwtAuth()
@@ -62,7 +67,7 @@ export class NotesController {
 		})
 	)
 	@Post('file')
-	async createNoteFile(@Request() req: Express.Request, @UploadedFile() file: Express.Multer.File): Promise<object> {
+	async createNoteFile(@Request() req, @UploadedFile() file: Express.Multer.File): Promise<object> {
 		if (!file) {
 			throw new BadRequestException('You must include a file')
 		}

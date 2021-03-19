@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
+import { Op } from 'sequelize'
 import { Note } from './models/notes.model'
 
 @Injectable()
@@ -10,6 +11,16 @@ export class NotesRepository {
 		return this.noteModel.findOne({
 			where: {
 				id: id
+			}
+		})
+	}
+
+	async findNotesMatchesTitle(title: string): Promise<Note[] | undefined> {
+		return this.noteModel.findAll({
+			where: {
+				title: {
+					[Op.like]: `%${title}%`
+				}
 			}
 		})
 	}
