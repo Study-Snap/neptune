@@ -10,9 +10,10 @@ export async function extractBodyFromFile(path: string): Promise<string | undefi
 }
 
 export async function calculateReadTimeMinutes(body: string): Promise<number> {
-	console.log(body)
-	// TODO: Implement actual read time calculation
-	return 10
+	// Source: https://irisreading.com/what-is-the-average-reading-speed/
+	const avgWordsPerMin = 200
+
+	return body.split(' ').length / avgWordsPerMin
 }
 
 export function createEmptyRatings(ratingsSize?: number): number[] {

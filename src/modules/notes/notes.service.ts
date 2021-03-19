@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { calculateReadTimeMinutes, createEmptyRatings, extractBodyFromFile } from './helper'
 import { NotesRepository } from './notes.repository'
@@ -23,6 +23,52 @@ export class NotesService {
 		return note
 	}
 
+	async updateNoteWithId(authorId: number, id: number, data: object): Promise<Note> {
+		const note: Note = await this.notesRepository.findNoteById(id)
+
+		if (!note) {
+			throw new NotFoundException(`Could not find note with ID, ${id}`)
+		}
+
+		if (authorId !== note.authorId) {
+			throw new UnauthorizedException('You cannot edit this note as you are not the author')
+		}
+
+		// Filter out unallowed fields
+		const allowedFields = [
+			'title',
+			'keywords',
+			'body',
+			'shortDescription',
+			'isPublic',
+			'downloadAvailable',
+			'rating',
+			'timeLength',
+			'bibtextCitation'
+		]
+
+		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
+			obj[key] = data[key]
+			return obj
+		}, {})
+
+		return this.notesRepository.updateNote(note, filteredData)
+	}
+
+	async deleteNoteWithId(authorId: number, id: number): Promise<boolean> {
+		const note: Note = await this.notesRepository.findNoteById(id)
+
+		if (!note) {
+			throw new NotFoundException(`Could not find note with ID, ${id}`)
+		}
+
+		if (authorId !== note.authorId) {
+			throw new UnauthorizedException('You are not allowed to delete this note as you are not its author')
+		}
+
+		return this.notesRepository.deleteNote(note)
+	}
+
 	async createNoteWithFile(data: CreateNoteDto, authorId: number, ratingsSize?: number): Promise<Note> {
 		const noteFile = `${data.fileId}.${data.fileType}`
 		const fileStat = existsSync(`${config.fileStorageLocation}/${noteFile}`)
@@ -31,6 +77,7 @@ export class NotesService {
 			throw new NotFoundException('Could not find a file with that ID')
 		}
 
+		// Perform some preprocessing before note creation
 		const body = await extractBodyFromFile(noteFile)
 		const readTime = await calculateReadTimeMinutes(body)
 		const ratings = createEmptyRatings(ratingsSize)

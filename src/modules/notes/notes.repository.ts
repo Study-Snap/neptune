@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Note } from './models/notes.model'
 
@@ -18,7 +18,7 @@ export class NotesRepository {
 		title: string,
 		authorId: number,
 		keywords: string[],
-		fileUri: string,
+		fileId: string,
 		body: string,
 		shortDescription: string,
 		isPublic: boolean,
@@ -27,14 +27,12 @@ export class NotesRepository {
 		timeLength?: number,
 		bibtextCitation?: string
 	): Promise<Note | undefined> {
-		console.log(fileUri)
-
 		return this.noteModel.create(
 			{
 				title,
 				authorId,
 				keywords,
-				fileUri,
+				fileId,
 				body,
 				shortDescription,
 				rating,
@@ -45,5 +43,18 @@ export class NotesRepository {
 			},
 			{ validate: false }
 		)
+	}
+
+	async updateNote(note: Note, data: object): Promise<Note | undefined> {
+		if (Object.keys(data).length === 0) {
+			throw new BadRequestException('Invalid update fields specified in update request')
+		}
+
+		return note.update(data)
+	}
+
+	async deleteNote(note: Note): Promise<boolean> {
+		await note.destroy()
+		return true
 	}
 }

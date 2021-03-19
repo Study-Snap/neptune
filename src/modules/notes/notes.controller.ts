@@ -2,9 +2,11 @@ import {
 	BadRequestException,
 	Body,
 	Controller,
+	Delete,
 	Get,
 	Param,
 	Post,
+	Put,
 	Request,
 	UploadedFile,
 	UseInterceptors
@@ -18,6 +20,7 @@ import { diskStorage } from 'multer'
 import { editFileName } from './helper'
 import { IConfigAttributes } from 'src/common/interfaces/config/app-config.interface'
 import { getConfig } from 'src/config'
+import { UpdateNoteDto } from './dto/update-note.dto'
 
 const config: IConfigAttributes = getConfig()
 
@@ -71,5 +74,23 @@ export class NotesController {
 			fileType: file.filename.split('.')[1],
 			message: 'File was successfully uploaded to cloud storage'
 		}
+	}
+
+	@JwtAuth()
+	@Put()
+	async updateNoteWithId(@Request() req, @Body() updateDto: UpdateNoteDto): Promise<Note> {
+		return this.notesService.updateNoteWithId(req.user.id, updateDto.noteId, updateDto.newData)
+	}
+
+	@JwtAuth()
+	@Delete(':id')
+	async deleteNoteWithId(@Request() req, @Param('id') id: number): Promise<object> {
+		const res = await this.notesService.deleteNoteWithId(req.user.id, id)
+		const response = {
+			statusCode: 200,
+			message: res ? `Successfully delete note with id, ${id}` : `Could not delete the note with id, ${id}`
+		}
+
+		return response
 	}
 }
