@@ -4,7 +4,6 @@ import { v4 as uuid } from 'uuid'
 
 // Works only on PDF
 export async function extractBodyFromFile(path: string): Promise<string | undefined> {
-	console.log(path)
 	// TODO: Implement actual file extraction
 	return 'Sample body text for a note'
 }
@@ -13,7 +12,7 @@ export async function calculateReadTimeMinutes(body: string): Promise<number> {
 	// Source: https://irisreading.com/what-is-the-average-reading-speed/
 	const avgWordsPerMin = 200
 
-	return body.split(' ').length / avgWordsPerMin
+	return Math.round(body.split(' ').length / avgWordsPerMin)
 }
 
 export function createEmptyRatings(ratingsSize?: number): number[] {

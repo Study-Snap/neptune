@@ -32,7 +32,7 @@ const appConfig: IConfig = {
 		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_testdb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
 		jwtSecret: process.env.JWT_SECRET || 'dev',
-		fileStorageLocation: process.env.FILE_STORE || '/tmp'
+		fileStorageLocation: process.env.FILE_STORE || './tmp/'
 	},
 	production: {
 		listenPort: process.env.PORT || 5555,

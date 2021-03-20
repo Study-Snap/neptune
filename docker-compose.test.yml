@@ -11,8 +11,6 @@ services:
       POSTGRES_PASSWORD: snapstudy
     ports:
       - "8888:5432"
-    volumes:
-      - notedb_data:/var/lib/postgresql/data
     networks:
       - nep-dev-network
   authdb:
@@ -50,5 +48,4 @@ networks:
   nep-dev-network:
     driver: bridge
 volumes:
-  notedb_data:
   authdb_data:

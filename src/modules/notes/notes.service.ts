@@ -3,8 +3,8 @@ import { CreateNoteDto } from './dto/create-note.dto'
 import { calculateReadTimeMinutes, createEmptyRatings, extractBodyFromFile } from './helper'
 import { NotesRepository } from './notes.repository'
 import { Note } from './models/notes.model'
-import { IConfigAttributes } from 'src/common/interfaces/config/app-config.interface'
-import { getConfig } from 'src/config'
+import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
+import { getConfig } from '../../config'
 import { existsSync } from 'fs'
 
 const config: IConfigAttributes = getConfig()
@@ -51,7 +51,7 @@ export class NotesService {
 			'body',
 			'shortDescription',
 			'isPublic',
-			'downloadAvailable',
+			'allowDownloads',
 			'rating',
 			'timeLength',
 			'bibtextCitation'

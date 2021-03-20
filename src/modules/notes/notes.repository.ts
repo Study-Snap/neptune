@@ -33,7 +33,7 @@ export class NotesRepository {
 		body: string,
 		shortDescription: string,
 		isPublic: boolean,
-		downloadAvailable: boolean,
+		allowDownloads: boolean,
 		rating?: number[],
 		timeLength?: number,
 		bibtextCitation?: string
@@ -50,7 +50,7 @@ export class NotesRepository {
 				timeLength,
 				bibtextCitation,
 				isPublic,
-				downloadAvailable
+				allowDownloads
 			},
 			{ validate: false }
 		)

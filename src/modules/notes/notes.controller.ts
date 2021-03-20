@@ -18,8 +18,8 @@ import { Note } from './models/notes.model'
 import { NotesService } from './notes.service'
 import { diskStorage } from 'multer'
 import { editFileName } from './helper'
-import { IConfigAttributes } from 'src/common/interfaces/config/app-config.interface'
-import { getConfig } from 'src/config'
+import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
+import { getConfig } from '../../config'
 import { UpdateNoteDto } from './dto/update-note.dto'
 
 const config: IConfigAttributes = getConfig()

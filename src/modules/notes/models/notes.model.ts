@@ -47,9 +47,9 @@ export class Note extends Model<Note> {
 	@Unique
 	@AllowNull(true)
 	@Column(DataType.STRING)
-	fileUri: string
+	fileId: string
 
 	@Default(false)
 	@Column(DataType.BOOLEAN)
-	downloadAvailable: boolean
+	allowDownloads: boolean
 }
