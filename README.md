@@ -9,6 +9,9 @@
 
 [![Status](https://img.shields.io/badge/status-active-success.svg)]()
 [![Lint and Unit Tests](https://github.com/Study-Snap/neptune/actions/workflows/test-unit-source.yml/badge.svg)](https://github.com/Study-Snap/neptune/actions/workflows/test-unit-source.yml)
+[![Build and Push Docker](https://github.com/Study-Snap/neptune/actions/workflows/build-push-docker.yml/badge.svg)](https://github.com/Study-Snap/neptune/actions/workflows/build-push-docker.yml)
+[![Lint and Scan Docker](https://github.com/Study-Snap/neptune/actions/workflows/lint-scan-docker.yml/badge.svg)](https://github.com/Study-Snap/neptune/actions/workflows/lint-scan-docker.yml)
+[![E2E and Coverage](https://github.com/Study-Snap/neptune/actions/workflows/test-e2e-cov-source.yml/badge.svg)](https://github.com/Study-Snap/neptune/actions/workflows/test-e2e-cov-source.yml)
 [![License](https://img.shields.io/badge/license-Apache2.0-blue.svg)](/LICENSE)
 
 </div>

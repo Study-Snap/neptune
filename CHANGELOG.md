@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (notes): Notes module started
 - (docs): Added documentation
 - (tests): Implemented E2E tests and coverage
+- (SSPP-121): Create models for Notes
+- (SSPP-133): Added e2e tests for available note CRUD operations
 
 ### Modified
 

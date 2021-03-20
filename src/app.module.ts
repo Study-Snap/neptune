@@ -1,3 +1,4 @@
+import { FilesModule } from './modules/files/files.module'
 import { NotesModule } from './modules/notes/notes.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { Module } from '@nestjs/common'
@@ -11,6 +12,7 @@ const config: IConfigAttributes = getConfig()
 
 @Module({
 	imports: [
+		FilesModule,
 		NotesModule,
 		AuthModule,
 		SequelizeModule.forRoot({

@@ -9,6 +9,7 @@ export interface IConfigAttributes {
 	dbPassword: string
 	dbRetryAttempts: number | string
 	jwtSecret: string
+	fileStorageLocation: string
 }
 
 export interface IConfig {
