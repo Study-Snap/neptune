@@ -13,6 +13,7 @@ const config: IConfigAttributes = getConfig()
 describe('Neptune', () => {
 	let app: INestApplication
 	let connection: Sequelize
+	let resFile: { fileId; fileType }
 
 	// For use in testing prodected endpoints
 	let jwtToken: string
@@ -59,6 +60,31 @@ describe('Neptune', () => {
 		await app.init()
 	})
 
+	describe('FilesController', () => {
+		const FILE_BASE_URL = '/api/files'
+
+		describe('Create Notes', () => {
+			it('Should create a note', async () => {
+				// Create a buffer file
+				const buffer = Buffer.from('some note data')
+
+				// Create note file with ID
+				const res = await request(app.getHttpServer())
+					.post(`${FILE_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.attach('file', buffer, 'test_file.pdf')
+
+				// Verify results from file upload
+				expect(res.status).toBe(HttpStatus.CREATED)
+				expect(res.body.fileId).toBeDefined()
+				expect(res.body.fileType).toBeDefined()
+
+				// Save file upload response
+				resFile = { fileId: res.body.fileId, fileType: res.body.fileType }
+			})
+		})
+	})
+
 	describe('NotesController', () => {
 		const NOTE_BASE_URL = '/api/notes'
 		let noteId: number // Useful for later tests
@@ -84,28 +110,7 @@ describe('Neptune', () => {
 		})
 
 		describe('Note Creation', () => {
-			let resFile: { fileId; fileType }
-
-			it('should handle uploading a note file (step 1)', async () => {
-				// Create a buffer file
-				const buffer = Buffer.from('some note data')
-
-				// Create note file with ID
-				const res = await request(app.getHttpServer())
-					.post(`${NOTE_BASE_URL}/file`)
-					.set('Authorization', `Bearer ${jwtToken}`)
-					.attach('file', buffer, 'test_file.pdf')
-
-				// Verify results from file upload
-				expect(res.status).toBe(HttpStatus.CREATED)
-				expect(res.body.fileId).toBeDefined()
-				expect(res.body.fileType).toBeDefined()
-
-				// Save file upload response
-				resFile = { fileId: res.body.fileId, fileType: res.body.fileType }
-			})
-
-			it('should create a new note with valid inputs (step 2)', async () => {
+			it('should create a new note with valid file and fields according to DTO spec', async () => {
 				// Create the note with file
 				const reqData = {
 					title: 'Science 101',

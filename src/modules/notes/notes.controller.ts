@@ -7,6 +7,7 @@ import {
 	Param,
 	Post,
 	Put,
+	Query,
 	Request,
 	UploadedFile,
 	UseInterceptors
@@ -21,6 +22,7 @@ import { editFileName } from './helper'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
 import { getConfig } from '../../config'
 import { UpdateNoteDto } from './dto/update-note.dto'
+import { FilesService } from '../files/files.service'
 
 const config: IConfigAttributes = getConfig()
 
@@ -58,30 +60,6 @@ export class NotesController {
 	}
 
 	@JwtAuth()
-	@UseInterceptors(
-		FileInterceptor('file', {
-			storage: diskStorage({
-				destination: config.fileStorageLocation,
-				filename: editFileName
-			})
-		})
-	)
-	@Post('file')
-	async createNoteFile(@Request() req, @UploadedFile() file: Express.Multer.File): Promise<object> {
-		if (!file) {
-			throw new BadRequestException('You must include a file')
-		}
-
-		// Return the uploaded file ID and type
-		return {
-			statusCode: 201,
-			fileId: file.filename.split('.')[0],
-			fileType: file.filename.split('.')[1],
-			message: 'File was successfully uploaded to cloud storage'
-		}
-	}
-
-	@JwtAuth()
 	@Put()
 	async updateNoteWithId(@Request() req, @Body() updateDto: UpdateNoteDto): Promise<Note> {
 		return this.notesService.updateNoteWithId(req.user.id, updateDto.noteId, updateDto.newData)
@@ -89,11 +67,16 @@ export class NotesController {
 
 	@JwtAuth()
 	@Delete(':id')
-	async deleteNoteWithId(@Request() req, @Param('id') id: number): Promise<object> {
-		const res = await this.notesService.deleteNoteWithId(req.user.id, id)
+	async deleteNoteWithId(
+		@Request() req,
+		@Param('id') id: number,
+		@Query('typeOverride') type?: string
+	): Promise<object> {
+		const resNote = await this.notesService.deleteNoteWithId(req.user.id, id, type ? type : 'pdf')
+
 		const response = {
 			statusCode: 200,
-			message: res ? `Successfully delete note with id, ${id}` : `Could not delete the note with id, ${id}`
+			message: resNote ? `Successfully delete note with id, ${id}` : `Could not delete the note with id, ${id}`
 		}
 
 		return response
