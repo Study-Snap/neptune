@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { existsSync } from 'fs'
 import { unlink } from 'fs/promises'
 import { IConfigAttributes } from 'src/common/interfaces/config/app-config.interface'
-import { getConfig } from '../../../src/config'
+import { getConfig } from '../../config'
 
 const config: IConfigAttributes = getConfig()
 
