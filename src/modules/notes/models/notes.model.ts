@@ -1,5 +1,14 @@
-import { Model } from 'sequelize'
-import { AllowNull, AutoIncrement, Column, DataType, Default, PrimaryKey, Table, Unique } from 'sequelize-typescript'
+import {
+	AllowNull,
+	Model,
+	AutoIncrement,
+	Column,
+	DataType,
+	Default,
+	PrimaryKey,
+	Table,
+	Unique
+} from 'sequelize-typescript'
 
 @Table({ tableName: 'notes', underscored: true })
 export class Note extends Model<Note> {
@@ -47,7 +56,7 @@ export class Note extends Model<Note> {
 	@Unique
 	@AllowNull(true)
 	@Column(DataType.STRING)
-	fileId: string
+	fileUri: string
 
 	@Default(false)
 	@Column(DataType.BOOLEAN)

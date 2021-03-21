@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Op } from 'sequelize'
 import { Note } from './models/notes.model'
@@ -29,7 +29,7 @@ export class NotesRepository {
 		title: string,
 		authorId: number,
 		keywords: string[],
-		fileId: string,
+		fileUri: string,
 		body: string,
 		shortDescription: string,
 		isPublic: boolean,
@@ -43,7 +43,7 @@ export class NotesRepository {
 				title,
 				authorId,
 				keywords,
-				fileId,
+				fileUri,
 				body,
 				shortDescription,
 				rating,

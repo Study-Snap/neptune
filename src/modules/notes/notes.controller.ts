@@ -1,28 +1,10 @@
-import {
-	BadRequestException,
-	Body,
-	Controller,
-	Delete,
-	Get,
-	Param,
-	Post,
-	Put,
-	Request,
-	UploadedFile,
-	UseInterceptors
-} from '@nestjs/common'
-import { FileInterceptor } from '@nestjs/platform-express'
+import { Body, Controller, Delete, Get, Param, Post, Put, Request } from '@nestjs/common'
 import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { Note } from './models/notes.model'
 import { NotesService } from './notes.service'
-import { diskStorage } from 'multer'
-import { editFileName } from './helper'
-import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
-import { getConfig } from '../../config'
 import { UpdateNoteDto } from './dto/update-note.dto'
-
-const config: IConfigAttributes = getConfig()
+import { DeleteNoteDto } from './dto/delete-note.dto'
 
 @Controller('/api/notes')
 export class NotesController {
@@ -58,42 +40,21 @@ export class NotesController {
 	}
 
 	@JwtAuth()
-	@UseInterceptors(
-		FileInterceptor('file', {
-			storage: diskStorage({
-				destination: config.fileStorageLocation,
-				filename: editFileName
-			})
-		})
-	)
-	@Post('file')
-	async createNoteFile(@Request() req, @UploadedFile() file: Express.Multer.File): Promise<object> {
-		if (!file) {
-			throw new BadRequestException('You must include a file')
-		}
-
-		// Return the uploaded file ID and type
-		return {
-			statusCode: 201,
-			fileId: file.filename.split('.')[0],
-			fileType: file.filename.split('.')[1],
-			message: 'File was successfully uploaded to cloud storage'
-		}
-	}
-
-	@JwtAuth()
 	@Put()
 	async updateNoteWithId(@Request() req, @Body() updateDto: UpdateNoteDto): Promise<Note> {
 		return this.notesService.updateNoteWithId(req.user.id, updateDto.noteId, updateDto.newData)
 	}
 
 	@JwtAuth()
-	@Delete(':id')
-	async deleteNoteWithId(@Request() req, @Param('id') id: number): Promise<object> {
-		const res = await this.notesService.deleteNoteWithId(req.user.id, id)
+	@Delete()
+	async deleteNoteWithId(@Request() req, @Body() deleteDto: DeleteNoteDto): Promise<object> {
+		const resNote = await this.notesService.deleteNoteWithId(req.user.id, deleteDto.noteId, deleteDto.fileUri)
+
 		const response = {
 			statusCode: 200,
-			message: res ? `Successfully delete note with id, ${id}` : `Could not delete the note with id, ${id}`
+			message: resNote
+				? `Successfully delete note with id, ${deleteDto.noteId}`
+				: `Could not delete the note with id, ${deleteDto.noteId}`
 		}
 
 		return response

@@ -7,12 +7,14 @@ import * as request from 'supertest'
 import { createTestAccountForE2e, getAccessTokenFromAuth, TEST_PASSWORD, TEST_USERNAME } from './util'
 import { IConfigAttributes } from '../src/common/interfaces/config/app-config.interface'
 import { getConfig } from '../src/config'
+import { DeleteNoteDto } from 'src/modules/notes/dto/delete-note.dto'
 
 const config: IConfigAttributes = getConfig()
 
 describe('Neptune', () => {
 	let app: INestApplication
 	let connection: Sequelize
+	let resFile: string
 
 	// For use in testing prodected endpoints
 	let jwtToken: string
@@ -20,9 +22,7 @@ describe('Neptune', () => {
 	// Setup test environment
 	beforeAll(async () => {
 		const testModule: TestingModule = await Test.createTestingModule({
-			imports: [
-				AppModule
-			]
+			imports: [AppModule]
 		}).compile()
 
 		// Get Database connection
@@ -59,6 +59,41 @@ describe('Neptune', () => {
 		await app.init()
 	})
 
+	describe('FilesController', () => {
+		const FILE_BASE_URL = '/api/files'
+
+		describe('Upload note files', () => {
+			it('should create a new note file with valid authorization and file in form-data', async () => {
+				// Create a buffer file
+				const buffer = Buffer.from('some note data')
+
+				// Create note file with ID
+				const res = await request(app.getHttpServer())
+					.post(`${FILE_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.attach('file', buffer, 'test_file.pdf')
+
+				// Verify results from file upload
+				expect(res.status).toBe(HttpStatus.CREATED)
+				expect(res.body.fileUri).toBeDefined()
+
+				// Save file upload response
+				resFile = res.body.fileUri
+			})
+
+			it('should fail to create a new note upload without proper authorization', async () => {
+				// Create a buffer file as usual
+				const buffer = Buffer.from('some note data')
+
+				// Attempt to create a note file without authorization header (or invalid one)
+				const res = await request(app.getHttpServer()).post(`${FILE_BASE_URL}`).attach('file', buffer, 'test_file.pdf')
+
+				// Verify results from file upload
+				expect(res.status).toBe(HttpStatus.UNAUTHORIZED)
+			})
+		})
+	})
+
 	describe('NotesController', () => {
 		const NOTE_BASE_URL = '/api/notes'
 		let noteId: number // Useful for later tests
@@ -84,39 +119,13 @@ describe('Neptune', () => {
 		})
 
 		describe('Note Creation', () => {
-			let resFile: { fileId; fileType }
-
-			it('should handle uploading a note file (step 1)', async () => {
-				// Create a buffer file
-				const buffer = Buffer.from('some note data')
-
-				// Create note file with ID
-				const res = await request(app.getHttpServer())
-					.post(`${NOTE_BASE_URL}/file`)
-					.set('Authorization', `Bearer ${jwtToken}`)
-					.attach('file', buffer, 'test_file.pdf')
-
-				// Verify results from file upload
-				expect(res.status).toBe(HttpStatus.CREATED)
-				expect(res.body.fileId).toBeDefined()
-				expect(res.body.fileType).toBeDefined()
-
-				// Save file upload response
-				resFile = { fileId: res.body.fileId, fileType: res.body.fileType }
-			})
-
-			it('should create a new note with valid inputs (step 2)', async () => {
+			it('should create a new note with valid file and fields according to DTO spec', async () => {
 				// Create the note with file
 				const reqData = {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
-					fileId: resFile.fileId,
-					fileType: resFile.fileType,
-					keywords: [
-						'biology',
-						'chemestry',
-						'Physics'
-					],
+					fileUri: resFile,
+					keywords: ['biology', 'chemestry', 'Physics'],
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -139,11 +148,7 @@ describe('Neptune', () => {
 				const reqData = {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
-					keywords: [
-						'biology',
-						'chemestry',
-						'Physics'
-					],
+					keywords: ['biology', 'chemestry', 'Physics'],
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -162,13 +167,8 @@ describe('Neptune', () => {
 				const reqData = {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
-					fileId: 'fake-nonexist-file-id',
-					fileType: resFile.fileType,
-					keywords: [
-						'biology',
-						'chemestry',
-						'Physics'
-					],
+					fileUri: 'fake-nonexist-file-id',
+					keywords: ['biology', 'chemestry', 'Physics'],
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -242,25 +242,39 @@ describe('Neptune', () => {
 			})
 
 			it('should fail to delete note with fake id', async () => {
+				const badRequestData: DeleteNoteDto = {
+					noteId: 9999999,
+					fileUri: resFile
+				}
 				const res = await request(app.getHttpServer())
-					.del(`${NOTE_BASE_URL}/999999`)
+					.del(`${NOTE_BASE_URL}`)
 					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(badRequestData)
 
 				// Verify Results
 				expect(res.status).toBe(HttpStatus.NOT_FOUND)
 			})
 
 			it('should fail to delete note without authorization', async () => {
-				const res = await request(app.getHttpServer()).del(`${NOTE_BASE_URL}/${noteId}`)
+				const reqData: DeleteNoteDto = {
+					noteId,
+					fileUri: resFile
+				}
+				const res = await request(app.getHttpServer()).del(`${NOTE_BASE_URL}`).send(reqData)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.UNAUTHORIZED)
 			})
 
 			it('should delete note with valid id', async () => {
+				const reqData: DeleteNoteDto = {
+					noteId,
+					fileUri: resFile
+				}
 				const res = await request(app.getHttpServer())
-					.del(`${NOTE_BASE_URL}/${noteId}`)
+					.del(`${NOTE_BASE_URL}`)
 					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)

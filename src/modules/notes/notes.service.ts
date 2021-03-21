@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
+import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { calculateReadTimeMinutes, createEmptyRatings, extractBodyFromFile } from './helper'
 import { NotesRepository } from './notes.repository'
@@ -6,12 +6,13 @@ import { Note } from './models/notes.model'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
 import { getConfig } from '../../config'
 import { existsSync } from 'fs'
+import { FilesService } from '../files/files.service'
 
 const config: IConfigAttributes = getConfig()
 
 @Injectable()
 export class NotesService {
-	constructor(private readonly notesRepository: NotesRepository) {}
+	constructor(private readonly notesRepository: NotesRepository, private readonly filesService: FilesService) {}
 
 	async getNoteWithId(id: number): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
@@ -57,15 +58,17 @@ export class NotesService {
 			'bibtextCitation'
 		]
 
-		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
-			obj[key] = data[key]
-			return obj
-		}, {})
+		const filteredData: object = Object.keys(data)
+			.filter((key) => allowedFields.includes(key))
+			.reduce((obj, key) => {
+				obj[key] = data[key]
+				return obj
+			}, {})
 
 		return this.notesRepository.updateNote(note, filteredData)
 	}
 
-	async deleteNoteWithId(authorId: number, id: number): Promise<boolean> {
+	async deleteNoteWithId(authorId: number, id: number, fileUri: string): Promise<boolean> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
@@ -76,19 +79,30 @@ export class NotesService {
 			throw new UnauthorizedException('You are not allowed to delete this note as you are not its author')
 		}
 
+		// Delete the actual file for the note
+		const delSuccess = await this.filesService.deleteFileWithId(fileUri)
+
+		if (!delSuccess) {
+			throw new InternalServerErrorException(
+				'For some reason, we could not delete the file associated with this note. Aborting delete operation.'
+			)
+		}
+
+		// Delete the actual note from the database now
 		return this.notesRepository.deleteNote(note)
 	}
 
 	async createNoteWithFile(data: CreateNoteDto, authorId: number, ratingsSize?: number): Promise<Note> {
-		const noteFile = `${data.fileId}.${data.fileType}`
-		const fileStat = existsSync(`${config.fileStorageLocation}/${noteFile}`)
+		const fileStat = existsSync(`${config.fileStorageLocation}/${data.fileUri}`)
 
 		if (!fileStat) {
-			throw new NotFoundException('Could not find a file with that ID')
+			throw new NotFoundException(
+				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /api/files'
+			)
 		}
 
 		// Perform some preprocessing before note creation
-		const body = await extractBodyFromFile(noteFile)
+		const body = await extractBodyFromFile(data.fileUri)
 		const readTime = await calculateReadTimeMinutes(body)
 		const ratings = createEmptyRatings(ratingsSize)
 
@@ -97,7 +111,7 @@ export class NotesService {
 			data.title,
 			authorId,
 			data.keywords,
-			data.fileId,
+			data.fileUri,
 			body,
 			data.shortDescription,
 			data.isPublic,
