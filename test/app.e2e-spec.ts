@@ -21,7 +21,9 @@ describe('Neptune', () => {
 	// Setup test environment
 	beforeAll(async () => {
 		const testModule: TestingModule = await Test.createTestingModule({
-			imports: [AppModule]
+			imports: [
+				AppModule
+			]
 		}).compile()
 
 		// Get Database connection
@@ -61,8 +63,8 @@ describe('Neptune', () => {
 	describe('FilesController', () => {
 		const FILE_BASE_URL = '/api/files'
 
-		describe('Create Notes', () => {
-			it('Should create a note', async () => {
+		describe('Upload note files', () => {
+			it('should create a new note file with valid authorization and file in form-data', async () => {
 				// Create a buffer file
 				const buffer = Buffer.from('some note data')
 
@@ -79,6 +81,17 @@ describe('Neptune', () => {
 
 				// Save file upload response
 				resFile = { fileId: res.body.fileId, fileType: res.body.fileType }
+			})
+
+			it('should fail to create a new note upload without proper authorization', async () => {
+				// Create a buffer file as usual
+				const buffer = Buffer.from('some note data')
+
+				// Attempt to create a note file without authorization header (or invalid one)
+				const res = await request(app.getHttpServer()).post(`${FILE_BASE_URL}`).attach('file', buffer, 'test_file.pdf')
+
+				// Verify results from file upload
+				expect(res.status).toBe(HttpStatus.UNAUTHORIZED)
 			})
 		})
 	})
@@ -115,7 +128,11 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the note',
 					fileId: resFile.fileId,
 					fileType: resFile.fileType,
-					keywords: ['biology', 'chemestry', 'Physics'],
+					keywords: [
+						'biology',
+						'chemestry',
+						'Physics'
+					],
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -138,7 +155,11 @@ describe('Neptune', () => {
 				const reqData = {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
-					keywords: ['biology', 'chemestry', 'Physics'],
+					keywords: [
+						'biology',
+						'chemestry',
+						'Physics'
+					],
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -159,7 +180,11 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the note',
 					fileId: 'fake-nonexist-file-id',
 					fileType: resFile.fileType,
-					keywords: ['biology', 'chemestry', 'Physics'],
+					keywords: [
+						'biology',
+						'chemestry',
+						'Physics'
+					],
 					isPublic: true,
 					allowDownloads: true
 				}
