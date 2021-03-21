@@ -33,11 +33,10 @@ export class FilesController {
 			throw new BadRequestException('You must include a file')
 		}
 
-		// Return the uploaded file ID and type
+		// Return the uploaded file ID (URI)
 		return {
 			statusCode: HttpStatus.CREATED,
-			fileId: file.filename.split('.')[0],
-			fileType: file.filename.split('.')[1],
+			fileUri: file.filename,
 			message: 'File was successfully uploaded to cloud storage'
 		}
 	}

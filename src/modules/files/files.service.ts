@@ -8,12 +8,12 @@ const config: IConfigAttributes = getConfig()
 
 @Injectable()
 export class FilesService {
-	async deleteFileWithId(file: { id: string; type: string }): Promise<boolean> {
-		const filePath = `${config.fileStorageLocation}/${file.id}.${file.type}`
+	async deleteFileWithId(fileUri: string): Promise<boolean> {
+		const filePath = `${config.fileStorageLocation}/${fileUri}`
 		const fileExists: boolean = existsSync(filePath)
 
 		if (!fileExists) {
-			throw new NotFoundException(`Could not find a file with ID, ${file.id}`)
+			throw new NotFoundException(`Could not find a file with URI, ${fileUri}`)
 		}
 
 		// Delete the file

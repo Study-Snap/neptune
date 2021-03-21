@@ -7,11 +7,7 @@ export class CreateNoteDto {
 
 	@IsNotEmpty({ message: 'Must include a file ID' })
 	@IsString({ message: 'FileID must be a string' })
-	fileId: string
-
-	@IsNotEmpty({ message: 'Must specify the file type' })
-	@IsString({ message: 'Improper format for the file type parameter' })
-	fileType: string
+	fileUri: string
 
 	@IsBoolean({
 		message:

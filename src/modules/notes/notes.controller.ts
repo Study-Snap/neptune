@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Request } from '@nestjs/common'
 import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { Note } from './models/notes.model'
 import { NotesService } from './notes.service'
 import { UpdateNoteDto } from './dto/update-note.dto'
+import { DeleteNoteDto } from './dto/delete-note.dto'
 
 @Controller('/api/notes')
 export class NotesController {
@@ -45,17 +46,15 @@ export class NotesController {
 	}
 
 	@JwtAuth()
-	@Delete(':id')
-	async deleteNoteWithId(
-		@Request() req,
-		@Param('id') id: number,
-		@Query('typeOverride') type?: string
-	): Promise<object> {
-		const resNote = await this.notesService.deleteNoteWithId(req.user.id, id, type ? type : 'pdf')
+	@Delete()
+	async deleteNoteWithId(@Request() req, @Body() deleteDto: DeleteNoteDto): Promise<object> {
+		const resNote = await this.notesService.deleteNoteWithId(req.user.id, deleteDto.noteId, deleteDto.fileUri)
 
 		const response = {
 			statusCode: 200,
-			message: resNote ? `Successfully delete note with id, ${id}` : `Could not delete the note with id, ${id}`
+			message: resNote
+				? `Successfully delete note with id, ${deleteDto.noteId}`
+				: `Could not delete the note with id, ${deleteDto.noteId}`
 		}
 
 		return response

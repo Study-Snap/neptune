@@ -56,7 +56,7 @@ export class Note extends Model<Note> {
 	@Unique
 	@AllowNull(true)
 	@Column(DataType.STRING)
-	fileId: string
+	fileUri: string
 
 	@Default(false)
 	@Column(DataType.BOOLEAN)

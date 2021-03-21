@@ -68,7 +68,7 @@ export class NotesService {
 		return this.notesRepository.updateNote(note, filteredData)
 	}
 
-	async deleteNoteWithId(authorId: number, id: number, type: string): Promise<boolean> {
+	async deleteNoteWithId(authorId: number, id: number, fileUri: string): Promise<boolean> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
@@ -80,29 +80,29 @@ export class NotesService {
 		}
 
 		// Delete the actual file for the note
-		const delSuccess = await this.filesService.deleteFileWithId({ id: note.fileId, type: type })
+		const delSuccess = await this.filesService.deleteFileWithId(fileUri)
 
 		if (!delSuccess) {
 			throw new InternalServerErrorException(
-				'For some reason, we could not delete the file associated with this note. Aborting delete.'
+				'For some reason, we could not delete the file associated with this note. Aborting delete operation.'
 			)
 		}
 
+		// Delete the actual note from the database now
 		return this.notesRepository.deleteNote(note)
 	}
 
 	async createNoteWithFile(data: CreateNoteDto, authorId: number, ratingsSize?: number): Promise<Note> {
-		const noteFile = `${data.fileId}.${data.fileType}`
-		const fileStat = existsSync(`${config.fileStorageLocation}/${noteFile}`)
+		const fileStat = existsSync(`${config.fileStorageLocation}/${data.fileUri}`)
 
 		if (!fileStat) {
 			throw new NotFoundException(
-				'Could not find a file with that ID. If you have not done so already, ensure you upload a file by issuing POST request to /api/files'
+				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /api/files'
 			)
 		}
 
 		// Perform some preprocessing before note creation
-		const body = await extractBodyFromFile(noteFile)
+		const body = await extractBodyFromFile(data.fileUri)
 		const readTime = await calculateReadTimeMinutes(body)
 		const ratings = createEmptyRatings(ratingsSize)
 
@@ -111,7 +111,7 @@ export class NotesService {
 			data.title,
 			authorId,
 			data.keywords,
-			data.fileId,
+			data.fileUri,
 			body,
 			data.shortDescription,
 			data.isPublic,
