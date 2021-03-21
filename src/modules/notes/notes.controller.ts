@@ -1,30 +1,9 @@
-import {
-	BadRequestException,
-	Body,
-	Controller,
-	Delete,
-	Get,
-	Param,
-	Post,
-	Put,
-	Query,
-	Request,
-	UploadedFile,
-	UseInterceptors
-} from '@nestjs/common'
-import { FileInterceptor } from '@nestjs/platform-express'
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request } from '@nestjs/common'
 import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { Note } from './models/notes.model'
 import { NotesService } from './notes.service'
-import { diskStorage } from 'multer'
-import { editFileName } from './helper'
-import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
-import { getConfig } from '../../config'
 import { UpdateNoteDto } from './dto/update-note.dto'
-import { FilesService } from '../files/files.service'
-
-const config: IConfigAttributes = getConfig()
 
 @Controller('/api/notes')
 export class NotesController {

@@ -7,21 +7,9 @@ import { NotesRepository } from './notes.repository'
 import { FilesService } from '../files/files.service'
 
 @Module({
-	imports: [
-		SequelizeModule.forFeature([
-			Note
-		])
-	],
-	controllers: [
-		NotesController
-	],
-	providers: [
-		NotesService,
-		NotesRepository,
-		FilesService
-	],
-	exports: [
-		SequelizeModule
-	]
+	imports: [SequelizeModule.forFeature([Note])],
+	controllers: [NotesController],
+	providers: [NotesService, NotesRepository, FilesService],
+	exports: [SequelizeModule]
 })
 export class NotesModule {}

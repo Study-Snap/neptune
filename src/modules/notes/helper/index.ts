@@ -1,4 +1,3 @@
-import {} from 'fs'
 import { extname } from 'path'
 import { v4 as uuid } from 'uuid'
 
@@ -12,9 +11,10 @@ export async function calculateReadTimeMinutes(body: string): Promise<number> {
 	// Source: https://irisreading.com/what-is-the-average-reading-speed/
 	const avgWordsPerMin = 200
 
-	return Math.round(body.split(' ').length / avgWordsPerMin)
+	return Math.round(body.split(' ').length / avgWordsPerMin) + 1
 }
 
+// Used to initialize a ratings format for a new note
 export function createEmptyRatings(ratingsSize?: number): number[] {
 	if (ratingsSize) {
 		return Array(ratingsSize).fill(0)

@@ -58,10 +58,12 @@ export class NotesService {
 			'bibtextCitation'
 		]
 
-		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
-			obj[key] = data[key]
-			return obj
-		}, {})
+		const filteredData: object = Object.keys(data)
+			.filter((key) => allowedFields.includes(key))
+			.reduce((obj, key) => {
+				obj[key] = data[key]
+				return obj
+			}, {})
 
 		return this.notesRepository.updateNote(note, filteredData)
 	}
@@ -94,7 +96,9 @@ export class NotesService {
 		const fileStat = existsSync(`${config.fileStorageLocation}/${noteFile}`)
 
 		if (!fileStat) {
-			throw new NotFoundException('Could not find a file with that ID')
+			throw new NotFoundException(
+				'Could not find a file with that ID. If you have not done so already, ensure you upload a file by issuing POST request to /api/files'
+			)
 		}
 
 		// Perform some preprocessing before note creation

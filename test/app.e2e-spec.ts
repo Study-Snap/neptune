@@ -21,9 +21,7 @@ describe('Neptune', () => {
 	// Setup test environment
 	beforeAll(async () => {
 		const testModule: TestingModule = await Test.createTestingModule({
-			imports: [
-				AppModule
-			]
+			imports: [AppModule]
 		}).compile()
 
 		// Get Database connection
@@ -117,11 +115,7 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the note',
 					fileId: resFile.fileId,
 					fileType: resFile.fileType,
-					keywords: [
-						'biology',
-						'chemestry',
-						'Physics'
-					],
+					keywords: ['biology', 'chemestry', 'Physics'],
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -144,11 +138,7 @@ describe('Neptune', () => {
 				const reqData = {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
-					keywords: [
-						'biology',
-						'chemestry',
-						'Physics'
-					],
+					keywords: ['biology', 'chemestry', 'Physics'],
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -169,11 +159,7 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the note',
 					fileId: 'fake-nonexist-file-id',
 					fileType: resFile.fileType,
-					keywords: [
-						'biology',
-						'chemestry',
-						'Physics'
-					],
+					keywords: ['biology', 'chemestry', 'Physics'],
 					isPublic: true,
 					allowDownloads: true
 				}
