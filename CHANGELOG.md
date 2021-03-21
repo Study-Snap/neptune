@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Modified
 
 - (cicd): Fixed name and created `docker-compose.text.yml` for e2e testing environment setup.
+- (SSPP-136): Refactored notes and files to be their own modules for better SoC
 
 ### Removed
 

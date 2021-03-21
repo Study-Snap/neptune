@@ -27,7 +27,7 @@ Neptune for StudySnap is the primary resource service for the StudySnap applicat
 
 ## Useful Links
 
-- [Helm Charts](https://github.com/Study-Snap/charts)
+- The [Neptune Helm Chart](https://github.com/Study-Snap/charts/studysnap/neptune)
 - This project tracks changes through its [CHANGELOG](/CHANGELOG)
 
 ## Prerequisites
@@ -36,6 +36,10 @@ This project requires some extra things to work on in development. In production
 
 - **Preferrably** [Docker](http://docker.com) and/or [docker-compose](https://docs.docker.com/compose/). Note: Can be run without docker.
 - Configured `.env` or `exported` environment variables according to the available configurations listed below.
+
+### For production
+
+- Suggested to use the associated [Helm Chart](https://github.com/Study-Snap/charts/studysnap/neptune) to deploy to k8s environment
 
 ## Available Configurations
 
@@ -53,6 +57,7 @@ Below is a list of available configuration options to customize the project. **N
 | DB_NOTE_DATABASE       | The name of the Studysnap notes database where you will store your notes.                                                 | `studysnap_notedb`               | Y        |
 | DB_RETRY_ATTEMPTS             | Number of times to retry a failed connection to the database configured.                                                                              | `2`                   | Y        |
 | JWT_SECRET      | Used to cryptographically decode authentication (JWT) tokens sent to the Neptune service from clients.                                                                              | `NONE`                     | N        |
+| FILE_STORE      | Specifies the location in the container/storage volume where to store and retrieve uploaded note data                                                                              | `/tmp`                     | N        |
 
 > The current dev environment setup I have convieniently included in the `.env` file at the root of this project.
 
@@ -97,6 +102,7 @@ DB_USER=studysnap
 DB_PASS=snapstudy
 DB_PORT=8888
 JWT_SECRET=dev
+FILE_STORE=./tmp/
 
 ```
 > Note this is a really, REALLY weak JWT_SECRET, ensure in production to generate a much stronger secret.
