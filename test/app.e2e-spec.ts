@@ -22,7 +22,9 @@ describe('Neptune', () => {
 	// Setup test environment
 	beforeAll(async () => {
 		const testModule: TestingModule = await Test.createTestingModule({
-			imports: [AppModule]
+			imports: [
+				AppModule
+			]
 		}).compile()
 
 		// Get Database connection
@@ -60,7 +62,7 @@ describe('Neptune', () => {
 	})
 
 	describe('FilesController', () => {
-		const FILE_BASE_URL = '/api/files'
+		const FILE_BASE_URL = '/neptune/files'
 
 		describe('Upload note files', () => {
 			it('should create a new note file with valid authorization and file in form-data', async () => {
@@ -95,7 +97,7 @@ describe('Neptune', () => {
 	})
 
 	describe('NotesController', () => {
-		const NOTE_BASE_URL = '/api/notes'
+		const NOTE_BASE_URL = '/neptune/notes'
 		let noteId: number // Useful for later tests
 
 		describe('Authenticated Endpoints', () => {
@@ -125,7 +127,11 @@ describe('Neptune', () => {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
 					fileUri: resFile,
-					keywords: ['biology', 'chemestry', 'Physics'],
+					keywords: [
+						'biology',
+						'chemestry',
+						'Physics'
+					],
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -148,7 +154,11 @@ describe('Neptune', () => {
 				const reqData = {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
-					keywords: ['biology', 'chemestry', 'Physics'],
+					keywords: [
+						'biology',
+						'chemestry',
+						'Physics'
+					],
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -168,7 +178,11 @@ describe('Neptune', () => {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
 					fileUri: 'fake-nonexist-file-id',
-					keywords: ['biology', 'chemestry', 'Physics'],
+					keywords: [
+						'biology',
+						'chemestry',
+						'Physics'
+					],
 					isPublic: true,
 					allowDownloads: true
 				}
