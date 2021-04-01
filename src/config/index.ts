@@ -22,7 +22,7 @@ const appConfig: IConfig = {
 		fileStorageLocation: process.env.FILE_STORE
 	},
 	test: {
-		listenPort: process.env.PORT || 5555,
+		listenPort: process.env.PORT || 7777,
 		maxRequests: 999,
 		dbDialect: process.env.DB_DIALECT || 'postgres',
 		dbHost: process.env.DB_HOST || 'localhost',
