@@ -23,7 +23,6 @@ jobs:
       uses: actions/setup-node@v2.1.5
       with:
         node-version: ${{ matrix.node-version }}
-    - run: curl localhost:5555
     - run: npm ci
     - run: npm run test:e2e
   test-coverage:
