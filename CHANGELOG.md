@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (cicd): Fixed name and created `docker-compose.text.yml` for e2e testing environment setup.
 - (SSPP-136): Refactored notes and files to be their own modules for better SoC
 - (hotfix): Fixed pathing to work better in k8s deployment so as not to conflict with `studysnap/authentication` dependencies
+- (SSPP-122): Fix issue pertaining to authentication on production database from neptune
 
 ### Removed
 
