@@ -35,7 +35,7 @@ services:
       DB_PASS: snapstudy
       DB_HOST: authdb
       DB_USER_DATABASE: studysnap_authdb
-      JWT_SECRET: dev
+      JWT_SECRET: test
       JWT_ACCESS_TOKEN_EXPIRE_TIME: 999m
     depends_on:
       - authdb

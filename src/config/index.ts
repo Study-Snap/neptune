@@ -22,16 +22,16 @@ const appConfig: IConfig = {
 		fileStorageLocation: process.env.FILE_STORE
 	},
 	test: {
-		listenPort: process.env.PORT || 5555,
+		listenPort: process.env.PORT || 7777,
 		maxRequests: 999,
 		dbDialect: process.env.DB_DIALECT || 'postgres',
 		dbHost: process.env.DB_HOST || 'localhost',
-		dbPort: process.env.DB_PORT || 7654,
-		dbUsername: process.env.DB_USER,
-		dbPassword: process.env.DB_PASS,
+		dbPort: process.env.DB_PORT || 8888,
+		dbUsername: process.env.DB_USER || 'studysnap',
+		dbPassword: process.env.DB_PASS || 'snapstudy',
 		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_testdb',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
-		jwtSecret: process.env.JWT_SECRET || 'dev',
+		jwtSecret: process.env.JWT_SECRET || 'test',
 		fileStorageLocation: process.env.FILE_STORE || './tmp/'
 	},
 	production: {
