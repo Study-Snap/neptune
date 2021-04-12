@@ -3,6 +3,20 @@ import { IConfig } from '../common/interfaces/config/app-config.interface'
 import * as dotenv from 'dotenv'
 dotenv.config()
 
+// Import env vars from appropriate file
+switch (process.env.NODE_ENV) {
+	case DEVELOPMENT:
+		dotenv.config({ path: '.dev.env' })
+		break
+	case TEST:
+		dotenv.config({ path: '.test.env' })
+	case PRODUCTION:
+		dotenv.config({ path: '.prod.env' })
+	default:
+		dotenv.config()
+		break
+}
+
 /*
 	NOTE: Ensure that JWT_SECRET is the same secret used in signing access tokens on AUTH_BASE_URL
 */

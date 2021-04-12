@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (tests): Implemented E2E tests and coverage
 - (SSPP-121): Create models for Notes
 - (SSPP-133): Added e2e tests for available note CRUD operations
+- (SSPP-151): Fixed issue with e2e testing environment due to misconfigured auth endpoint in `test/util/index.ts`.
+- (cicd): Implemented test docker publish for the testing of deployments using a branched version of the image instead of production versions
+- (SSPP-137): Implemented PDF parsing to extract note body for storage in note database
 
 ### Modified
 
