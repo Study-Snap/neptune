@@ -92,7 +92,7 @@ export class NotesService {
 		return this.notesRepository.deleteNote(note)
 	}
 
-	async createNoteWithFile(data: CreateNoteDto, authorId: number, ratingsSize?: number): Promise<Note> {
+	async createNoteWithFile(data: CreateNoteDto, authorId: number): Promise<Note> {
 		const fileStat = existsSync(`${config.fileStorageLocation}/${data.fileUri}`)
 
 		if (!fileStat) {
@@ -104,7 +104,7 @@ export class NotesService {
 		// Perform some preprocessing before note creation
 		const body = await extractBodyFromFile(data.fileUri)
 		const readTime = await calculateReadTimeMinutes(body)
-		const ratings = createEmptyRatings(ratingsSize)
+		const ratings = createEmptyRatings()
 
 		// Create the note in the database
 		return this.notesRepository.createNote(
