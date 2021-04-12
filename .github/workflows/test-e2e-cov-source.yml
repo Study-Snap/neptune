@@ -25,7 +25,6 @@ jobs:
     - name: Check running environment (docker)
       run: docker ps -a
     - run: npm ci
-    # - run: npm run test:e2e
     - name: Check running environment again (docker)
       run: docker ps -a
     - name: Check all logs
@@ -33,6 +32,7 @@ jobs:
         docker logs studysnap_testdb
         docker logs studysnap_authdb
         docker logs authentication
+    - run: npm run test:e2e
   test-coverage:
     runs-on: ubuntu-latest
     strategy:
