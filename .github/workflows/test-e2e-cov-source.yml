@@ -21,6 +21,8 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Check running environment (docker)
+      run: docker ps -a
     - run: npm ci
     - run: npm run test:e2e
   test-coverage:
