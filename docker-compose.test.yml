@@ -1,5 +1,5 @@
 # Development Setup for performing E2E tests on Neptune
-version: "3.4"
+version: "3"
 services:
   notedb:
     image: postgres:13.1
@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: studysnap
       POSTGRES_PASSWORD: snapstudy
     ports:
-      - "8888:5432"
+      - 8888:5432
     networks:
       - nep-test-network
   authdb:
