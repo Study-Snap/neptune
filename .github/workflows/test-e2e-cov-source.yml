@@ -30,8 +30,8 @@ jobs:
       run: docker ps -a
     - name: Check all logs
       run: |
-        docker logs notedb
-        docker logs authdb
+        docker logs studysnap_testdb
+        docker logs studysnap_authdb
         docker logs authentication
   test-coverage:
     runs-on: ubuntu-latest
