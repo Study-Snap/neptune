@@ -1,5 +1,6 @@
 # Development / Testing
 tmp/
+*.env
 
 # compiled output
 /dist

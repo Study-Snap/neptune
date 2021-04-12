@@ -1,6 +1,10 @@
 import axios, { AxiosRequestConfig } from 'axios'
+import { IConfigAttributes } from '../../src/common/interfaces/config/app-config.interface'
+import { getConfig } from '../../src/config'
 
-export const TEST_AUTH_URL = 'http://localhost:5555/api/auth'
+const config: IConfigAttributes = getConfig()
+
+export const TEST_AUTH_URL = `http://${config.testAuthHost}:${config.testAuthPort}/${config.testAuthBasePath}`
 export const TEST_USERNAME = 'test_sa@example.com'
 export const TEST_PASSWORD = '02809b3927fcc767ad65ce8a6e57afce'
 
