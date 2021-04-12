@@ -2,6 +2,8 @@ name: E2E and Coverage
 
 on:
   push:
+  #   branches: [ develop ]
+  # pull_request:
 
 jobs:
   test-e2e:
@@ -23,12 +25,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
-    - name: Check running environment (docker)
-      run: docker ps -a
-    - name: Check all logs
-      run: |
-        docker logs studysnap_testdb
-        docker logs authentication
     - run: npm run test:e2e
   test-coverage:
     runs-on: ubuntu-latest

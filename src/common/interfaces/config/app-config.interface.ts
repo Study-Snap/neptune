@@ -1,5 +1,8 @@
 export interface IConfigAttributes {
 	listenPort: number | string
+	testAuthBasePath?: string
+	testAuthHost?: string
+	testAuthPort?: number | string
 	maxRequests: number
 	dbDialect: string
 	dbHost: string
