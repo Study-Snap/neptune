@@ -25,7 +25,7 @@ const appConfig: IConfig = {
 		listenPort: process.env.PORT || 7777,
 		maxRequests: 999,
 		dbDialect: process.env.DB_DIALECT || 'postgres',
-		dbHost: process.env.DB_HOST || 'studysnap_testdb',
+		dbHost: process.env.DB_HOST || 'localhost',
 		dbPort: process.env.DB_PORT || 8888,
 		dbUsername: process.env.DB_USER || 'studysnap',
 		dbPassword: process.env.DB_PASS || 'snapstudy',

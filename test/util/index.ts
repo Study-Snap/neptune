@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios'
 
-export const TEST_AUTH_URL = 'http://localhost:5555/api/auth'
+export const TEST_AUTH_URL = 'http://localhost:5555/auth'
 export const TEST_USERNAME = 'test_sa@example.com'
 export const TEST_PASSWORD = '02809b3927fcc767ad65ce8a6e57afce'
 

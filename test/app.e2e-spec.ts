@@ -7,7 +7,7 @@ import * as request from 'supertest'
 import { createTestAccountForE2e, getAccessTokenFromAuth, TEST_PASSWORD, TEST_USERNAME } from './util'
 import { IConfigAttributes } from '../src/common/interfaces/config/app-config.interface'
 import { getConfig } from '../src/config'
-import { DeleteNoteDto } from 'src/modules/notes/dto/delete-note.dto'
+import { DeleteNoteDto } from '../src/modules/notes/dto/delete-note.dto'
 
 const config: IConfigAttributes = getConfig()
 

@@ -22,15 +22,12 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Check running environment (docker)
-      run: docker ps -a
     - run: npm ci
-    - name: Check running environment again (docker)
+    - name: Check running environment (docker)
       run: docker ps -a
     - name: Check all logs
       run: |
         docker logs studysnap_testdb
-        docker logs studysnap_authdb
         docker logs authentication
     - run: npm run test:e2e
   test-coverage:
