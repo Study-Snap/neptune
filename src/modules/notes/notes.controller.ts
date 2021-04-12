@@ -36,7 +36,7 @@ export class NotesController {
 		const authorId = req.user.id
 
 		// Create the note in the notes database with file reference
-		return this.notesService.createNoteWithFile(createDto, authorId, 5)
+		return this.notesService.createNoteWithFile(createDto, authorId)
 	}
 
 	@JwtAuth()

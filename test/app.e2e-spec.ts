@@ -4,17 +4,22 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { Dialect, Sequelize } from 'sequelize'
 import { AppModule } from '../src/app.module'
 import * as request from 'supertest'
+import { readFile } from 'fs/promises'
 import { createTestAccountForE2e, getAccessTokenFromAuth, TEST_PASSWORD, TEST_USERNAME } from './util'
 import { IConfigAttributes } from '../src/common/interfaces/config/app-config.interface'
 import { getConfig } from '../src/config'
-import { DeleteNoteDto } from 'src/modules/notes/dto/delete-note.dto'
+import { DeleteNoteDto } from '../src/modules/notes/dto/delete-note.dto'
 
 const config: IConfigAttributes = getConfig()
 
 describe('Neptune', () => {
 	let app: INestApplication
 	let connection: Sequelize
-	let resFile: string
+
+	// File params
+	const goodFileTestPath = 'test/files/capstone_pp.pdf'
+	let resGoodFileUri: string
+	let resBadFileUri: string
 
 	// For use in testing prodected endpoints
 	let jwtToken: string
@@ -65,22 +70,41 @@ describe('Neptune', () => {
 		const FILE_BASE_URL = '/neptune/files'
 
 		describe('Upload note files', () => {
-			it('should create a new note file with valid authorization and file in form-data', async () => {
+			it('should create a new note file with valid authorization and OTHER non-optimal file format', async () => {
 				// Create a buffer file
-				const buffer = Buffer.from('some note data')
+				const buffer = Buffer.from('docx formatted data some note data')
 
 				// Create note file with ID
 				const res = await request(app.getHttpServer())
 					.post(`${FILE_BASE_URL}`)
 					.set('Authorization', `Bearer ${jwtToken}`)
-					.attach('file', buffer, 'test_file.pdf')
+					.attach('file', buffer, 'test_file.docx')
 
 				// Verify results from file upload
 				expect(res.status).toBe(HttpStatus.CREATED)
 				expect(res.body.fileUri).toBeDefined()
 
 				// Save file upload response
-				resFile = res.body.fileUri
+				resBadFileUri = res.body.fileUri
+			})
+
+			it('should create note with valid optimal PDF and authorization in form-data', async () => {
+				// Get valid PDF formatted file from test (true expected format)
+				const file = await readFile(goodFileTestPath)
+				const buffer = Buffer.from(file)
+
+				// Create note file with ID
+				const res = await request(app.getHttpServer())
+					.post(`${FILE_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.attach('file', buffer, 'test_pdf_file.pdf')
+
+				// Verify results from file upload
+				expect(res.status).toBe(HttpStatus.CREATED)
+				expect(res.body.fileUri).toBeDefined()
+
+				// Save file upload response
+				resGoodFileUri = res.body.fileUri
 			})
 
 			it('should fail to create a new note upload without proper authorization', async () => {
@@ -121,12 +145,12 @@ describe('Neptune', () => {
 		})
 
 		describe('Note Creation', () => {
-			it('should create a new note with valid file and fields according to DTO spec', async () => {
+			it('should create a new note with valid PDF file and fields according to DTO spec', async () => {
 				// Create the note with file
 				const reqData = {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
-					fileUri: resFile,
+					fileUri: resGoodFileUri,
 					keywords: [
 						'biology',
 						'chemestry',
@@ -148,6 +172,33 @@ describe('Neptune', () => {
 
 				// Store noteID for later tests
 				noteId = res.body._id
+			})
+
+			it('should create a new note with other (docx) file but not process PDF extraction and provide warn', async () => {
+				// Create the note with file
+				const reqData = {
+					title: 'A Science note',
+					shortDescription: 'A short description about the docx note',
+					fileUri: resBadFileUri,
+					keywords: [
+						'biology',
+						'chemestry',
+						'Physics'
+					],
+					isPublic: true,
+					allowDownloads: true
+				}
+
+				// Create actual note with file
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.CREATED)
+				expect(res.body.title).toMatch(reqData.title)
+				expect(res.body.body).toMatch('BAD FORMAT')
 			})
 
 			it('should fail to create a new note if a file is not provided', async () => {
@@ -258,7 +309,7 @@ describe('Neptune', () => {
 			it('should fail to delete note with fake id', async () => {
 				const badRequestData: DeleteNoteDto = {
 					noteId: 9999999,
-					fileUri: resFile
+					fileUri: resGoodFileUri
 				}
 				const res = await request(app.getHttpServer())
 					.del(`${NOTE_BASE_URL}`)
@@ -272,7 +323,7 @@ describe('Neptune', () => {
 			it('should fail to delete note without authorization', async () => {
 				const reqData: DeleteNoteDto = {
 					noteId,
-					fileUri: resFile
+					fileUri: resGoodFileUri
 				}
 				const res = await request(app.getHttpServer()).del(`${NOTE_BASE_URL}`).send(reqData)
 
@@ -283,7 +334,7 @@ describe('Neptune', () => {
 			it('should delete note with valid id', async () => {
 				const reqData: DeleteNoteDto = {
 					noteId,
-					fileUri: resFile
+					fileUri: resGoodFileUri
 				}
 				const res = await request(app.getHttpServer())
 					.del(`${NOTE_BASE_URL}`)

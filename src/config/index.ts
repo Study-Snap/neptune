@@ -23,6 +23,9 @@ const appConfig: IConfig = {
 	},
 	test: {
 		listenPort: process.env.PORT || 7777,
+		testAuthHost: process.env.TEST_AUTH_HOST || 'localhost',
+		testAuthPort: process.env.TEST_AUTH_PORT || 5555,
+		testAuthBasePath: process.env.TEST_AUTH_BASE_PATH || 'auth',
 		maxRequests: 999,
 		dbDialect: process.env.DB_DIALECT || 'postgres',
 		dbHost: process.env.DB_HOST || 'localhost',
