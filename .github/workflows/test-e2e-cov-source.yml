@@ -6,6 +6,7 @@ on:
 jobs:
   test-e2e:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
         node-version: [14.x, 15.x]
@@ -25,6 +26,13 @@ jobs:
       run: docker ps -a
     - run: npm ci
     - run: npm run test:e2e
+    - name: Check running environment again (docker)
+      run: docker ps -a
+    - name: Check all logs
+      run: |
+        docker logs notedb
+        docker logs authdb
+        docker logs authentication
   test-coverage:
     runs-on: ubuntu-latest
     strategy:
