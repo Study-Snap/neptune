@@ -1,6 +1,6 @@
 {
   "name": "neptune",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "StudySnap resource server",
   "author": "Ben Sykes",
   "private": true,
@@ -33,6 +33,7 @@
     "class-validator": "^0.12.2",
     "cookie-parser": "^1.4.5",
     "dotenv": "^8.2.0",
+    "elasticsearch": "^16.7.2",
     "express-rate-limit": "^5.2.3",
     "fs-extra": "^9.1.0",
     "npm": "^6.14.10",

@@ -35,7 +35,8 @@ Neptune for StudySnap is the primary resource service for the StudySnap applicat
 This project requires some extra things to work on in development. In production, however, it should function on it's own given that you have the `studysnap_notedb` running in a postgres instance that is available to this application. In development, you will need
 
 - **Preferrably** [Docker](http://docker.com) and/or [docker-compose](https://docs.docker.com/compose/). Note: Can be run without docker.
-- Configured `.env` or `exported` environment variables according to the available configurations listed below.
+- Configured `.env` file(s) or `exported` environment variables according to the available configurations listed below. Note: Defaults should suffice for intended normal development.
+- Remember that when you first start up [docker-compose](https://docs.docker.com/compose/) services for development and you are working on components related to note search, you will have to first run the development node application so that `Logstash` can find the appropriate database in the `studysnap_notedb` database.
 
 ### For production
 
@@ -131,6 +132,18 @@ Finally, with the services up and running, you can make changes and test using [
 ## Running Tests
 
 Running tests is automated through our CI/CD pipeline process, however, running them manually during development is super helpful! Here's how.
+
+First, make sure all the required dependent services are actually running on your machine. 
+
+```bash
+
+# start the required services in a detached state
+docker-compose -f docker-compose.test.yml up -d
+
+```
+> Note: This is the test compose (!!which is different than the development one!!)
+
+then, all you have to do is choose a test and run the associated command from below options.
 
 ```bash
 # unit tests

@@ -3,6 +3,11 @@ export interface IConfigAttributes {
 	testAuthBasePath?: string
 	testAuthHost?: string
 	testAuthPort?: number | string
+	esVersion: string
+	esHost: string
+	esPort: number | string
+	esUser?: string
+	esPassword?: string
 	maxRequests: number
 	dbDialect: string
 	dbHost: string

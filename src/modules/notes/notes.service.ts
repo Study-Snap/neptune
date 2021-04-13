@@ -24,6 +24,20 @@ export class NotesService {
 		return note
 	}
 
+	async getNotesUsingES(searchType: string, searchQuery: string, defaultField?: string): Promise<Note[]> {
+		let notes: Note[]
+		// Request search with ES
+		// const hits =
+
+		// For each hit get note with ID and append to result
+
+		if (!notes || notes.length === 0) {
+			throw new NotFoundException('Could not find any notes for the supplied search query')
+		}
+
+		return notes
+	}
+
 	async getNotesWithTitle(title: string): Promise<Note[]> {
 		const notes: Note[] = await this.notesRepository.findNotesMatchesTitle(title)
 
@@ -58,12 +72,10 @@ export class NotesService {
 			'bibtextCitation'
 		]
 
-		const filteredData: object = Object.keys(data)
-			.filter((key) => allowedFields.includes(key))
-			.reduce((obj, key) => {
-				obj[key] = data[key]
-				return obj
-			}, {})
+		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
+			obj[key] = data[key]
+			return obj
+		}, {})
 
 		return this.notesRepository.updateNote(note, filteredData)
 	}

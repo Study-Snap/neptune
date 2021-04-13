@@ -1,6 +1,37 @@
 # Development Setup for working on Neptune
-version: "3.4"
+version: "3.7"
 services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
+    container_name: sem_elasticsearch
+    restart: on-failure
+    environment: 
+      - "discovery.type=single-node"
+    ports: 
+      - 9200:9200
+    networks: 
+      - nep-dev-network
+  logstash:
+    image: studysnap/logstash-pg-es:1.x
+    container_name: sem_logstash
+    restart: on-failure
+    environment:
+      LS_HOST: "0.0.0.0"
+      DB_HOST: notedb
+      DB_PORT: 5432
+      DB_USER: studysnap
+      DB_PASS: snapstudy
+      DB_NAME: studysnap_notedb
+      ES_HOST: elasticsearch
+      ES_PORT: 9200
+    volumes:
+      - "./.docker/es-search/config:/usr/share/logstash/config"
+      - "./.docker/es-search/pipelines:/usr/share/logstash/pipeline"
+    depends_on: 
+      - notedb
+      - elasticsearch
+    networks: 
+      - nep-dev-network
   notedb:
     image: postgres:13.1
     container_name: studysnap_notedb
@@ -11,8 +42,6 @@ services:
       POSTGRES_PASSWORD: snapstudy
     ports:
       - "8888:5432"
-    volumes:
-      - notedb_data:/var/lib/postgresql/data
     networks:
       - nep-dev-network
   authdb:
@@ -50,5 +79,4 @@ networks:
   nep-dev-network:
     driver: bridge
 volumes:
-  notedb_data:
   authdb_data:
