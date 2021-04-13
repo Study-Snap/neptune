@@ -7,12 +7,17 @@ import { IConfigAttributes } from '../../common/interfaces/config/app-config.int
 import { getConfig } from '../../config'
 import { existsSync } from 'fs'
 import { FilesService } from '../files/files.service'
+import { ElasticsearchService } from './elasticsearch.service'
 
 const config: IConfigAttributes = getConfig()
 
 @Injectable()
 export class NotesService {
-	constructor(private readonly notesRepository: NotesRepository, private readonly filesService: FilesService) {}
+	constructor(
+		private readonly notesRepository: NotesRepository,
+		private readonly filesService: FilesService,
+		private readonly elasticsearchService: ElasticsearchService
+	) {}
 
 	async getNoteWithId(id: number): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
@@ -24,18 +29,27 @@ export class NotesService {
 		return note
 	}
 
-	async getNotesUsingES(searchType: string, searchQuery: string, defaultField?: string): Promise<Note[]> {
-		let notes: Note[]
-		// Request search with ES
-		// const hits =
+	async getNotesUsingES(searchType: string, searchQuery: object): Promise<Note[]> {
+		let results: Note[] = []
+		const hits = await this.elasticsearchService.searchNotesForQuery(searchType, searchQuery)
 
-		// For each hit get note with ID and append to result
+		// For each hit get full note with ID and append to result
+		for (const hit of hits) {
+			const note: Note = await this.getNoteWithId(hit['_source']['id'])
 
-		if (!notes || notes.length === 0) {
-			throw new NotFoundException('Could not find any notes for the supplied search query')
+			// If a note was found in the database too then append to the results
+			if (note) {
+				results.push(note)
+			}
 		}
 
-		return notes
+		if (!results || results.length === 0) {
+			throw new NotFoundException(
+				'Failed to get data from database for related hits... It is possible the data has been removed.'
+			)
+		}
+
+		return results
 	}
 
 	async getNotesWithTitle(title: string): Promise<Note[]> {

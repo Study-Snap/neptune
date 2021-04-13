@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
 import { getConfig } from '../../config'
-import * as elasticsearch from 'elasticsearch'
+import { Client } from '@elastic/elasticsearch'
 import { Note } from './models/notes.model'
 
 // Get required config for ES service
@@ -11,23 +11,18 @@ const config: IConfigAttributes = getConfig()
 export class ElasticsearchService {
 	private esClient: any
 	constructor() {
-		this.esClient = new elasticsearch.Client({
-			host: `${config.esHost}:${config.esPort}`,
-			log: 'error',
-			apiVersion: config.esVersion // Ensure this version matches the running es service version
+		this.esClient = new Client({
+			node: `http://${config.esHost}:${config.esPort}`
 		})
 	}
 
-	async searchNotesForQuery(searchType: string, searchQuery: string, defaultField?: string): Promise<object> {
+	async searchNotesForQuery(searchType: string, searchQuery: object): Promise<object[]> {
 		const res = await this.esClient.search(
 			{
 				index: Note.tableName,
 				body: {
 					query: {
-						[searchType]: {
-							q: searchQuery,
-							df: defaultField
-						}
+						[searchType]: searchQuery
 					}
 				}
 			},
@@ -39,10 +34,10 @@ export class ElasticsearchService {
 			}
 		)
 
-		if (!res || !res.hits.hits || res.hits.hits.length === 0) {
+		if (!res.body || !res.body.hits || !res.body.hits.hits || res.body.hits.hits.length === 0) {
 			throw new NotFoundException('Could not find results for the supplied search query')
 		}
 
-		return res.hits.hits
+		return res.body.hits.hits
 	}
 }

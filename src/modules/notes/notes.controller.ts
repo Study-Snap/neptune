@@ -26,14 +26,9 @@ export class NotesController {
 		return this.notesService.getNoteWithId(id)
 	}
 
-	@Get('/search')
+	@Get()
 	async getNotesForQuery(@Body() searchDto: SearchNoteDto): Promise<Note[]> {
-		// Validate search request
-		if (searchDto.queryType === 'query_string' && !searchDto.defaultField) {
-			throw new BadRequestException(`Invalid query construction for type ${searchDto.queryType}`)
-		}
-
-		return this.notesService.getNotesUsingES(searchDto.queryType, searchDto.searchPhrase, searchDto.defaultField)
+		return this.notesService.getNotesUsingES(searchDto.queryType, searchDto.query)
 	}
 
 	@JwtAuth()
