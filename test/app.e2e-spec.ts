@@ -5,7 +5,13 @@ import { Dialect, Sequelize } from 'sequelize'
 import { AppModule } from '../src/app.module'
 import * as request from 'supertest'
 import { readFile } from 'fs/promises'
-import { createTestAccountForE2e, getAccessTokenFromAuth, TEST_PASSWORD, TEST_USERNAME } from './util'
+import {
+	createTestAccountForE2e,
+	getAccessTokenFromAuth,
+	TEST_PASSWORD,
+	TEST_USERNAME,
+	populateESIndexForTest
+} from './util'
 import { IConfigAttributes } from '../src/common/interfaces/config/app-config.interface'
 import { getConfig } from '../src/config'
 import { DeleteNoteDto } from '../src/modules/notes/dto/delete-note.dto'
@@ -250,6 +256,10 @@ describe('Neptune', () => {
 		})
 
 		describe('Note Querying', () => {
+			beforeEach(async () => {
+				await populateESIndexForTest(noteId)
+			})
+
 			it('should find a single note by ID', async () => {
 				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/${noteId}`)
 
@@ -269,6 +279,10 @@ describe('Neptune', () => {
 		})
 
 		describe('Note Update and Delete', () => {
+			beforeEach(async () => {
+				await populateESIndexForTest(noteId)
+			})
+
 			it('should update a note with given id with set of acceptable fields', async () => {
 				const reqData = {
 					noteId: noteId,
@@ -333,8 +347,7 @@ describe('Neptune', () => {
 
 			it('should delete note with valid id', async () => {
 				const reqData: DeleteNoteDto = {
-					noteId,
-					fileUri: resGoodFileUri
+					noteId
 				}
 				const res = await request(app.getHttpServer())
 					.del(`${NOTE_BASE_URL}`)
