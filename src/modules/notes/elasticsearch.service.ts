@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
 import { getConfig } from '../../config'
 import { Client } from '@elastic/elasticsearch'
@@ -39,5 +39,25 @@ export class ElasticsearchService {
 		}
 
 		return res.body.hits.hits
+	}
+
+	async deleteNoteWithIdFromES(noteId: number): Promise<void> {
+		const res = await this.esClient.deleteByQuery({
+			index: Note.tableName,
+			body: {
+				query: {
+					term: { id: noteId }
+				}
+			}
+		})
+
+		switch (res.statusCode) {
+			case 404:
+				throw new NotFoundException(`Could not find a note with the specified ID (${noteId}) in the ES index.`)
+			case 500:
+				throw new InternalServerErrorException(`Failed to delete note from elasticsearch index with id ${noteId}.`)
+			default:
+				break
+		}
 	}
 }

@@ -94,7 +94,7 @@ export class NotesService {
 		return this.notesRepository.updateNote(note, filteredData)
 	}
 
-	async deleteNoteWithId(authorId: number, id: number, fileUri: string): Promise<boolean> {
+	async deleteNoteWithId(authorId: number, id: number, fileUri?: string): Promise<boolean> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
@@ -105,10 +105,13 @@ export class NotesService {
 			throw new UnauthorizedException('You are not allowed to delete this note as you are not its author')
 		}
 
-		// Delete the actual file for the note
-		const delSuccess = await this.filesService.deleteFileWithId(fileUri)
+		// Remove the note from the elasticsearch index
+		await this.elasticsearchService.deleteNoteWithIdFromES(id)
 
-		if (!delSuccess) {
+		// Delete the actual file for the note
+		const fileDelSuccess = await this.filesService.deleteFileWithId(fileUri ? fileUri : note.fileUri)
+
+		if (!fileDelSuccess) {
 			throw new InternalServerErrorException(
 				'For some reason, we could not delete the file associated with this note. Aborting delete operation.'
 			)
@@ -123,7 +126,7 @@ export class NotesService {
 
 		if (!fileStat) {
 			throw new NotFoundException(
-				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /api/files'
+				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /neptune/files'
 			)
 		}
 
