@@ -26,7 +26,7 @@ export class NotesController {
 		return this.notesService.getNoteWithId(id)
 	}
 
-	@Get()
+	@Post('search')
 	async getNotesForQuery(@Body() searchDto: SearchNoteDto): Promise<Note[]> {
 		return this.notesService.getNotesUsingES(searchDto.queryType, searchDto.query)
 	}
