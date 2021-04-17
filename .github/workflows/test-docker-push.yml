@@ -13,6 +13,10 @@ jobs:
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+      - name: Get Current Target Branch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: current_branch
       - name: Get Package Version
         id: package_info
         uses: gregoranders/nodejs-project-info@v0.0.11
@@ -35,8 +39,8 @@ jobs:
         with:
           push: true
           tags: |
-            ${{ secrets.DOCKER_ID }}/neptune:test.${{ steps.package_info.outputs.version }}
-            ${{ secrets.DOCKER_ID }}/neptune:test.${{ steps.version_split.outputs._0 }}.x
-            ${{ secrets.DOCKER_ID }}/neptune:test.${{ steps.version_split.outputs._0 }}.${{ steps.version_split.outputs._1 }}.x
+            ${{ secrets.DOCKER_ID }}/neptune:${{ steps.current_branch.outputs.branch }}.${{ steps.package_info.outputs.version }}
+            ${{ secrets.DOCKER_ID }}/neptune:${{ steps.current_branch.outputs.branch }}.${{ steps.version_split.outputs._0 }}.x
+            ${{ secrets.DOCKER_ID }}/neptune:${{ steps.current_branch.outputs.branch }}.${{ steps.version_split.outputs._0 }}.${{ steps.version_split.outputs._1 }}.x
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
