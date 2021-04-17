@@ -7,6 +7,10 @@ import { Note } from './models/notes.model'
 export class NotesRepository {
 	constructor(@InjectModel(Note) private noteModel: typeof Note) {}
 
+	async findAllNotes(): Promise<Note[] | undefined> {
+		return this.noteModel.findAll()
+	}
+
 	async findNoteById(id: number): Promise<Note | undefined> {
 		return this.noteModel.findOne({
 			where: {

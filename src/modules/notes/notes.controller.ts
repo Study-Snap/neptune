@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, Request } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Request } from '@nestjs/common'
 import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { Note } from './models/notes.model'
@@ -19,6 +19,11 @@ export class NotesController {
 			message: 'Authenticated Request Successful!',
 			user: req.user
 		}
+	}
+
+	@Get('all')
+	async getAllNotesTemp(): Promise<Note[]> {
+		return this.notesService.getAllNotes()
 	}
 
 	@Get(':id')

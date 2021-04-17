@@ -27,9 +27,7 @@ export class ElasticsearchService {
 				}
 			},
 			{
-				ignore: [
-					404
-				],
+				ignore: [404],
 				maxRetries: 3
 			}
 		)

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNotEmptyObject, IsObject, IsOptional, IsString } from 'class-validator'
+import { IsNotEmptyObject, IsObject, IsString } from 'class-validator'
 
 export class SearchNoteDto {
 	@IsString({ message: 'Ensure a query type is specified' })

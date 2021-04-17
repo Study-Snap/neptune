@@ -19,6 +19,16 @@ export class NotesService {
 		private readonly elasticsearchService: ElasticsearchService
 	) {}
 
+	async getAllNotes(): Promise<Note[]> {
+		const notes: Note[] = await this.notesRepository.findAllNotes()
+
+		if (!notes || notes.length === 0) {
+			throw new NotFoundException('Did not find any notes in the database')
+		}
+
+		return notes
+	}
+
 	async getNoteWithId(id: number): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
@@ -30,7 +40,7 @@ export class NotesService {
 	}
 
 	async getNotesUsingES(searchType: string, searchQuery: object): Promise<Note[]> {
-		let results: Note[] = []
+		const results: Note[] = []
 		const hits = await this.elasticsearchService.searchNotesForQuery(searchType, searchQuery)
 
 		// For each hit get full note with ID and append to result
@@ -86,10 +96,12 @@ export class NotesService {
 			'bibtextCitation'
 		]
 
-		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
-			obj[key] = data[key]
-			return obj
-		}, {})
+		const filteredData: object = Object.keys(data)
+			.filter((key) => allowedFields.includes(key))
+			.reduce((obj, key) => {
+				obj[key] = data[key]
+				return obj
+			}, {})
 
 		return this.notesRepository.updateNote(note, filteredData)
 	}

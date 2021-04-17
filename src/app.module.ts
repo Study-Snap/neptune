@@ -1,4 +1,3 @@
-import { ElasticsearchService } from './modules/notes/elasticsearch.service'
 import { FilesModule } from './modules/files/files.module'
 import { NotesModule } from './modules/notes/notes.module'
 import { AuthModule } from './modules/auth/auth.module'
