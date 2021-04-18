@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
-import { calculateReadTimeMinutes, createEmptyRatings, extractBodyFromFile } from './helper'
+import { calculateReadTimeMinutes, compareNotesByRating, createEmptyRatings, extractBodyFromFile } from './helper'
 import { NotesRepository } from './notes.repository'
 import { Note } from './models/notes.model'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
@@ -27,6 +27,16 @@ export class NotesService {
 		}
 
 		return notes
+	}
+
+	async getTopNotesByRating(): Promise<Note[]> {
+		const notes: Note[] = await this.notesRepository.findAllNotes()
+
+		if (!notes || notes.length === 0) {
+			throw new NotFoundException('Did not get any top notes')
+		}
+
+		return notes.sort(compareNotesByRating)
 	}
 
 	async getNoteWithId(id: number): Promise<Note> {
@@ -96,12 +106,10 @@ export class NotesService {
 			'bibtextCitation'
 		]
 
-		const filteredData: object = Object.keys(data)
-			.filter((key) => allowedFields.includes(key))
-			.reduce((obj, key) => {
-				obj[key] = data[key]
-				return obj
-			}, {})
+		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
+			obj[key] = data[key]
+			return obj
+		}, {})
 
 		return this.notesRepository.updateNote(note, filteredData)
 	}

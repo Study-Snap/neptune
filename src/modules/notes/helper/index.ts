@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import * as pdf from 'pdf-parse'
 import { IConfigAttributes } from 'src/common/interfaces/config/app-config.interface'
 import { getConfig } from '../../../config'
+import { Note } from '../models/notes.model'
 
 const config: IConfigAttributes = getConfig()
 
@@ -38,4 +39,19 @@ export function editFileName(req, file: Express.Multer.File, cb) {
 	const name = file.originalname.split('.')[0]
 	const fileExtName = extname(file.originalname)
 	cb(null, `${name}-${uuid()}${fileExtName}`)
+}
+
+// Used to compare notes by rating
+export function compareNotesByRating(a: Note, b: Note): number {
+	const aRating = Math.max(...a.rating)
+	const bRating = Math.max(...b.rating)
+
+	if (aRating < bRating) {
+		return 1
+	}
+	if (aRating > bRating) {
+		return -1
+	}
+
+	return 0
 }
