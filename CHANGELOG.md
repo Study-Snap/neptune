@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (SSPP-148): Basic full-text search using elasticsearch
 - (SSPP-148): Development and testing workflows for elasticsearch integration
 - (SSPP-148/SSPP-151): Update README available configuration options
+- (SSPP-167): Code quality updates and refactor
 
 ### Modified
 
