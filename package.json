@@ -1,6 +1,6 @@
 {
   "name": "neptune",
-  "version": "0.0.3",
+  "version": "0.0.6",
   "description": "StudySnap resource server",
   "author": "Ben Sykes",
   "private": true,
@@ -21,6 +21,7 @@
     "test:e2e": "NODE_ENV=test jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^7.12.0",
     "@nestjs/common": "^7.5.1",
     "@nestjs/core": "^7.5.1",
     "@nestjs/jwt": "^7.2.0",

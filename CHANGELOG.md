@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (SSPP-151): Fixed issue with e2e testing environment due to misconfigured auth endpoint in `test/util/index.ts`.
 - (cicd): Implemented test docker publish for the testing of deployments using a branched version of the image instead of production versions
 - (SSPP-137): Implemented PDF parsing to extract note body for storage in note database
+- (SSPP-148): Basic full-text search using elasticsearch
+- (SSPP-148): Development and testing workflows for elasticsearch integration
+- (SSPP-148/SSPP-151): Update README available configuration options
 
 ### Modified
 

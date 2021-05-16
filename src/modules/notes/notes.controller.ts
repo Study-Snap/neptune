@@ -5,6 +5,7 @@ import { Note } from './models/notes.model'
 import { NotesService } from './notes.service'
 import { UpdateNoteDto } from './dto/update-note.dto'
 import { DeleteNoteDto } from './dto/delete-note.dto'
+import { SearchNoteDto } from './dto/search-note.dto'
 
 @Controller('neptune/notes')
 export class NotesController {
@@ -12,7 +13,7 @@ export class NotesController {
 
 	@JwtAuth()
 	@Get('test')
-	async tessEndpoint(@Request() req) {
+	async testEndpoint(@Request() req) {
 		return {
 			status: 'success',
 			message: 'Authenticated Request Successful!',
@@ -20,14 +21,19 @@ export class NotesController {
 		}
 	}
 
+	@Get('top')
+	async getTopNotesByRating(): Promise<Note[]> {
+		return this.notesService.getTopNotesByRating()
+	}
+
 	@Get(':id')
 	async getNote(@Param('id') id: number): Promise<Note> {
 		return this.notesService.getNoteWithId(id)
 	}
 
-	@Get('/all/:title')
-	async getNotesWithTitle(@Param('title') title: string): Promise<Note[]> {
-		return this.notesService.getNotesWithTitle(title)
+	@Post('search')
+	async getNotesForQuery(@Body() searchDto: SearchNoteDto): Promise<Note[]> {
+		return this.notesService.getNotesUsingES(searchDto.queryType, searchDto.query)
 	}
 
 	@JwtAuth()

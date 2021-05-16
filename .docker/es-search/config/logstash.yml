@@ -1,0 +1,5 @@
+http.host: "${LS_HOST}"
+xpack.monitoring.enabled: true
+xpack.monitoring.elasticsearch.hosts: [ "${ES_HOST}:${ES_PORT}" ]
+log.level: info
+config.support_escapes: true

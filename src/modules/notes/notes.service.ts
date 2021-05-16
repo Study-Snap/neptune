@@ -1,18 +1,33 @@
 import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
-import { calculateReadTimeMinutes, createEmptyRatings, extractBodyFromFile } from './helper'
+import { calculateReadTimeMinutes, compareNotesByRating, createEmptyRatings, extractBodyFromFile } from './helper'
 import { NotesRepository } from './notes.repository'
 import { Note } from './models/notes.model'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
 import { getConfig } from '../../config'
 import { existsSync } from 'fs'
 import { FilesService } from '../files/files.service'
+import { ElasticsearchService } from './elasticsearch.service'
 
 const config: IConfigAttributes = getConfig()
 
 @Injectable()
 export class NotesService {
-	constructor(private readonly notesRepository: NotesRepository, private readonly filesService: FilesService) {}
+	constructor(
+		private readonly notesRepository: NotesRepository,
+		private readonly filesService: FilesService,
+		private readonly elasticsearchService: ElasticsearchService
+	) {}
+
+	async getTopNotesByRating(): Promise<Note[]> {
+		const notes: Note[] = await this.notesRepository.findAllNotes()
+
+		if (!notes || notes.length === 0) {
+			throw new NotFoundException('Did not get any top notes')
+		}
+
+		return notes.sort(compareNotesByRating)
+	}
 
 	async getNoteWithId(id: number): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
@@ -24,14 +39,27 @@ export class NotesService {
 		return note
 	}
 
-	async getNotesWithTitle(title: string): Promise<Note[]> {
-		const notes: Note[] = await this.notesRepository.findNotesMatchesTitle(title)
+	async getNotesUsingES(searchType: string, searchQuery: object): Promise<Note[]> {
+		const results: Note[] = []
+		const hits = await this.elasticsearchService.searchNotesForQuery(searchType, searchQuery)
 
-		if (!notes) {
-			throw new NotFoundException(`Could not find any notes containing the title: ${title}`)
+		// For each hit get full note with ID and append to result
+		for (const hit of hits) {
+			const note: Note = await this.getNoteWithId(hit['_source']['id'])
+
+			// If a note was found in the database too then append to the results
+			if (note) {
+				results.push(note)
+			}
 		}
 
-		return notes
+		if (!results || results.length === 0) {
+			throw new NotFoundException(
+				'Failed to get data from database for related hits... It is possible the data has been removed.'
+			)
+		}
+
+		return results.sort(compareNotesByRating)
 	}
 
 	async updateNoteWithId(authorId: number, id: number, data: object): Promise<Note> {
@@ -68,7 +96,7 @@ export class NotesService {
 		return this.notesRepository.updateNote(note, filteredData)
 	}
 
-	async deleteNoteWithId(authorId: number, id: number, fileUri: string): Promise<boolean> {
+	async deleteNoteWithId(authorId: number, id: number, fileUri?: string): Promise<boolean> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
@@ -79,10 +107,13 @@ export class NotesService {
 			throw new UnauthorizedException('You are not allowed to delete this note as you are not its author')
 		}
 
-		// Delete the actual file for the note
-		const delSuccess = await this.filesService.deleteFileWithId(fileUri)
+		// Remove the note from the elasticsearch index
+		await this.elasticsearchService.deleteNoteWithIdFromES(id)
 
-		if (!delSuccess) {
+		// Delete the actual file for the note
+		const fileDelSuccess = await this.filesService.deleteFileWithId(fileUri ? fileUri : note.fileUri)
+
+		if (!fileDelSuccess) {
 			throw new InternalServerErrorException(
 				'For some reason, we could not delete the file associated with this note. Aborting delete operation.'
 			)
@@ -97,7 +128,7 @@ export class NotesService {
 
 		if (!fileStat) {
 			throw new NotFoundException(
-				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /api/files'
+				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /neptune/files'
 			)
 		}
 
