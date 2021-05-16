@@ -19,16 +19,6 @@ export class NotesService {
 		private readonly elasticsearchService: ElasticsearchService
 	) {}
 
-	async getAllNotes(): Promise<Note[]> {
-		const notes: Note[] = await this.notesRepository.findAllNotes()
-
-		if (!notes || notes.length === 0) {
-			throw new NotFoundException('Did not find any notes in the database')
-		}
-
-		return notes
-	}
-
 	async getTopNotesByRating(): Promise<Note[]> {
 		const notes: Note[] = await this.notesRepository.findAllNotes()
 
@@ -72,16 +62,6 @@ export class NotesService {
 		return results.sort(compareNotesByRating)
 	}
 
-	async getNotesWithTitle(title: string): Promise<Note[]> {
-		const notes: Note[] = await this.notesRepository.findNotesMatchesTitle(title)
-
-		if (!notes) {
-			throw new NotFoundException(`Could not find any notes containing the title: ${title}`)
-		}
-
-		return notes
-	}
-
 	async updateNoteWithId(authorId: number, id: number, data: object): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
@@ -106,10 +86,12 @@ export class NotesService {
 			'bibtextCitation'
 		]
 
-		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
-			obj[key] = data[key]
-			return obj
-		}, {})
+		const filteredData: object = Object.keys(data)
+			.filter((key) => allowedFields.includes(key))
+			.reduce((obj, key) => {
+				obj[key] = data[key]
+				return obj
+			}, {})
 
 		return this.notesRepository.updateNote(note, filteredData)
 	}

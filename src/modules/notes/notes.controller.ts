@@ -21,11 +21,6 @@ export class NotesController {
 		}
 	}
 
-	@Get('all')
-	async getAllNotesTemp(): Promise<Note[]> {
-		return this.notesService.getAllNotes()
-	}
-
 	@Get('top')
 	async getTopNotesByRating(): Promise<Note[]> {
 		return this.notesService.getTopNotesByRating()
