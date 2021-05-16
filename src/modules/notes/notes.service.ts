@@ -69,7 +69,7 @@ export class NotesService {
 			)
 		}
 
-		return results
+		return results.sort(compareNotesByRating)
 	}
 
 	async getNotesWithTitle(title: string): Promise<Note[]> {
@@ -106,12 +106,10 @@ export class NotesService {
 			'bibtextCitation'
 		]
 
-		const filteredData: object = Object.keys(data)
-			.filter((key) => allowedFields.includes(key))
-			.reduce((obj, key) => {
-				obj[key] = data[key]
-				return obj
-			}, {})
+		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
+			obj[key] = data[key]
+			return obj
+		}, {})
 
 		return this.notesRepository.updateNote(note, filteredData)
 	}
