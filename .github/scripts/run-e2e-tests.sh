@@ -7,7 +7,7 @@
 # check es cluster health (req: green)
 curl "http://localhost:9200/_cat/health" &> /dev/null
 while [ $? -ne 0 ]; do
-  echo "Elasticsearch not ready yet..."
+  echo "Elasticsearch not in a ready(green) state yet..."
   sleep 5
   curl "http://localhost:9200/_cat/health" &> /dev/null
 done
