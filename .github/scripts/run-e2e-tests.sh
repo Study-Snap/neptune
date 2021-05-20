@@ -5,10 +5,10 @@
 .github/scripts/service-check.sh localhost:9200 -s -t 30 -- echo "Elasticsearch service is up!"
 
 # check es cluster health (req: green)
-curl "http://localhost:9200/_cat/health"
+curl "http://localhost:9200/_cat/health" 2> /dev/null
 while [ $? -ne 0 ]; do
   sleep 5
-  curl "http://localhost:9200/_cat/health"
+  curl "http://localhost:9200/_cat/health" 2> /dev/null
 done
 
 if [ $? -ne 0 ]; then
