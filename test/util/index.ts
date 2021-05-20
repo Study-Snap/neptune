@@ -55,44 +55,47 @@ export const getAccessTokenFromAuth = async (email: string, password: string) =>
 	return res.data.accessToken
 }
 
-export const populateESIndexForTest = async (noteId) => {
+export const populateESIndexForTest = async (noteId: number) => {
 	// Check if index already exists
-	const exists = await esClient.indices.get({
-		index: Note.tableName
-	})
-
-	console.log(exists)
+	const exists = await esClient.indices.exists({ index: `${Note.tableName}` })
 
 	// Create the index (if needed)
 	let createIndexRes: any
 	if (exists.statusCode !== 200) {
-		createIndexRes = await esClient.indices.create({
-			index: Note.tableName
-		})
+		createIndexRes = await esClient.indices.create(
+			{
+				index: Note.tableName,
+				body: {
+					mappings: {
+						properties: {
+							id: { type: 'text' },
+							title: { type: 'text' },
+							keywords: { type: 'text' },
+							shortDescription: { type: 'text' }
+						}
+					}
+				}
+			},
+			{
+				ignore: [400, 409]
+			}
+		)
 	}
 
 	// Insert a document for use in testing
-	if (!createIndexRes || createIndexRes.statusCode === 200 || createIndexRes.statusCode === 409) {
-		console.log('Running insert')
-		const insert = await esClient.index({
-			index: Note.tableName,
+	if (exists.statusCode === 200 || createIndexRes.statusCode === 200 || createIndexRes.statusCode === 409) {
+		// Insert test document
+		await esClient.index({
+			index: `${Note.tableName}`,
 			id: 55,
 			body: {
-				_id: `${noteId}`,
+				id: noteId,
 				title: 'Science 101',
-				keywords: "['Science', 'Biology']",
+				keywords: ['science', 'how-to'],
 				shortDescription: 'A note all about the science of biology and stuff'
 			}
 		})
-
-		console.log(insert)
-
-		if (insert.statusCode !== 200) {
-			console.log('Fialed to populate ES index with test data')
-			throw new Error('Fialed to populate ES index with test data')
-		}
 	} else {
-		console.log('Failed to create ES index...is the client configured properly? Is the service running?')
 		throw new Error('Failed to create ES index...is the client configured properly? Is the service running?')
 	}
 }
