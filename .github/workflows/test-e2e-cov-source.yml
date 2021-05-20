@@ -2,7 +2,7 @@ name: E2E and Coverage
 
 on:
   push:
-    branches: [ develop, SSPP-188 ]
+    branches: [ develop ]
   pull_request:
 
 jobs:
