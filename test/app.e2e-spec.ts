@@ -238,7 +238,7 @@ describe('Neptune', () => {
 		})
 
 		describe('Note Querying', () => {
-			beforeEach(async () => {
+			beforeAll(async () => {
 				await populateESIndexForTest(noteId)
 			})
 
@@ -261,7 +261,7 @@ describe('Neptune', () => {
 		})
 
 		describe('Note Update and Delete', () => {
-			beforeEach(async () => {
+			beforeAll(async () => {
 				await populateESIndexForTest(noteId)
 			})
 
