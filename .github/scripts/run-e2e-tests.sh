@@ -12,4 +12,5 @@ if [ $? -ne 0 ]; then
 fi
 
 # if everything is good we can start the tests
+sleep 15
 npm run test:e2e
