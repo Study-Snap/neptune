@@ -7,7 +7,7 @@ import { UpdateNoteDto } from './dto/update-note.dto'
 import { DeleteNoteDto } from './dto/delete-note.dto'
 import { SearchNoteDto } from './dto/search-note.dto'
 
-@Controller('neptune/notes')
+@Controller('notes')
 export class NotesController {
 	constructor(private readonly notesService: NotesService) {}
 

@@ -16,7 +16,7 @@ import { editFileName } from '../notes/helper'
 
 const config: IConfigAttributes = getConfig()
 
-@Controller('neptune/files')
+@Controller('files')
 export class FilesController {
 	@JwtAuth()
 	@UseInterceptors(
