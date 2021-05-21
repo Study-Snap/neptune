@@ -71,7 +71,7 @@ describe('Neptune', () => {
 	})
 
 	describe('FilesController', () => {
-		const FILE_BASE_URL = '/neptune/files'
+		const FILE_BASE_URL = 'files'
 
 		describe('Upload note files', () => {
 			it('should create a new note file with valid authorization and OTHER non-optimal file format', async () => {
@@ -125,7 +125,7 @@ describe('Neptune', () => {
 	})
 
 	describe('NotesController', () => {
-		const NOTE_BASE_URL = '/neptune/notes'
+		const NOTE_BASE_URL = 'notes'
 		let noteId: number // Useful for later tests
 
 		describe('Authenticated Endpoints', () => {
