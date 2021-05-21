@@ -2,7 +2,7 @@ name: Test Docker Push
 
 on:
   push:
-    branches: [ 'SSPP-*', '!master', '!develop' ]
+    branches: [ 'SSPP-*', 'develop', '!master' ]
 
 jobs:
   main:
