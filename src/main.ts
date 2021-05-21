@@ -34,7 +34,7 @@ async function bootstrap() {
 		.addTag('notes')
 		.build()
 	const document = SwaggerModule.createDocument(app, swaggerConfig)
-	SwaggerModule.setup('neptune/docs', app, document, {
+	SwaggerModule.setup('docs', app, document, {
 		swaggerOptions: {
 			supportedSubmitMethods: []
 		}
