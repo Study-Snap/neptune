@@ -44,12 +44,12 @@ services:
       - 8888:5432
     networks:
       - nep-test-network
-  authdb:
+  classdb:
     image: postgres:13.1
-    container_name: studysnap_authdb
+    container_name: studysnap_classdb
     restart: on-failure
     environment:
-      POSTGRES_DB: studysnap_authdb
+      POSTGRES_DB: studysnap_classdb
       POSTGRES_USER: studysnap
       POSTGRES_PASSWORD: snapstudy
     networks:
@@ -62,12 +62,12 @@ services:
       PORT: 5555
       DB_USER: studysnap
       DB_PASS: snapstudy
-      DB_HOST: authdb
-      DB_USER_DATABASE: studysnap_authdb
+      DB_HOST: classdb
+      DB_USER_DATABASE: studysnap_classdb
       JWT_SECRET: test
       JWT_ACCESS_TOKEN_EXPIRE_TIME: 999m
     depends_on:
-      - authdb
+      - classdb
     ports:
       - 5555:5555
     networks:
