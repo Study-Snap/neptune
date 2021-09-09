@@ -13,7 +13,7 @@ import {
 import { ClassroomUser } from './classroom-user.model'
 import { Classroom } from './classroom.model'
 
-// !! DO NOT TOUCH !!
+// !! DO NOT TOUCH !! //
 @Table({ tableName: 'users', underscored: true })
 export class User extends Model<User> {
 	@PrimaryKey

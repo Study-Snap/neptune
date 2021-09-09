@@ -7,6 +7,7 @@ import { SequelizeModule } from '@nestjs/sequelize'
 import { Dialect } from 'sequelize'
 import { getConfig } from './config'
 import { IConfigAttributes } from './common/interfaces/config/app-config.interface'
+import { CLASS_DB_CONNECTION, NOTE_DB_CONNECTION } from './common/constants'
 
 // Get App Config
 const config: IConfigAttributes = getConfig()
@@ -18,6 +19,7 @@ const config: IConfigAttributes = getConfig()
 		NotesModule,
 		AuthModule,
 		SequelizeModule.forRoot({
+			name: NOTE_DB_CONNECTION,
 			dialect: config.dbDialect as Dialect,
 			host: config.dbNoteHost,
 			port: config.dbNotePort as number,
@@ -30,6 +32,7 @@ const config: IConfigAttributes = getConfig()
 			logging: false
 		}),
 		SequelizeModule.forRoot({
+			name: CLASS_DB_CONNECTION,
 			dialect: config.dbDialect as Dialect,
 			host: config.dbClassHost,
 			port: config.dbClassPort as number,

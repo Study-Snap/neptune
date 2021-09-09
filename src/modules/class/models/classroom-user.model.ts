@@ -2,8 +2,8 @@ import { Column, ForeignKey, Model, Table } from 'sequelize-typescript'
 import { Classroom } from './classroom.model'
 import { User } from './user.model'
 
-@Table
-export class ClassroomUser extends Model {
+@Table({ tableName: 'classrooms_users', underscored: true })
+export class ClassroomUser extends Model<ClassroomUser> {
 	@ForeignKey(() => Classroom)
 	@Column
 	classId: string

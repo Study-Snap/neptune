@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { SequelizeModule } from '@nestjs/sequelize'
+import { CLASS_DB_CONNECTION } from 'src/common/constants'
 import { ClassroomController } from './classroom.controller'
 import { ClassroomRepository } from './classroom.repository'
 import { ClassroomService } from './classroom.service'
@@ -11,8 +12,8 @@ import { UserRepository } from './user.repository'
 import { UserService } from './user.service'
 
 @Module({
-	imports: [ SequelizeModule.forFeature([ User, Classroom, ClassroomUser ]) ],
+	imports: [ SequelizeModule.forFeature([ User, Classroom, ClassroomUser ], CLASS_DB_CONNECTION) ],
 	controllers: [ ClassroomController, UserController ],
-	providers: [ ClassroomService, UserService ] // TODO: Add back repositories and find out why it's not working
+	providers: [ ClassroomService, UserService, ClassroomRepository ] // TODO: Add back repositories and find out why it's not working
 })
 export class ClassModule {}

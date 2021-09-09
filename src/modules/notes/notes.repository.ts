@@ -1,11 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Op } from 'sequelize'
+import { NOTE_DB_CONNECTION } from 'src/common/constants'
 import { Note } from './models/notes.model'
 
 @Injectable()
 export class NotesRepository {
-	constructor(@InjectModel(Note) private noteModel: typeof Note) {}
+	constructor(
+		@InjectModel(Note, NOTE_DB_CONNECTION)
+		private noteModel: typeof Note
+	) {}
 
 	async findAllNotes(): Promise<Note[] | undefined> {
 		return this.noteModel.findAll()
