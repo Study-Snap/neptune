@@ -54,6 +54,8 @@ services:
       POSTGRES_PASSWORD: snapstudy
     volumes:
       - classdb_data:/var/lib/postgresql/data
+    ports:
+      - "6655:5432"
     networks:
       - nep-dev-network
   authentication:

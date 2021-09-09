@@ -28,6 +28,18 @@ const config: IConfigAttributes = getConfig()
 			autoLoadModels: true,
 			synchronize: true,
 			logging: false
+		}),
+		SequelizeModule.forRoot({
+			dialect: config.dbDialect as Dialect,
+			host: config.dbClassHost,
+			port: config.dbClassPort as number,
+			database: config.dbClassDatabase,
+			username: config.dbClassUsername,
+			password: config.dbClassPassword,
+			retryAttempts: config.dbRetryAttempts as number,
+			autoLoadModels: true,
+			synchronize: true,
+			logging: false
 		})
 	],
 	controllers: [],
