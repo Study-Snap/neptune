@@ -1,3 +1,4 @@
+import { ClassModule } from './modules/class/class.module'
 import { FilesModule } from './modules/files/files.module'
 import { NotesModule } from './modules/notes/notes.module'
 import { AuthModule } from './modules/auth/auth.module'
@@ -12,16 +13,17 @@ const config: IConfigAttributes = getConfig()
 
 @Module({
 	imports: [
+		ClassModule,
 		FilesModule,
 		NotesModule,
 		AuthModule,
 		SequelizeModule.forRoot({
 			dialect: config.dbDialect as Dialect,
-			host: config.dbHost,
-			port: config.dbPort as number,
+			host: config.dbNoteHost,
+			port: config.dbNotePort as number,
 			database: config.dbNoteDatabase,
-			username: config.dbUsername,
-			password: config.dbPassword,
+			username: config.dbNoteUsername,
+			password: config.dbNotePassword,
 			retryAttempts: config.dbRetryAttempts as number,
 			autoLoadModels: true,
 			synchronize: true,

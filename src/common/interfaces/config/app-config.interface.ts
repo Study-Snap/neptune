@@ -10,11 +10,16 @@ export interface IConfigAttributes {
 	esPassword?: string
 	maxRequests: number
 	dbDialect: string
-	dbHost: string
-	dbPort: number | string
+	dbNoteHost: string
+	dbNotePort: number | string
 	dbNoteDatabase: string
-	dbUsername: string
-	dbPassword: string
+	dbNoteUsername: string
+	dbNotePassword: string
+	dbClassHost: string
+	dbClassPort: number | string
+	dbClassDatabase: string
+	dbClassUsername: string
+	dbClassPassword: string
 	dbRetryAttempts: number | string
 	jwtSecret: string
 	fileStorageLocation: string

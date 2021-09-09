@@ -61,4 +61,8 @@ export class Note extends Model<Note> {
 	@Default(false)
 	@Column(DataType.BOOLEAN)
 	allowDownloads: boolean
+
+	/**
+	 * Note: updated_at, created_at fields are automatically generated
+	 */
 }
