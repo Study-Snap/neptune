@@ -19,7 +19,7 @@ export class User extends Model<User> {
 	@PrimaryKey
 	@AutoIncrement
 	@Column(DataType.INTEGER)
-	_id: number
+	id: number
 
 	@Unique
 	@IsEmail

@@ -6,7 +6,7 @@ import { User } from './user.model'
 export class Classroom extends Model<Classroom> {
 	@PrimaryKey
 	@Column(DataType.STRING)
-	_id: string
+	id: string
 
 	@AllowNull(false)
 	@Column(DataType.STRING)

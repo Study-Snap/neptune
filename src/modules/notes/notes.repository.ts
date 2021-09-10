@@ -18,7 +18,7 @@ export class NotesRepository {
 	async findNoteById(id: number): Promise<Note | undefined> {
 		return this.noteModel.findOne({
 			where: {
-				id: id
+				id
 			}
 		})
 	}
