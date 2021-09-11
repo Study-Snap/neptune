@@ -1,5 +1,4 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
-import { ClassroomRepository } from './classroom.repository'
 import { ClassroomService } from './classroom.service'
 import { ClassroomUser } from './models/classroom-user.model'
 import { Classroom } from './models/classroom.model'
