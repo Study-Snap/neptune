@@ -41,7 +41,7 @@ export class User extends Model<User> {
 
 	/** Entity Relationships */
 	@BelongsToMany(() => Classroom, () => ClassroomUser)
-	classroom: Classroom[]
+	classes: Classroom[]
 
 	/**
 	 * Note: updated_at, created_at fields are automatically generated

@@ -27,7 +27,7 @@ export class ElasticsearchService {
 				}
 			},
 			{
-				ignore: [404],
+				ignore: [ 404 ],
 				maxRetries: 3
 			}
 		)
@@ -39,7 +39,7 @@ export class ElasticsearchService {
 		return res.body.hits.hits
 	}
 
-	async deleteNoteWithIdFromES(noteId: number): Promise<void> {
+	async deleteNoteWithIDFromES(noteId: number): Promise<void> {
 		const res = await this.esClient.deleteByQuery({
 			index: Note.tableName,
 			body: {

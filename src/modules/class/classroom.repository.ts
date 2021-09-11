@@ -5,6 +5,7 @@ import { Classroom } from './models/classroom.model'
 import { ClassroomUser } from './models/classroom-user.model'
 import { v4 as uuid } from 'uuid'
 import { User } from './models/user.model'
+import { Note } from '../notes/models/notes.model'
 
 @Injectable()
 export class ClassroomRepository {
@@ -65,5 +66,20 @@ export class ClassroomRepository {
 		// delete the relationship (ie: user leaves classroom)
 		await cu.destroy()
 		return true
+	}
+
+	async getUsers(cr: Classroom): Promise<User[] | undefined> {
+		return cr.users
+	}
+
+	async getNotes(cr: Classroom): Promise<Note[] | undefined> {
+		return cr.notes
+	}
+
+	async getNoteWithIDInClass(cr: Classroom, noteId: number): Promise<Note | undefined> {
+		const results = cr.notes.filter((note) => note.id === noteId)
+
+		// Return the first (and hopefully only) result
+		return results[0]
 	}
 }

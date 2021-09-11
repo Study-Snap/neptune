@@ -32,6 +32,10 @@ export class CreateNoteDto {
 	@ArrayMinSize(2, { message: 'Must specify at least 2 keywords' })
 	keywords: string[]
 
+	@IsString()
+	@IsNotEmpty()
+	classId: string
+
 	// Need not require validation (optional)
 	bibtextCitation?: string
 }

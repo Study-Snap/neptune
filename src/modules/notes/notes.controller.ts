@@ -28,7 +28,7 @@ export class NotesController {
 
 	@Get(':id')
 	async getNote(@Param('id') id: number): Promise<Note> {
-		return this.notesService.getNoteWithId(id)
+		return this.notesService.getNoteWithID(id)
 	}
 
 	@Post('search')
@@ -47,14 +47,14 @@ export class NotesController {
 
 	@JwtAuth()
 	@Put()
-	async updateNoteWithId(@Request() req, @Body() updateDto: UpdateNoteDto): Promise<Note> {
-		return this.notesService.updateNoteWithId(req.user.id, updateDto.noteId, updateDto.newData)
+	async updateNoteWithID(@Request() req, @Body() updateDto: UpdateNoteDto): Promise<Note> {
+		return this.notesService.updateNoteWithID(req.user.id, updateDto.noteId, updateDto.newData)
 	}
 
 	@JwtAuth()
 	@Delete()
-	async deleteNoteWithId(@Request() req, @Body() deleteDto: DeleteNoteDto): Promise<object> {
-		const resNote = await this.notesService.deleteNoteWithId(req.user.id, deleteDto.noteId, deleteDto.fileUri)
+	async deleteNoteWithID(@Request() req, @Body() deleteDto: DeleteNoteDto): Promise<object> {
+		const resNote = await this.notesService.deleteNoteWithID(req.user.id, deleteDto.noteId, deleteDto.fileUri)
 
 		const response = {
 			statusCode: 200,

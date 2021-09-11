@@ -42,6 +42,7 @@ export class NotesRepository {
 		shortDescription: string,
 		isPublic: boolean,
 		allowDownloads: boolean,
+		classId: string,
 		rating?: number[],
 		timeLength?: number,
 		bibtextCitation?: string
@@ -58,7 +59,8 @@ export class NotesRepository {
 				timeLength,
 				bibtextCitation,
 				isPublic,
-				allowDownloads
+				allowDownloads,
+				classId
 			},
 			{ validate: false }
 		)

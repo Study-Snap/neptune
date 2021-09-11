@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common'
+import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { calculateReadTimeMinutes, compareNotesByRating, createEmptyRatings, extractBodyFromFile } from './helper'
 import { NotesRepository } from './notes.repository'
@@ -29,7 +29,7 @@ export class NotesService {
 		return notes.sort(compareNotesByRating)
 	}
 
-	async getNoteWithId(id: number): Promise<Note> {
+	async getNoteWithID(id: number): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
@@ -45,7 +45,7 @@ export class NotesService {
 
 		// For each hit get full note with ID and append to result
 		for (const hit of hits) {
-			const note: Note = await this.getNoteWithId(hit['_source']['id'])
+			const note: Note = await this.getNoteWithID(hit['_source']['id'])
 
 			// If a note was found in the database too then append to the results
 			if (note) {
@@ -62,7 +62,7 @@ export class NotesService {
 		return results.sort(compareNotesByRating)
 	}
 
-	async updateNoteWithId(authorId: number, id: number, data: object): Promise<Note> {
+	async updateNoteWithID(authorId: number, id: number, data: object): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
@@ -70,7 +70,7 @@ export class NotesService {
 		}
 
 		if (authorId !== note.authorId) {
-			throw new UnauthorizedException('You cannot edit this note as you are not the author')
+			throw new ForbiddenException('You cannot edit this note as you are not the author')
 		}
 
 		// Filter out unallowed fields
@@ -82,21 +82,20 @@ export class NotesService {
 			'isPublic',
 			'allowDownloads',
 			'rating',
+			'classId',
 			'timeLength',
 			'bibtextCitation'
 		]
 
-		const filteredData: object = Object.keys(data)
-			.filter((key) => allowedFields.includes(key))
-			.reduce((obj, key) => {
-				obj[key] = data[key]
-				return obj
-			}, {})
+		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
+			obj[key] = data[key]
+			return obj
+		}, {})
 
 		return this.notesRepository.updateNote(note, filteredData)
 	}
 
-	async deleteNoteWithId(authorId: number, id: number, fileUri?: string): Promise<boolean> {
+	async deleteNoteWithID(authorId: number, id: number, fileUri?: string): Promise<boolean> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
@@ -104,14 +103,14 @@ export class NotesService {
 		}
 
 		if (authorId !== note.authorId) {
-			throw new UnauthorizedException('You are not allowed to delete this note as you are not its author')
+			throw new ForbiddenException('You are not allowed to delete this note as you are not its author')
 		}
 
 		// Remove the note from the elasticsearch index
-		await this.elasticsearchService.deleteNoteWithIdFromES(id)
+		await this.elasticsearchService.deleteNoteWithIDFromES(id)
 
 		// Delete the actual file for the note
-		const fileDelSuccess = await this.filesService.deleteFileWithId(fileUri ? fileUri : note.fileUri)
+		const fileDelSuccess = await this.filesService.deleteFileWithID(fileUri ? fileUri : note.fileUri)
 
 		if (!fileDelSuccess) {
 			throw new InternalServerErrorException(
@@ -147,6 +146,7 @@ export class NotesService {
 			data.shortDescription,
 			data.isPublic,
 			data.allowDownloads,
+			data.classId,
 			ratings,
 			readTime,
 			data.bibtextCitation

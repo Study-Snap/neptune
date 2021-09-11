@@ -8,7 +8,7 @@ const config: IConfigAttributes = getConfig()
 
 @Injectable()
 export class FilesService {
-	async deleteFileWithId(fileUri: string): Promise<boolean> {
+	async deleteFileWithID(fileUri: string): Promise<boolean> {
 		const filePath = `${config.fileStorageLocation}/${fileUri}`
 		const fileExists: boolean = existsSync(filePath)
 
