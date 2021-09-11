@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Op } from 'sequelize'
-import { NOTE_DB_CONNECTION } from 'src/common/constants'
+import { DB_CONNECTION_NAME } from 'src/common/constants'
 import { Note } from './models/notes.model'
 
 @Injectable()
 export class NotesRepository {
 	constructor(
-		@InjectModel(Note, NOTE_DB_CONNECTION)
+		@InjectModel(Note, DB_CONNECTION_NAME)
 		private noteModel: typeof Note
 	) {}
 

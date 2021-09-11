@@ -7,5 +7,4 @@ export const TEST = 'test'
 export const PRODUCTION = 'production'
 
 // Connections
-export const NOTE_DB_CONNECTION = 'NOTE_DB_CONNECTION'
-export const CLASS_DB_CONNECTION = 'CLASS_DB_CONNECTION'
+export const DB_CONNECTION_NAME = 'SS_DB_CONNECTION'

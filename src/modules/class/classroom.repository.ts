@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
-import { CLASS_DB_CONNECTION } from 'src/common/constants'
+import { DB_CONNECTION_NAME } from 'src/common/constants'
 import { Classroom } from './models/classroom.model'
 import { ClassroomUser } from './models/classroom-user.model'
 import { v4 as uuid } from 'uuid'
@@ -9,9 +9,9 @@ import { User } from './models/user.model'
 @Injectable()
 export class ClassroomRepository {
 	constructor(
-		@InjectModel(Classroom, CLASS_DB_CONNECTION)
+		@InjectModel(Classroom, DB_CONNECTION_NAME)
 		private crModel: typeof Classroom,
-		@InjectModel(ClassroomUser, CLASS_DB_CONNECTION)
+		@InjectModel(ClassroomUser, DB_CONNECTION_NAME)
 		private cuModel: typeof ClassroomUser
 	) {}
 

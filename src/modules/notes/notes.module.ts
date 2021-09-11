@@ -6,10 +6,10 @@ import { Note } from './models/notes.model'
 import { NotesRepository } from './notes.repository'
 import { FilesService } from '../files/files.service'
 import { ElasticsearchService } from './elasticsearch.service'
-import { NOTE_DB_CONNECTION } from 'src/common/constants'
+import { DB_CONNECTION_NAME } from 'src/common/constants'
 
 @Module({
-	imports: [ SequelizeModule.forFeature([ Note ], NOTE_DB_CONNECTION) ],
+	imports: [ SequelizeModule.forFeature([ Note ], DB_CONNECTION_NAME) ],
 	controllers: [ NotesController ],
 	providers: [ NotesService, NotesRepository, FilesService, ElasticsearchService ],
 	exports: [ SequelizeModule ]
