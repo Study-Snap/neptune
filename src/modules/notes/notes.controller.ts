@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Request } from '@nestjs/common'
+import { Body, Controller, Delete, Get, InternalServerErrorException, Param, Post, Put, Request } from '@nestjs/common'
 import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { Note } from './models/notes.model'
@@ -56,13 +56,13 @@ export class NotesController {
 	async deleteNoteWithID(@Request() req, @Body() deleteDto: DeleteNoteDto): Promise<object> {
 		const resNote = await this.notesService.deleteNoteWithID(req.user.id, deleteDto.noteId, deleteDto.fileUri)
 
-		const response = {
-			statusCode: 200,
-			message: resNote
-				? `Successfully delete note with id, ${deleteDto.noteId}`
-				: `Could not delete the note with id, ${deleteDto.noteId}`
+		if (!resNote) {
+			throw new InternalServerErrorException(`Could not delete note with ID ${deleteDto.noteId}`)
 		}
 
-		return response
+		return {
+			statusCode: 200,
+			message: `Successfully delete note with id, ${deleteDto.noteId}`
+		}
 	}
 }

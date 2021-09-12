@@ -8,3 +8,6 @@ export const PRODUCTION = 'production'
 
 // Connections
 export const DB_CONNECTION_NAME = 'SS_DB_CONNECTION'
+
+// Field Constants (for db access)
+export const DB_USERS_PASSWORD_FIELD = 'password'

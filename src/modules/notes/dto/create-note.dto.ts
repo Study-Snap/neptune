@@ -6,7 +6,7 @@ export class CreateNoteDto {
 	title: string
 
 	@IsNotEmpty({ message: 'Must include a file ID' })
-	@IsString({ message: 'FileID must be a string' })
+	@IsString({ message: 'FileUri must be a string' })
 	fileUri: string
 
 	@IsBoolean({

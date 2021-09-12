@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
-import { DB_CONNECTION_NAME } from 'src/common/constants'
+import { DB_CONNECTION_NAME, DB_USERS_PASSWORD_FIELD } from 'src/common/constants'
 import { Classroom } from './models/classroom.model'
 import { ClassroomUser } from './models/classroom-user.model'
 import { v4 as uuid } from 'uuid'
@@ -26,6 +26,10 @@ export class ClassroomRepository {
 			},
 			{ validate: true }
 		)
+	}
+
+	async list(): Promise<Classroom[] | undefined> {
+		return this.crModel.findAll()
 	}
 
 	async get(id: string): Promise<Classroom | undefined> {
@@ -69,11 +73,16 @@ export class ClassroomRepository {
 	}
 
 	async getUsers(cr: Classroom): Promise<User[] | undefined> {
-		return cr.users
+		const crUser: Classroom = await this.crModel.findOne({
+			where: { id: cr.id },
+			include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } } ]
+		})
+
+		return crUser.users
 	}
 
 	async getNotes(cr: Classroom): Promise<Note[] | undefined> {
-		return cr.notes
+		return (await this.crModel.findOne({ where: { id: cr.id }, include: [ Note ] })).notes
 	}
 
 	async getNoteWithIDInClass(cr: Classroom, noteId: number): Promise<Note | undefined> {

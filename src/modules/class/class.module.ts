@@ -15,6 +15,6 @@ import { UserService } from './user.service'
 @Module({
 	imports: [ SequelizeModule.forFeature([ User, Classroom, ClassroomUser, Note ], DB_CONNECTION_NAME) ],
 	controllers: [ ClassroomController, UserController ],
-	providers: [ ClassroomService, UserService, ClassroomRepository, UserRepository ] // TODO: Add back repositories and find out why it's not working
+	providers: [ ClassroomRepository, ClassroomService, UserRepository, UserService ]
 })
 export class ClassModule {}

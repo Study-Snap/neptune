@@ -127,7 +127,7 @@ export class NotesService {
 
 		if (!fileStat) {
 			throw new NotFoundException(
-				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /neptune/files'
+				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /files'
 			)
 		}
 
@@ -137,19 +137,25 @@ export class NotesService {
 		const ratings = createEmptyRatings()
 
 		// Create the note in the database
-		return this.notesRepository.createNote(
-			data.title,
-			authorId,
-			data.keywords,
-			data.fileUri,
-			body,
-			data.shortDescription,
-			data.isPublic,
-			data.allowDownloads,
-			data.classId,
-			ratings,
-			readTime,
-			data.bibtextCitation
-		)
+		try {
+			const res = await this.notesRepository.createNote(
+				data.title,
+				authorId,
+				data.keywords,
+				data.fileUri,
+				body,
+				data.shortDescription,
+				data.isPublic,
+				data.allowDownloads,
+				data.classId,
+				ratings,
+				readTime,
+				data.bibtextCitation
+			)
+
+			return res
+		} catch (err) {
+			throw new InternalServerErrorException(`Failed to create note. Reason: ${err.message}`)
+		}
 	}
 }
