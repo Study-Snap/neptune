@@ -1,5 +1,5 @@
 import { AllowNull, Column, DataType, PrimaryKey, Table, Model, BelongsToMany, HasMany } from 'sequelize-typescript'
-import { Note } from 'src/modules/notes/models/notes.model'
+import { Note } from '../../../modules/notes/models/notes.model'
 import { ClassroomUser } from './classroom-user.model'
 import { User } from './user.model'
 

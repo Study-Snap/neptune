@@ -26,7 +26,7 @@ export class NotesController {
 		return this.notesService.getTopNotesByRating()
 	}
 
-	@Get(':id')
+	@Get('by-id/:id')
 	async getNote(@Param('id') id: number): Promise<Note> {
 		return this.notesService.getNoteWithID(id)
 	}

@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Post, Request } from '@nestjs/common'
-import { JwtAuth } from 'src/common/decorators/jwt-auth.decorator'
+import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { Classroom } from './models/classroom.model'
 import { User } from './models/user.model'
 import { UserService } from './user.service'

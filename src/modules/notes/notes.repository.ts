@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Op } from 'sequelize'
-import { DB_CONNECTION_NAME } from 'src/common/constants'
+import { DB_CONNECTION_NAME } from '../../common/constants'
 import { Note } from './models/notes.model'
 
 @Injectable()

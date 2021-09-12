@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { SequelizeModule } from '@nestjs/sequelize'
-import { DB_CONNECTION_NAME } from 'src/common/constants'
+import { DB_CONNECTION_NAME } from '../../common/constants'
 import { Note } from '../notes/models/notes.model'
 import { ClassroomController } from './classroom.controller'
 import { ClassroomRepository } from './classroom.repository'

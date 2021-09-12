@@ -11,7 +11,7 @@ import {
 	ForeignKey,
 	BelongsTo
 } from 'sequelize-typescript'
-import { Classroom } from 'src/modules/class/models/classroom.model'
+import { Classroom } from '../../../modules/class/models/classroom.model'
 
 @Table({ tableName: 'notes', underscored: true })
 export class Note extends Model<Note> {

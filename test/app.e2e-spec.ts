@@ -15,6 +15,8 @@ import {
 import { IConfigAttributes } from '../src/common/interfaces/config/app-config.interface'
 import { getConfig } from '../src/config'
 import { DeleteNoteDto } from '../src/modules/notes/dto/delete-note.dto'
+import { CreateNoteDto } from 'src/modules/notes/dto/create-note.dto'
+import { SearchNoteDto } from 'src/modules/notes/dto/search-note.dto'
 
 const config: IConfigAttributes = getConfig()
 
@@ -30,12 +32,14 @@ describe('Neptune', () => {
 	// For use in testing prodected endpoints
 	let jwtToken: string
 
+	// Classroom test data
+	const testClassABCId = 'test'
+	const testClassABCOwnerId = 1
+
 	// Setup test environment
 	beforeAll(async () => {
 		const testModule: TestingModule = await Test.createTestingModule({
-			imports: [
-				AppModule
-			]
+			imports: [ AppModule ]
 		}).compile()
 
 		// Get Database connection
@@ -43,7 +47,7 @@ describe('Neptune', () => {
 			dialect: config.dbDialect as Dialect,
 			host: config.dbHost,
 			port: config.dbPort as number,
-			database: config.dbNoteDatabase,
+			database: config.dbDatabaseName,
 			username: config.dbUsername,
 			password: config.dbPassword,
 			logging: false
@@ -51,6 +55,15 @@ describe('Neptune', () => {
 
 		// Remove existing notes in the test database
 		await connection.query(`DELETE FROM ONLY notes`, { logging: false })
+		await connection.query(`DELETE FROM ONLY classrooms`, { logging: false })
+		await connection.query(`DELETE FROM ONLY classrooms_users`, { logging: false })
+		await connection.query(`DELETE FROM ONLY users`, { logging: false })
+		await connection.query(
+			`INSERT INTO classrooms (id, name, owner_id, created_at, updated_at) VALUES ('${testClassABCId}', 'ABC Class', ${testClassABCOwnerId}, '2021-01-01', '2021-01-01')`,
+			{
+				logging: false
+			}
+		)
 
 		// TODO: Load some test data using raw INSERT (data from ./data)
 
@@ -153,15 +166,12 @@ describe('Neptune', () => {
 		describe('Note Creation', () => {
 			it('should create a new note with valid PDF file and fields according to DTO spec', async () => {
 				// Create the note with file
-				const reqData = {
+				const reqData: CreateNoteDto = {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
 					fileUri: resGoodFileUri,
-					keywords: [
-						'biology',
-						'chemestry',
-						'Physics'
-					],
+					keywords: [ 'biology', 'chemestry', 'Physics' ],
+					classId: testClassABCId,
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -182,15 +192,12 @@ describe('Neptune', () => {
 
 			it('should create a new note with other (docx) file but not process PDF extraction and provide warn', async () => {
 				// Create the note with file
-				const reqData = {
+				const reqData: CreateNoteDto = {
 					title: 'A Science note',
 					shortDescription: 'A short description about the docx note',
 					fileUri: resBadFileUri,
-					keywords: [
-						'biology',
-						'chemestry',
-						'Physics'
-					],
+					keywords: [ 'biology', 'chemestry', 'Physics' ],
+					classId: testClassABCId,
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -211,11 +218,8 @@ describe('Neptune', () => {
 				const reqData = {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
-					keywords: [
-						'biology',
-						'chemestry',
-						'Physics'
-					],
+					keywords: [ 'biology', 'chemestry', 'Physics' ],
+					classId: testClassABCId,
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -231,15 +235,12 @@ describe('Neptune', () => {
 			})
 
 			it('should fail to create a new note if specified file does not exist', async () => {
-				const reqData = {
+				const reqData: CreateNoteDto = {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
 					fileUri: 'fake-nonexist-file-id',
-					keywords: [
-						'biology',
-						'chemestry',
-						'Physics'
-					],
+					keywords: [ 'biology', 'chemestry', 'Physics' ],
+					classId: testClassABCId,
 					isPublic: true,
 					allowDownloads: true
 				}
@@ -261,7 +262,7 @@ describe('Neptune', () => {
 			})
 
 			it('should find a single note by ID', async () => {
-				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/${noteId}`)
+				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/by-id/${noteId}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
@@ -270,12 +271,30 @@ describe('Neptune', () => {
 			})
 
 			it('should respond with not found if invalid id is passed', async () => {
-				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/999999`)
+				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/by-id/999999`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.NOT_FOUND)
 				expect(res.body.title).toBeUndefined()
 			})
+
+			it('should not find a note using using elasticsearch on /search with random garbage', async () => {
+				const reqData: SearchNoteDto = {
+					queryType: 'query_string',
+					query: {
+						query: 'randaopwdiuahwda 76dta67wt d6aw'
+					}
+				}
+
+				// Perform the search
+				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.NOT_FOUND)
+				expect(res.body).not.toBeUndefined()
+			})
+
+			// TODO: Add test for searching elasticsearch for note that does exist
 		})
 
 		describe('Note Update and Delete', () => {
@@ -358,6 +377,14 @@ describe('Neptune', () => {
 				expect(res.status).toBe(HttpStatus.OK)
 			})
 		})
+	})
+
+	describe('Classroom Controller', () => {
+		// TODO: implement tests
+	})
+
+	describe('Neptune User Controller', () => {
+		// TODO: implement tests
 	})
 
 	afterAll(async () => {

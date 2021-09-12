@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, InternalServerErrorException, Param, Post, Put, Request } from '@nestjs/common'
-import { JwtAuth } from 'src/common/decorators/jwt-auth.decorator'
+import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { Note } from '../notes/models/notes.model'
 import { ClassroomService } from './classroom.service'
 import { CreateClassroomDto } from './dto/create-classroom.dto'

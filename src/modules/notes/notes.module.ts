@@ -8,7 +8,7 @@ import { ElasticsearchService } from './elasticsearch.service'
 import { ClassroomRepository } from '../class/classroom.repository'
 import { User } from '../class/models/user.model'
 import { Classroom } from '../class/models/classroom.model'
-import { DB_CONNECTION_NAME } from 'src/common/constants'
+import { DB_CONNECTION_NAME } from '../../common/constants'
 import { ClassroomUser } from '../class/models/classroom-user.model'
 import { Note } from './models/notes.model'
 

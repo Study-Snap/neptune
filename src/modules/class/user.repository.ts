@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
-import { DB_CONNECTION_NAME, DB_USERS_PASSWORD_FIELD } from 'src/common/constants'
+import { DB_CONNECTION_NAME, DB_USERS_PASSWORD_FIELD } from '../../common/constants'
 import { Classroom } from './models/classroom.model'
 import { User } from './models/user.model'
 
