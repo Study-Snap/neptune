@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Request } from '@nestjs/common'
+import { Controller, Get, HttpCode, Param, Post, Request } from '@nestjs/common'
 import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { Classroom } from './models/classroom.model'
 import { User } from './models/user.model'
@@ -48,6 +48,7 @@ export class UserController {
 	}
 
 	@JwtAuth()
+	@HttpCode(200)
 	@Post('classroom/leave/:classId')
 	async leaveClassroom(@Request() req, @Param('classId') classId: string): Promise<object> {
 		await this.userService.leaveClassroom(req.user.id, classId)
