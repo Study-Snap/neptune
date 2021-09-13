@@ -1,11 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Op } from 'sequelize'
+import { DB_CONNECTION_NAME } from '../../common/constants'
 import { Note } from './models/notes.model'
 
 @Injectable()
 export class NotesRepository {
-	constructor(@InjectModel(Note) private noteModel: typeof Note) {}
+	constructor(
+		@InjectModel(Note, DB_CONNECTION_NAME)
+		private noteModel: typeof Note
+	) {}
 
 	async findAllNotes(): Promise<Note[] | undefined> {
 		return this.noteModel.findAll()
@@ -14,7 +18,7 @@ export class NotesRepository {
 	async findNoteById(id: number): Promise<Note | undefined> {
 		return this.noteModel.findOne({
 			where: {
-				id: id
+				id
 			}
 		})
 	}
@@ -38,6 +42,7 @@ export class NotesRepository {
 		shortDescription: string,
 		isPublic: boolean,
 		allowDownloads: boolean,
+		classId: string,
 		rating?: number[],
 		timeLength?: number,
 		bibtextCitation?: string
@@ -54,7 +59,8 @@ export class NotesRepository {
 				timeLength,
 				bibtextCitation,
 				isPublic,
-				allowDownloads
+				allowDownloads,
+				classId
 			},
 			{ validate: false }
 		)

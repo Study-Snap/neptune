@@ -32,6 +32,9 @@ export const createTestAccountForE2e = async () => {
 		const res = await axios(options)
 		return res.status === 201
 	} catch (err) {
+		if (`${err}`.includes('409')) {
+			return
+		}
 		console.log(
 			`Something happened when creating a test account. This may be nothing to worry about. Here is what we got: ${err}`
 		)
@@ -77,7 +80,7 @@ export const populateESIndexForTest = async (noteId: number) => {
 				}
 			},
 			{
-				ignore: [400, 409]
+				ignore: [ 400, 409 ]
 			}
 		)
 	}
@@ -91,7 +94,7 @@ export const populateESIndexForTest = async (noteId: number) => {
 			body: {
 				id: noteId,
 				title: 'Science 101',
-				keywords: ['science', 'how-to'],
+				keywords: [ 'science', 'how-to' ],
 				shortDescription: 'A note all about the science of biology and stuff'
 			}
 		})

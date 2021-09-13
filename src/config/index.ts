@@ -33,7 +33,7 @@ const appConfig: IConfig = {
 		dbPort: process.env.DB_PORT || 5432,
 		dbUsername: process.env.DB_USER,
 		dbPassword: process.env.DB_PASS,
-		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_notedb',
+		dbDatabaseName: process.env.DB_DATABASE_NAME || 'studysnap_db',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
 		jwtSecret: process.env.JWT_SECRET || 'dev_secret_do_change_in_prod',
 		fileStorageLocation: process.env.FILE_STORE
@@ -52,7 +52,7 @@ const appConfig: IConfig = {
 		dbPort: process.env.DB_PORT || 8888,
 		dbUsername: process.env.DB_USER || 'studysnap',
 		dbPassword: process.env.DB_PASS || 'snapstudy',
-		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_testdb',
+		dbDatabaseName: process.env.DB_DATABASE_NAME || 'studysnap_db',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
 		jwtSecret: process.env.JWT_SECRET || 'test',
 		fileStorageLocation: process.env.FILE_STORE || './tmp/'
@@ -68,7 +68,7 @@ const appConfig: IConfig = {
 		dbPort: process.env.DB_PORT || 5432,
 		dbUsername: process.env.DB_USER,
 		dbPassword: process.env.DB_PASS,
-		dbNoteDatabase: process.env.DB_NOTE_DATABASE || 'studysnap_notedb',
+		dbDatabaseName: process.env.DB_DATABASE_NAME || 'studysnap_db',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 5,
 		jwtSecret: process.env.JWT_SECRET,
 		fileStorageLocation: process.env.FILE_STORE

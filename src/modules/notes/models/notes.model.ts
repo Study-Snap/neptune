@@ -7,8 +7,11 @@ import {
 	Default,
 	PrimaryKey,
 	Table,
-	Unique
+	Unique,
+	ForeignKey,
+	BelongsTo
 } from 'sequelize-typescript'
+import { Classroom } from '../../../modules/class/models/classroom.model'
 
 @Table({ tableName: 'notes', underscored: true })
 export class Note extends Model<Note> {
@@ -61,4 +64,17 @@ export class Note extends Model<Note> {
 	@Default(false)
 	@Column(DataType.BOOLEAN)
 	allowDownloads: boolean
+
+	/** Entity Relationships */
+
+	@ForeignKey(() => Classroom)
+	@Column
+	classId: string
+
+	@BelongsTo(() => Classroom)
+	class: Classroom
+
+	/**
+	 * Note: updated_at, created_at fields are automatically generated
+	 */
 }

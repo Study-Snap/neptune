@@ -6,7 +6,7 @@ export class CreateNoteDto {
 	title: string
 
 	@IsNotEmpty({ message: 'Must include a file ID' })
-	@IsString({ message: 'FileID must be a string' })
+	@IsString({ message: 'FileUri must be a string' })
 	fileUri: string
 
 	@IsBoolean({
@@ -31,6 +31,10 @@ export class CreateNoteDto {
 	@IsArray({ message: 'Must specify a list of keywords. Hint: Pass a "keywords" in body of your request' })
 	@ArrayMinSize(2, { message: 'Must specify at least 2 keywords' })
 	keywords: string[]
+
+	@IsString()
+	@IsNotEmpty()
+	classId: string
 
 	// Need not require validation (optional)
 	bibtextCitation?: string

@@ -1,6 +1,6 @@
 {
   "name": "neptune",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "StudySnap resource server",
   "author": "Ben Sykes",
   "private": true,
