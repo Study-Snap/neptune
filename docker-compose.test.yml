@@ -41,7 +41,7 @@ services:
       POSTGRES_USER: studysnap
       POSTGRES_PASSWORD: snapstudy
     ports:
-      - "8888:5432"
+      - 8888:5432
     networks:
       - nep-test-network
   authentication:
