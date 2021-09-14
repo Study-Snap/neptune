@@ -1,0 +1,41 @@
+---
+name: CD
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  tag-release:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout code using git
+        uses: actions/checkout@v2
+      - name: Ensure git is configured
+        run: |
+          git config --global user.email "ci@studysnap.ca"
+          git config --global user.name "CI"
+      - name: Get Package Version
+        id: package_info
+        uses: gregoranders/nodejs-project-info@v0.0.11
+        with:
+          path: ./package.json
+      - name: Split Package Version
+        id: version_split
+        uses: JungWinter/split@v1.1.0
+        with:
+          msg: ${{ steps.package_info.outputs.version }}
+          seperator: '.'
+      - name: create tags (semver)
+        run: |
+          echo "Creating tagged release using git..."
+          if [[ -z $(git tag --list | egrep '^${{ steps.package_info.outputs.version }}$') ]]; then
+            git tag -a v${{ steps.package_info.outputs.version }} -m "(${{ steps.package_info.outputs.version }}) - Release"
+            git tag -a v${{ steps.version_split.outputs._0 }}.x --force -m "(${{ steps.package_info.outputs.version }}) - Release"
+            git tag -a v${{ steps.version_split.outputs._0 }}.${{ steps.version_split.outputs._1 }}.x --force -m "(${{ steps.package_info.outputs.version }}) - Release"
+            git push --tags --force
+          else
+            echo "Not tagging... release version already exists"
+            exit 1
+          fi
