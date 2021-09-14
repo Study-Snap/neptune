@@ -21,4 +21,4 @@ fi
 .github/scripts/service-check.sh localhost:5555 -s -t 30 -- echo "Authentication service is running"
 
 # if everything is good we can start the tests
-npm run test:e2e
+sleep 30; npm run test:e2e
