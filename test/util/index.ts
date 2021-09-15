@@ -10,7 +10,7 @@ const esClient: any = new Client({
 	node: `http://${config.esHost}:${config.esPort}`
 })
 
-export const TEST_AUTH_URL = `http://${config.testAuthHost}:${config.testAuthPort}/${config.testAuthBasePath}`
+export const TEST_AUTH_URL = `http://${config.testAuthHost}:${config.testAuthPort}${config.testAuthBasePath}`
 export const TEST_USERNAME = 'test_sa@example.com'
 export const TEST_PASSWORD = '02809b3927fcc767ad65ce8a6e57afce'
 

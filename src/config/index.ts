@@ -42,7 +42,7 @@ const appConfig: IConfig = {
 		listenPort: process.env.PORT || 7777,
 		testAuthHost: process.env.TEST_AUTH_HOST || 'localhost',
 		testAuthPort: process.env.TEST_AUTH_PORT || 5555,
-		testAuthBasePath: process.env.TEST_AUTH_BASE_PATH || 'auth',
+		testAuthBasePath: process.env.TEST_AUTH_BASE_PATH || '',
 		maxRequests: 999,
 		esVersion: process.env.ES_TARGET_VERSION || '7.x',
 		esHost: process.env.ES_HOST || 'localhost',
