@@ -38,6 +38,7 @@ export const createTestAccountForE2e = async () => {
 		console.log(
 			`Something happened when creating a test account. This may be nothing to worry about. Here is what we got: ${err}`
 		)
+		console.log(err.stack)
 		return
 	}
 }
