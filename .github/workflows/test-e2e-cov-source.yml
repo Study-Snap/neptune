@@ -29,6 +29,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm install
     - run: npm ci
+    - run: |
+        docker ps -a
+        docker-compose -f docker-compose.test.yml logs authentication
     - run: .github/scripts/run-e2e-tests.sh
   test-coverage:
     runs-on: ubuntu-20.04
