@@ -8,8 +8,10 @@ import {
 	Table,
 	Unique,
 	Model,
-	BelongsToMany
+	BelongsToMany,
+	HasMany
 } from 'sequelize-typescript'
+import { Note } from '../../../modules/notes/models/notes.model'
 import { ClassroomUser } from './classroom-user.model'
 import { Classroom } from './classroom.model'
 
@@ -42,6 +44,9 @@ export class User extends Model<User> {
 	/** Entity Relationships */
 	@BelongsToMany(() => Classroom, () => ClassroomUser)
 	classes: Classroom[]
+
+	@HasMany(() => Note)
+	notes: Note[]
 
 	/**
 	 * Note: updated_at, created_at fields are automatically generated

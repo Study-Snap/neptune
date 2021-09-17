@@ -4,13 +4,13 @@ import {
 	AutoIncrement,
 	Column,
 	DataType,
-	Default,
 	PrimaryKey,
 	Table,
 	Unique,
 	ForeignKey,
 	BelongsTo
 } from 'sequelize-typescript'
+import { User } from '../../../modules/class/models/user.model'
 import { Classroom } from '../../../modules/class/models/classroom.model'
 
 @Table({ tableName: 'notes', underscored: true })
@@ -18,11 +18,7 @@ export class Note extends Model<Note> {
 	@PrimaryKey
 	@AutoIncrement
 	@Column(DataType.INTEGER)
-	_id: number
-
-	@AllowNull(false)
-	@Column(DataType.INTEGER)
-	authorId: number
+	id: number
 
 	@AllowNull(true)
 	@Column(DataType.ARRAY(DataType.INTEGER))
@@ -31,10 +27,6 @@ export class Note extends Model<Note> {
 	@AllowNull(true)
 	@Column(DataType.INTEGER)
 	timeLength: number
-
-	@Default(false)
-	@Column(DataType.BOOLEAN)
-	isPublic: boolean
 
 	@AllowNull(true)
 	@Column(DataType.TEXT)
@@ -61,10 +53,6 @@ export class Note extends Model<Note> {
 	@Column(DataType.STRING)
 	fileUri: string
 
-	@Default(false)
-	@Column(DataType.BOOLEAN)
-	allowDownloads: boolean
-
 	/** Entity Relationships */
 
 	@ForeignKey(() => Classroom)
@@ -73,6 +61,13 @@ export class Note extends Model<Note> {
 
 	@BelongsTo(() => Classroom)
 	class: Classroom
+
+	@ForeignKey(() => User)
+	@Column
+	authorId: number
+
+	@BelongsTo(() => User)
+	user: User
 
 	/**
 	 * Note: updated_at, created_at fields are automatically generated

@@ -36,13 +36,11 @@ export class NotesRepository {
 	async createNote(
 		title: string,
 		authorId: number,
+		classId: string,
 		keywords: string[],
 		fileUri: string,
 		body: string,
 		shortDescription: string,
-		isPublic: boolean,
-		allowDownloads: boolean,
-		classId: string,
 		rating?: number[],
 		timeLength?: number,
 		bibtextCitation?: string
@@ -58,8 +56,6 @@ export class NotesRepository {
 				rating,
 				timeLength,
 				bibtextCitation,
-				isPublic,
-				allowDownloads,
 				classId
 			},
 			{ validate: false }

@@ -79,10 +79,9 @@ export class NotesService {
 			'keywords',
 			'body',
 			'shortDescription',
-			'isPublic',
-			'allowDownloads',
 			'rating',
 			'classId',
+			'authorId',
 			'timeLength',
 			'bibtextCitation'
 		]
@@ -141,13 +140,11 @@ export class NotesService {
 			const res = await this.notesRepository.createNote(
 				data.title,
 				authorId,
+				data.classId,
 				data.keywords,
 				data.fileUri,
 				body,
 				data.shortDescription,
-				data.isPublic,
-				data.allowDownloads,
-				data.classId,
 				ratings,
 				readTime,
 				data.bibtextCitation

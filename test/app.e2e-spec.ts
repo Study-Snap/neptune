@@ -196,9 +196,7 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the note',
 					fileUri: resGoodFileUri,
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
-					classId: testClasses[0].id,
-					isPublic: true,
-					allowDownloads: true
+					classId: testClasses[0].id
 				}
 
 				// Create actual note with file
@@ -212,7 +210,7 @@ describe('Neptune', () => {
 				expect(res.body.title).toMatch(reqData.title)
 
 				// Store noteID for later tests
-				noteId = res.body._id
+				noteId = res.body.id
 			})
 
 			it('should create a new note with other (docx) file but not process PDF extraction and provide warn', async () => {
@@ -222,9 +220,7 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the docx note',
 					fileUri: resBadFileUri,
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
-					classId: testClasses[0].id,
-					isPublic: true,
-					allowDownloads: true
+					classId: testClasses[0].id
 				}
 
 				// Create actual note with file
@@ -265,9 +261,7 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the note',
 					fileUri: 'fake-nonexist-file-id',
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
-					classId: testClasses[0].id,
-					isPublic: true,
-					allowDownloads: true
+					classId: testClasses[0].id
 				}
 
 				// Create actual note with file
@@ -287,6 +281,7 @@ describe('Neptune', () => {
 			})
 
 			it('should find a single note by ID', async () => {
+				console.log(noteId)
 				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/by-id/${noteId}`)
 
 				// Verify results
@@ -331,8 +326,7 @@ describe('Neptune', () => {
 				const reqData = {
 					noteId: noteId,
 					newData: {
-						isPublic: true,
-						allowDownloads: false
+						title: 'ABC Note'
 					}
 				}
 
@@ -344,8 +338,7 @@ describe('Neptune', () => {
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
-				expect(res.body.isPublic).toBe(true)
-				expect(res.body.allowDownloads).toBe(false)
+				expect(res.body.title).toMatch(reqData.newData.title)
 			})
 
 			it('should fail to update without authorization of author', async () => {
@@ -596,7 +589,7 @@ describe('Neptune', () => {
 			})
 
 			it('should provide user data for a user with presented ID', async () => {
-				const res = await request(app.getHttpServer()).get(`${USER_BASE_URL}/by-uuid/${testUserId}`)
+				const res = await request(app.getHttpServer()).get(`${USER_BASE_URL}/by-id/${testUserId}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
@@ -604,9 +597,21 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Object)
 			})
 
-			it('should list classrooms the user is a part of', async () => {
+			it('should list classrooms a selected user is a part of', async () => {
 				const res = await request(app.getHttpServer())
-					.get(`${USER_BASE_URL}/by-uuid/${testUserId}/classrooms`)
+					.get(`${USER_BASE_URL}/by-id/${testUserId}/classrooms`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Array)
+				expect(res.body.length).toBeGreaterThan(0)
+			})
+
+			it('should provice a list of notes uploaded by a selected user', async () => {
+				const res = await request(app.getHttpServer())
+					.get(`${USER_BASE_URL}/by-id/${testUserId}/notes`)
 					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
@@ -619,6 +624,18 @@ describe('Neptune', () => {
 			it('should list classrooms for the logged in user', async () => {
 				const res = await request(app.getHttpServer())
 					.get(`${USER_BASE_URL}/classrooms`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Array)
+				expect(res.body.length).toBeGreaterThan(0)
+			})
+
+			it('should list notes uploaded by the requesting user', async () => {
+				const res = await request(app.getHttpServer())
+					.get(`${USER_BASE_URL}/notes`)
 					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
