@@ -62,28 +62,35 @@ export const populateESIndexForTest = async (noteId: number) => {
 	// Check if index already exists
 	const exists = await esClient.indices.exists({ index: `${Note.tableName}` })
 
-	// Create the index (if needed)
-	let createIndexRes: any
-	if (exists.statusCode !== 200) {
-		createIndexRes = await esClient.indices.create(
-			{
-				index: Note.tableName,
-				body: {
-					mappings: {
-						properties: {
-							id: { type: 'text' },
-							title: { type: 'text' },
-							keywords: { type: 'text' },
-							shortDescription: { type: 'text' }
-						}
+	// Delete the index (if exists already)
+	if (exists.statusCode === 200) {
+		await esClient.indices.delete({
+			index: Note.tableName,
+			timeout: '50s',
+			ignore_unavailable: false,
+			allow_no_indices: false
+		})
+	}
+
+	// Create the index
+	const createIndexRes = await esClient.indices.create(
+		{
+			index: Note.tableName,
+			body: {
+				mappings: {
+					properties: {
+						id: { type: 'text' },
+						title: { type: 'text' },
+						keywords: { type: 'text' },
+						shortDescription: { type: 'text' }
 					}
 				}
-			},
-			{
-				ignore: [ 400, 409 ]
 			}
-		)
-	}
+		},
+		{
+			ignore: [ 400, 409 ]
+		}
+	)
 
 	// Insert a document for use in testing
 	if (exists.statusCode === 200 || createIndexRes.statusCode === 200 || createIndexRes.statusCode === 409) {
@@ -97,6 +104,13 @@ export const populateESIndexForTest = async (noteId: number) => {
 				keywords: [ 'science', 'how-to' ],
 				shortDescription: 'A note all about the science of biology and stuff'
 			}
+		})
+
+		// Perform an index refresh to ensure that the data is available for tests
+		await esClient.indices.refresh({
+			index: Note.tableName,
+			ignore_unavailable: false,
+			allow_no_indices: false
 		})
 	} else {
 		throw new Error('Failed to create ES index...is the client configured properly? Is the service running?')

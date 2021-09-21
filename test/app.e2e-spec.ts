@@ -277,11 +277,28 @@ describe('Neptune', () => {
 
 		describe('Note Querying', () => {
 			beforeAll(async () => {
+				/**
+				 * 
+				 * This function will eliminate the need to logstash to perform index synchronization for the purposes of the e2e tests
+				 * It does this by manually populating the index with some test data which only contains the real note ID using the ES API
+				 * 
+				 * TEST DATA:
+				 * 
+				 * notes: [
+				 * 	{
+				 *     id: noteId,
+				 *     title: Science 101,
+				 *     keywords: [ 'science', 'how-to' ],
+				 *     shortDescription: 'A note all about the science of biology and stuff'
+				 *  }
+				 * ]
+				 * 
+				 * Neptune will use ES to search based on the combined data provided (includes all fields, title, keywords, short description...)
+				 */
 				await populateESIndexForTest(noteId)
 			})
 
 			it('should find a single note by ID', async () => {
-				console.log(noteId)
 				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/by-id/${noteId}`)
 
 				// Verify results
@@ -303,7 +320,8 @@ describe('Neptune', () => {
 					queryType: 'query_string',
 					query: {
 						query: 'randaopwdiuahwda 76dta67wt d6aw'
-					}
+					},
+					classId: testClasses[0].id
 				}
 
 				// Perform the search
@@ -314,7 +332,45 @@ describe('Neptune', () => {
 				expect(res.body).not.toBeUndefined()
 			})
 
-			// TODO: Add test for searching elasticsearch for note that does exist
+			it('should find a note using elasticsearch on /search with valid query', async () => {
+				const reqData: SearchNoteDto = {
+					queryType: 'query_string',
+					query: {
+						query: 'science and biology how-to'
+					},
+					classId: testClasses[0].id
+				}
+
+				// Perform the search
+				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Array)
+				expect(res.body.length).toBeGreaterThan(0)
+				expect(res.body[0].title).toMatch('Science 101')
+			})
+
+			it('should find a note using elasticsearch on /search with only a word from the description field', async () => {
+				const reqData: SearchNoteDto = {
+					queryType: 'query_string',
+					query: {
+						query: 'biology stuff'
+					},
+					classId: testClasses[0].id
+				}
+
+				// Perform the search
+				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Array)
+				expect(res.body.length).toBeGreaterThan(0)
+				expect(res.body[0].title).toMatch('Science 101')
+			})
 		})
 
 		describe('Note Update and Delete', () => {
