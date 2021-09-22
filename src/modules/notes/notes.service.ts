@@ -29,8 +29,8 @@ export class NotesService {
 		return notes.sort(compareNotesByRating)
 	}
 
-	async getNoteWithID(id: number): Promise<Note> {
-		const note: Note = await this.notesRepository.findNoteById(id)
+	async getNoteWithID(id: number, classId?: string): Promise<Note> {
+		const note: Note = await this.notesRepository.findNoteById(id, classId)
 
 		if (!note) {
 			throw new NotFoundException(`Could not find a note with id, ${id}`)
@@ -39,13 +39,13 @@ export class NotesService {
 		return note
 	}
 
-	async getNotesUsingES(searchType: string, searchQuery: object): Promise<Note[]> {
+	async getNotesUsingES(searchType: string, searchQuery: object, classId: string): Promise<Note[]> {
 		const results: Note[] = []
 		const hits = await this.elasticsearchService.searchNotesForQuery(searchType, searchQuery)
 
 		// For each hit get full note with ID and append to result
 		for (const hit of hits) {
-			const note: Note = await this.getNoteWithID(hit['_source']['id'])
+			const note: Note = await this.getNoteWithID(hit['_source']['id'], classId)
 
 			// If a note was found in the database too then append to the results
 			if (note) {
@@ -79,10 +79,9 @@ export class NotesService {
 			'keywords',
 			'body',
 			'shortDescription',
-			'isPublic',
-			'allowDownloads',
 			'rating',
 			'classId',
+			'authorId',
 			'timeLength',
 			'bibtextCitation'
 		]
@@ -141,13 +140,11 @@ export class NotesService {
 			const res = await this.notesRepository.createNote(
 				data.title,
 				authorId,
+				data.classId,
 				data.keywords,
 				data.fileUri,
 				body,
 				data.shortDescription,
-				data.isPublic,
-				data.allowDownloads,
-				data.classId,
 				ratings,
 				readTime,
 				data.bibtextCitation

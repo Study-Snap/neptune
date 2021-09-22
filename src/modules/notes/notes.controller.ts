@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, InternalServerErrorException, Param, Post, Put, Request } from '@nestjs/common'
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	HttpCode,
+	InternalServerErrorException,
+	Param,
+	Post,
+	Put,
+	Request
+} from '@nestjs/common'
 import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { Note } from './models/notes.model'
@@ -31,9 +42,10 @@ export class NotesController {
 		return this.notesService.getNoteWithID(id)
 	}
 
+	@HttpCode(200)
 	@Post('search')
 	async getNotesForQuery(@Body() searchDto: SearchNoteDto): Promise<Note[]> {
-		return this.notesService.getNotesUsingES(searchDto.queryType, searchDto.query)
+		return this.notesService.getNotesUsingES(searchDto.queryType, searchDto.query, searchDto.classId)
 	}
 
 	@JwtAuth()

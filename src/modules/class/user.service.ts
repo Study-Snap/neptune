@@ -1,4 +1,5 @@
 import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+import { Note } from '../notes/models/notes.model'
 import { ClassroomService } from './classroom.service'
 import { ClassroomUser } from './models/classroom-user.model'
 import { Classroom } from './models/classroom.model'
@@ -32,6 +33,17 @@ export class UserService {
 		}
 
 		return classes
+	}
+
+	async getUserNotes(userId: number): Promise<Note[]> {
+		const user: User = await this.getUserWithID(userId)
+		const notes: Note[] = await this.userRepository.getNotes(userId)
+
+		if (!notes || notes.length === 0) {
+			throw new NotFoundException(`No notes found for ${user.firstName}`)
+		}
+
+		return notes
 	}
 
 	async joinClassroom(userId: number, classId: string): Promise<void> {

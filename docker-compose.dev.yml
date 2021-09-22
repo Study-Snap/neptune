@@ -17,7 +17,7 @@ services:
     restart: on-failure
     environment:
       LS_HOST: "0.0.0.0"
-      DB_HOST: db
+      DB_HOST: ssdb
       DB_PORT: 5432
       DB_USER: studysnap
       DB_PASS: snapstudy
@@ -40,8 +40,10 @@ services:
       POSTGRES_DB: studysnap_db
       POSTGRES_USER: studysnap
       POSTGRES_PASSWORD: snapstudy
+    volumes:
+      - ssdb_data:/var/lib/postgresql/data
     ports:
-      - "8888:5432"
+      - 8888:5432
     networks:
       - nep-dev-network
   authentication:
@@ -67,4 +69,4 @@ networks:
   nep-dev-network:
     driver: bridge
 volumes:
-  classdb_data:
+  ssdb_data:

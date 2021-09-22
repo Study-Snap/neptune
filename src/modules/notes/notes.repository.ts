@@ -15,14 +15,22 @@ export class NotesRepository {
 		return this.noteModel.findAll()
 	}
 
-	async findNoteById(id: number): Promise<Note | undefined> {
-		return this.noteModel.findOne({
-			where: {
-				id
-			}
-		})
+	async findNoteById(id: number, classId?: string): Promise<Note | undefined> {
+		return classId
+			? this.noteModel.findOne({
+					where: {
+						id,
+						classId
+					}
+				})
+			: this.noteModel.findOne({
+					where: {
+						id
+					}
+				})
 	}
 
+	/** !!MAYBE: LEGACY!! */
 	async findNotesMatchesTitle(title: string): Promise<Note[] | undefined> {
 		return this.noteModel.findAll({
 			where: {
@@ -36,13 +44,11 @@ export class NotesRepository {
 	async createNote(
 		title: string,
 		authorId: number,
+		classId: string,
 		keywords: string[],
 		fileUri: string,
 		body: string,
 		shortDescription: string,
-		isPublic: boolean,
-		allowDownloads: boolean,
-		classId: string,
 		rating?: number[],
 		timeLength?: number,
 		bibtextCitation?: string
@@ -58,8 +64,6 @@ export class NotesRepository {
 				rating,
 				timeLength,
 				bibtextCitation,
-				isPublic,
-				allowDownloads,
 				classId
 			},
 			{ validate: false }

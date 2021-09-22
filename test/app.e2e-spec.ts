@@ -196,9 +196,7 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the note',
 					fileUri: resGoodFileUri,
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
-					classId: testClasses[0].id,
-					isPublic: true,
-					allowDownloads: true
+					classId: testClasses[0].id
 				}
 
 				// Create actual note with file
@@ -212,7 +210,7 @@ describe('Neptune', () => {
 				expect(res.body.title).toMatch(reqData.title)
 
 				// Store noteID for later tests
-				noteId = res.body._id
+				noteId = res.body.id
 			})
 
 			it('should create a new note with other (docx) file but not process PDF extraction and provide warn', async () => {
@@ -222,9 +220,7 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the docx note',
 					fileUri: resBadFileUri,
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
-					classId: testClasses[0].id,
-					isPublic: true,
-					allowDownloads: true
+					classId: testClasses[0].id
 				}
 
 				// Create actual note with file
@@ -265,9 +261,7 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the note',
 					fileUri: 'fake-nonexist-file-id',
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
-					classId: testClasses[0].id,
-					isPublic: true,
-					allowDownloads: true
+					classId: testClasses[0].id
 				}
 
 				// Create actual note with file
@@ -283,6 +277,24 @@ describe('Neptune', () => {
 
 		describe('Note Querying', () => {
 			beforeAll(async () => {
+				/**
+				 * 
+				 * This function will eliminate the need to logstash to perform index synchronization for the purposes of the e2e tests
+				 * It does this by manually populating the index with some test data which only contains the real note ID using the ES API
+				 * 
+				 * TEST DATA:
+				 * 
+				 * notes: [
+				 * 	{
+				 *     id: noteId,
+				 *     title: Science 101,
+				 *     keywords: [ 'science', 'how-to' ],
+				 *     shortDescription: 'A note all about the science of biology and stuff'
+				 *  }
+				 * ]
+				 * 
+				 * Neptune will use ES to search based on the combined data provided (includes all fields, title, keywords, short description...)
+				 */
 				await populateESIndexForTest(noteId)
 			})
 
@@ -308,7 +320,8 @@ describe('Neptune', () => {
 					queryType: 'query_string',
 					query: {
 						query: 'randaopwdiuahwda 76dta67wt d6aw'
-					}
+					},
+					classId: testClasses[0].id
 				}
 
 				// Perform the search
@@ -319,7 +332,45 @@ describe('Neptune', () => {
 				expect(res.body).not.toBeUndefined()
 			})
 
-			// TODO: Add test for searching elasticsearch for note that does exist
+			it('should find a note using elasticsearch on /search with valid query', async () => {
+				const reqData: SearchNoteDto = {
+					queryType: 'query_string',
+					query: {
+						query: 'science and biology how-to'
+					},
+					classId: testClasses[0].id
+				}
+
+				// Perform the search
+				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Array)
+				expect(res.body.length).toBeGreaterThan(0)
+				expect(res.body[0].title).toMatch('Science 101')
+			})
+
+			it('should find a note using elasticsearch on /search with only a word from the description field', async () => {
+				const reqData: SearchNoteDto = {
+					queryType: 'query_string',
+					query: {
+						query: 'biology stuff'
+					},
+					classId: testClasses[0].id
+				}
+
+				// Perform the search
+				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Array)
+				expect(res.body.length).toBeGreaterThan(0)
+				expect(res.body[0].title).toMatch('Science 101')
+			})
 		})
 
 		describe('Note Update and Delete', () => {
@@ -331,8 +382,7 @@ describe('Neptune', () => {
 				const reqData = {
 					noteId: noteId,
 					newData: {
-						isPublic: true,
-						allowDownloads: false
+						title: 'ABC Note'
 					}
 				}
 
@@ -344,8 +394,7 @@ describe('Neptune', () => {
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
-				expect(res.body.isPublic).toBe(true)
-				expect(res.body.allowDownloads).toBe(false)
+				expect(res.body.title).toMatch(reqData.newData.title)
 			})
 
 			it('should fail to update without authorization of author', async () => {
@@ -596,7 +645,7 @@ describe('Neptune', () => {
 			})
 
 			it('should provide user data for a user with presented ID', async () => {
-				const res = await request(app.getHttpServer()).get(`${USER_BASE_URL}/by-uuid/${testUserId}`)
+				const res = await request(app.getHttpServer()).get(`${USER_BASE_URL}/by-id/${testUserId}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
@@ -604,9 +653,21 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Object)
 			})
 
-			it('should list classrooms the user is a part of', async () => {
+			it('should list classrooms a selected user is a part of', async () => {
 				const res = await request(app.getHttpServer())
-					.get(`${USER_BASE_URL}/by-uuid/${testUserId}/classrooms`)
+					.get(`${USER_BASE_URL}/by-id/${testUserId}/classrooms`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Array)
+				expect(res.body.length).toBeGreaterThan(0)
+			})
+
+			it('should provice a list of notes uploaded by a selected user', async () => {
+				const res = await request(app.getHttpServer())
+					.get(`${USER_BASE_URL}/by-id/${testUserId}/notes`)
 					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
@@ -619,6 +680,18 @@ describe('Neptune', () => {
 			it('should list classrooms for the logged in user', async () => {
 				const res = await request(app.getHttpServer())
 					.get(`${USER_BASE_URL}/classrooms`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Array)
+				expect(res.body.length).toBeGreaterThan(0)
+			})
+
+			it('should list notes uploaded by the requesting user', async () => {
+				const res = await request(app.getHttpServer())
+					.get(`${USER_BASE_URL}/notes`)
 					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
