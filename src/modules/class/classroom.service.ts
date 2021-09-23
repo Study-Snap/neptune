@@ -6,6 +6,7 @@ import {
 	InternalServerErrorException,
 	NotFoundException
 } from '@nestjs/common'
+import { compareNotesByRating } from '../notes/helper'
 import { Note } from '../notes/models/notes.model'
 import { ClassroomRepository } from './classroom.repository'
 import { ClassroomUser } from './models/classroom-user.model'
@@ -79,6 +80,26 @@ export class ClassroomService {
 		}
 
 		return notes
+	}
+
+	async getTopClassroomNotesByRating(userId: number, classId: string): Promise<Note[]> {
+		const userInClass = await this.userInClass(classId, userId)
+
+		// Verify classroom membership
+		if (!userInClass) {
+			throw new ForbiddenException(
+				`User with ID ${userId} is not in classroom with ID ${classId} and is therefore not allowed to see any notes.`
+			)
+		}
+
+		const cr: Classroom = await this.getClassroomWithID(classId)
+		const notes: Note[] = await this.classroomRepository.getNotes(cr)
+
+		if (!notes || notes.length === 0) {
+			throw new NotFoundException(`No notes were found in ${cr.name}`)
+		}
+
+		return notes.sort(compareNotesByRating)
 	}
 
 	async getClassroomUsers(classId: string, userId: number): Promise<User[]> {

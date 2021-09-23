@@ -35,6 +35,12 @@ export class ClassroomController {
 	}
 
 	@JwtAuth()
+	@Get('by-uuid/:id/notes/top')
+	async getTopClassroomNotes(@Request() req, @Param('id') id: string): Promise<Note[]> {
+		return this.classroomService.getTopClassroomNotesByRating(req.user.id, id)
+	}
+
+	@JwtAuth()
 	@Post()
 	async createClassroom(@Request() req, @Body() createCrDto: CreateClassroomDto): Promise<Classroom> {
 		return this.classroomService.createClassroom(createCrDto.name, req.user.id)

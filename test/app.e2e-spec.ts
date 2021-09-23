@@ -168,6 +168,19 @@ describe('Neptune', () => {
 		const NOTE_BASE_URL = '/notes'
 		let noteId: number // Useful for later tests
 
+		beforeAll(async () => {
+			/**
+			 * Ensures that the user added to the test classroom initially so that a note can be uploaded
+			 */
+			await connection.query(
+				`INSERT INTO classrooms_users (class_id, user_id, created_at, updated_at) VALUES ((SELECT id FROM classrooms WHERE id='${testClasses[0]
+					.id}'), (SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
+				{
+					logging: false
+				}
+			)
+		})
+
 		describe('Authenticated Endpoints', () => {
 			it('/test: should get a 200 response with a valid access token', async () => {
 				const res = await request(app.getHttpServer())
@@ -299,7 +312,9 @@ describe('Neptune', () => {
 			})
 
 			it('should find a single note by ID', async () => {
-				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/by-id/${noteId}`)
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/${noteId}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
@@ -308,7 +323,9 @@ describe('Neptune', () => {
 			})
 
 			it('should respond with not found if invalid id is passed', async () => {
-				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/by-id/999999`)
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/999999`)
+					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.NOT_FOUND)
@@ -325,7 +342,10 @@ describe('Neptune', () => {
 				}
 
 				// Perform the search
-				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}/search`)
+					.send(reqData)
+					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.NOT_FOUND)
@@ -342,7 +362,10 @@ describe('Neptune', () => {
 				}
 
 				// Perform the search
-				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}/search`)
+					.send(reqData)
+					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
@@ -362,7 +385,10 @@ describe('Neptune', () => {
 				}
 
 				// Perform the search
-				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}/search`)
+					.send(reqData)
+					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
@@ -451,6 +477,12 @@ describe('Neptune', () => {
 				expect(res.status).toBe(HttpStatus.OK)
 			})
 		})
+
+		afterAll(async () => {
+			await connection.query(`DELETE FROM classrooms_users`, {
+				logging: false
+			})
+		})
 	})
 
 	describe('Classroom Controller', () => {
@@ -459,8 +491,8 @@ describe('Neptune', () => {
 			beforeAll(async () => {
 				// Join the test user to the first test classroom
 				await connection.query(
-					`INSERT INTO classrooms_users (class_id, user_id, created_at, updated_at) VALUES ('${testClasses[0]
-						.id}', (SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
+					`INSERT INTO classrooms_users (class_id, user_id, created_at, updated_at) VALUES ((SELECT id FROM classrooms WHERE id='${testClasses[0]
+						.id}'), (SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
 					{
 						logging: false
 					}
