@@ -11,8 +11,12 @@ export class NotesRepository {
 		private noteModel: typeof Note
 	) {}
 
-	async findAllNotes(): Promise<Note[] | undefined> {
-		return this.noteModel.findAll()
+	async findAllNotes(classId: string): Promise<Note[] | undefined> {
+		return this.noteModel.findAll({
+			where: {
+				classId
+			}
+		})
 	}
 
 	async findNoteById(id: number, classId?: string): Promise<Note | undefined> {

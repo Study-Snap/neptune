@@ -32,20 +32,17 @@ export class NotesController {
 		}
 	}
 
-	@Get('top')
-	async getTopNotesByRating(): Promise<Note[]> {
-		return this.notesService.getTopNotesByRating()
-	}
-
+	@JwtAuth()
 	@Get('by-id/:id')
-	async getNote(@Param('id') id: number): Promise<Note> {
-		return this.notesService.getNoteWithID(id)
+	async getNote(@Request() req, @Param('id') id: number): Promise<Note> {
+		return this.notesService.getNoteWithID(id, req.user.id)
 	}
 
+	@JwtAuth()
 	@HttpCode(200)
 	@Post('search')
-	async getNotesForQuery(@Body() searchDto: SearchNoteDto): Promise<Note[]> {
-		return this.notesService.getNotesUsingES(searchDto.queryType, searchDto.query, searchDto.classId)
+	async getNotesForQuery(@Request() req, @Body() searchDto: SearchNoteDto): Promise<Note[]> {
+		return this.notesService.getNotesUsingES(req.user.id, searchDto.queryType, searchDto.query, searchDto.classId)
 	}
 
 	@JwtAuth()

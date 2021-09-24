@@ -59,6 +59,9 @@ describe('Neptune', () => {
 		}
 	]
 
+	// Additional Note IDs (use and create more as needed)
+	const testNoteIds = [ 77, 88, 99, 122 ]
+
 	// Setup test environment
 	beforeAll(async () => {
 		const testModule: TestingModule = await Test.createTestingModule({
@@ -167,6 +170,19 @@ describe('Neptune', () => {
 	describe('NotesController', () => {
 		const NOTE_BASE_URL = '/notes'
 		let noteId: number // Useful for later tests
+
+		beforeAll(async () => {
+			/**
+			 * Ensures that the user added to the test classroom initially so that a note can be uploaded
+			 */
+			await connection.query(
+				`INSERT INTO classrooms_users (class_id, user_id, created_at, updated_at) VALUES ((SELECT id FROM classrooms WHERE id='${testClasses[0]
+					.id}'), (SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
+				{
+					logging: false
+				}
+			)
+		})
 
 		describe('Authenticated Endpoints', () => {
 			it('/test: should get a 200 response with a valid access token', async () => {
@@ -296,10 +312,19 @@ describe('Neptune', () => {
 				 * Neptune will use ES to search based on the combined data provided (includes all fields, title, keywords, short description...)
 				 */
 				await populateESIndexForTest(noteId)
+
+				// Add a note that is in a class the user is not a part of so that we can ensure ES search filtering
+				await connection.query(
+					`INSERT INTO notes (id, rating, time_length, title, keywords, short_description, body, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},'{0,0,0,0,0}',5,'Science 205','{science,row}','biology','biology body','fake.pdf',(SELECT id FROM classrooms WHERE id='${testClasses[0]
+						.id}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
+					{ logging: false }
+				)
 			})
 
 			it('should find a single note by ID', async () => {
-				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/by-id/${noteId}`)
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/${noteId}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
@@ -308,7 +333,9 @@ describe('Neptune', () => {
 			})
 
 			it('should respond with not found if invalid id is passed', async () => {
-				const res = await request(app.getHttpServer()).get(`${NOTE_BASE_URL}/by-id/999999`)
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/999999`)
+					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.NOT_FOUND)
@@ -325,7 +352,10 @@ describe('Neptune', () => {
 				}
 
 				// Perform the search
-				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}/search`)
+					.send(reqData)
+					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.NOT_FOUND)
@@ -342,14 +372,18 @@ describe('Neptune', () => {
 				}
 
 				// Perform the search
-				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}/search`)
+					.send(reqData)
+					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body).toBeInstanceOf(Array)
-				expect(res.body.length).toBeGreaterThan(0)
+				expect(res.body.length).toBeGreaterThanOrEqual(1)
 				expect(res.body[0].title).toMatch('Science 101')
+				expect(res.body.filter((note) => note.id === testNoteIds[0]).length).toEqual(0)
 			})
 
 			it('should find a note using elasticsearch on /search with only a word from the description field', async () => {
@@ -362,14 +396,23 @@ describe('Neptune', () => {
 				}
 
 				// Perform the search
-				const res = await request(app.getHttpServer()).post(`${NOTE_BASE_URL}/search`).send(reqData)
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}/search`)
+					.send(reqData)
+					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body).toBeInstanceOf(Array)
-				expect(res.body.length).toBeGreaterThan(0)
+				expect(res.body.length).toBeGreaterThanOrEqual(1)
 				expect(res.body[0].title).toMatch('Science 101')
+				expect(res.body.filter((note) => note.id === testNoteIds[0]).length).toEqual(0)
+			})
+
+			afterAll(async () => {
+				// Remove note used in the test
+				await connection.query(`DELETE FROM notes where id=${testNoteIds[0]}`)
 			})
 		})
 
@@ -451,6 +494,12 @@ describe('Neptune', () => {
 				expect(res.status).toBe(HttpStatus.OK)
 			})
 		})
+
+		afterAll(async () => {
+			await connection.query(`DELETE FROM classrooms_users`, {
+				logging: false
+			})
+		})
 	})
 
 	describe('Classroom Controller', () => {
@@ -459,8 +508,8 @@ describe('Neptune', () => {
 			beforeAll(async () => {
 				// Join the test user to the first test classroom
 				await connection.query(
-					`INSERT INTO classrooms_users (class_id, user_id, created_at, updated_at) VALUES ('${testClasses[0]
-						.id}', (SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
+					`INSERT INTO classrooms_users (class_id, user_id, created_at, updated_at) VALUES ((SELECT id FROM classrooms WHERE id='${testClasses[0]
+						.id}'), (SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
 					{
 						logging: false
 					}

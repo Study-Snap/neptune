@@ -1,4 +1,11 @@
-import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+import {
+	ForbiddenException,
+	forwardRef,
+	Inject,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException
+} from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
 import { calculateReadTimeMinutes, compareNotesByRating, createEmptyRatings, extractBodyFromFile } from './helper'
 import { NotesRepository } from './notes.repository'
@@ -8,6 +15,7 @@ import { getConfig } from '../../config'
 import { existsSync } from 'fs'
 import { FilesService } from '../files/files.service'
 import { ElasticsearchService } from './elasticsearch.service'
+import { ClassroomService } from '../class/classroom.service'
 
 const config: IConfigAttributes = getConfig()
 
@@ -16,36 +24,44 @@ export class NotesService {
 	constructor(
 		private readonly notesRepository: NotesRepository,
 		private readonly filesService: FilesService,
-		private readonly elasticsearchService: ElasticsearchService
+		private readonly elasticsearchService: ElasticsearchService,
+		@Inject(forwardRef(() => ClassroomService))
+		private readonly classroomService: ClassroomService
 	) {}
 
-	async getTopNotesByRating(): Promise<Note[]> {
-		const notes: Note[] = await this.notesRepository.findAllNotes()
+	async getNoteWithID(id: number, userId: number, classId?: string): Promise<Note> {
+		const note: Note = await this.notesRepository.findNoteById(id, classId) // Will filter by classId if passed in with function call
 
-		if (!notes || notes.length === 0) {
-			throw new NotFoundException('Did not get any top notes')
-		}
-
-		return notes.sort(compareNotesByRating)
-	}
-
-	async getNoteWithID(id: number, classId?: string): Promise<Note> {
-		const note: Note = await this.notesRepository.findNoteById(id, classId)
-
+		// Make sure note actually exists
 		if (!note) {
 			throw new NotFoundException(`Could not find a note with id, ${id}`)
+		}
+
+		// Verify classroom membership
+		const userInClass = await this.classroomService.userInClass(note.classId, userId)
+		if (!userInClass) {
+			throw new ForbiddenException(
+				`Cannot get note details for note that is part of class with ID ${note.classId} since you are not a member ...`
+			)
 		}
 
 		return note
 	}
 
-	async getNotesUsingES(searchType: string, searchQuery: object, classId: string): Promise<Note[]> {
+	async getNotesUsingES(userId: number, searchType: string, searchQuery: object, classId: string): Promise<Note[]> {
+		// Verify classroom membership
+		const userInClass = await this.classroomService.userInClass(classId, userId)
+		if (!userInClass) {
+			throw new ForbiddenException(`You do cannot search notes inside a classroom you are not a part of ...`)
+		}
+
+		// Set up search parameters and search
 		const results: Note[] = []
 		const hits = await this.elasticsearchService.searchNotesForQuery(searchType, searchQuery)
 
 		// For each hit get full note with ID and append to result
 		for (const hit of hits) {
-			const note: Note = await this.getNoteWithID(hit['_source']['id'], classId)
+			const note: Note = await this.notesRepository.findNoteById(hit['_source']['id'], classId)
 
 			// If a note was found in the database too then append to the results
 			if (note) {
@@ -123,6 +139,13 @@ export class NotesService {
 
 	async createNoteWithFile(data: CreateNoteDto, authorId: number): Promise<Note> {
 		const fileStat = existsSync(`${config.fileStorageLocation}/${data.fileUri}`)
+		const userInClass = await this.classroomService.userInClass(data.classId, authorId)
+
+		if (!userInClass) {
+			throw new ForbiddenException(
+				`Cannot create not in a class (${data.classId}) you (${authorId}) are not a part of.`
+			)
+		}
 
 		if (!fileStat) {
 			throw new NotFoundException(
