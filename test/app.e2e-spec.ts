@@ -59,6 +59,9 @@ describe('Neptune', () => {
 		}
 	]
 
+	// Additional Note IDs (use and create more as needed)
+	const testNoteIds = [ 77, 88, 99, 122 ]
+
 	// Setup test environment
 	beforeAll(async () => {
 		const testModule: TestingModule = await Test.createTestingModule({
@@ -309,6 +312,13 @@ describe('Neptune', () => {
 				 * Neptune will use ES to search based on the combined data provided (includes all fields, title, keywords, short description...)
 				 */
 				await populateESIndexForTest(noteId)
+
+				// Add a note that is in a class the user is not a part of so that we can ensure ES search filtering
+				await connection.query(
+					`INSERT INTO notes (id, rating, time_length, title, keywords, short_description, body, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},'{0,0,0,0,0}',5,'Science 205','{science,row}','biology','biology body','fake.pdf',(SELECT id FROM classrooms WHERE id='${testClasses[0]
+						.id}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
+					{ logging: false }
+				)
 			})
 
 			it('should find a single note by ID', async () => {
@@ -371,8 +381,9 @@ describe('Neptune', () => {
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body).toBeInstanceOf(Array)
-				expect(res.body.length).toBeGreaterThan(0)
+				expect(res.body.length).toBeGreaterThanOrEqual(1)
 				expect(res.body[0].title).toMatch('Science 101')
+				expect(res.body.filter((note) => note.id === testNoteIds[0]).length).toEqual(0)
 			})
 
 			it('should find a note using elasticsearch on /search with only a word from the description field', async () => {
@@ -394,8 +405,14 @@ describe('Neptune', () => {
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body).toBeInstanceOf(Array)
-				expect(res.body.length).toBeGreaterThan(0)
+				expect(res.body.length).toBeGreaterThanOrEqual(1)
 				expect(res.body[0].title).toMatch('Science 101')
+				expect(res.body.filter((note) => note.id === testNoteIds[0]).length).toEqual(0)
+			})
+
+			afterAll(async () => {
+				// Remove note used in the test
+				await connection.query(`DELETE FROM notes where id=${testNoteIds[0]}`)
 			})
 		})
 

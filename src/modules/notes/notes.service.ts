@@ -49,16 +49,19 @@ export class NotesService {
 	}
 
 	async getNotesUsingES(userId: number, searchType: string, searchQuery: object, classId: string): Promise<Note[]> {
+		// Verify classroom membership
+		const userInClass = await this.classroomService.userInClass(classId, userId)
+		if (!userInClass) {
+			throw new ForbiddenException(`You do cannot search notes inside a classroom you are not a part of ...`)
+		}
+
 		// Set up search parameters and search
 		const results: Note[] = []
 		const hits = await this.elasticsearchService.searchNotesForQuery(searchType, searchQuery)
 
 		// For each hit get full note with ID and append to result
 		for (const hit of hits) {
-			// NOTE: getNoteWithID() will handle classroom membership verification for each note that turns up in the search
-			// Passing class ID will force getNoteWithID() to SELECT WHERE class_id=classId
-			// TODO: refactor this to map hits to Notes without failing after one note isn't found (sync problem)
-			const note: Note = await this.getNoteWithID(hit['_source']['id'], userId, classId)
+			const note: Note = await this.notesRepository.findNoteById(hit['_source']['id'], classId)
 
 			// If a note was found in the database too then append to the results
 			if (note) {
