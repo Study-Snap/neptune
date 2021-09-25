@@ -1,6 +1,13 @@
+# Development / Testing
+tmp/
+*.env
+
 # compiled output
 /dist
 /node_modules
+
+# Environment
+*.env
 
 # Logs
 logs

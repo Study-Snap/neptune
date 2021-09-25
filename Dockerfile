@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Change this port to your configured port in `config/index.ts`
-EXPOSE 5555
+EXPOSE 7777
 
 # Use nonroot user studysnap
 USER studysnap

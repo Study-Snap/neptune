@@ -1,0 +1,72 @@
+# Testing Setup for E2E Tests
+version: "3.7"
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
+    container_name: sem_elasticsearch
+    restart: on-failure
+    environment: 
+      - "discovery.type=single-node"
+    ports: 
+      - 9200:9200
+    networks: 
+      - nep-test-network
+  logstash:
+    image: studysnap/logstash-pg-es:1.x
+    container_name: sem_logstash
+    restart: on-failure
+    environment:
+      LS_HOST: "0.0.0.0"
+      DB_HOST: ssdb
+      DB_PORT: 5432
+      DB_USER: studysnap
+      DB_PASS: snapstudy
+      DB_NAME: studysnap_db
+      ES_HOST: elasticsearch
+      ES_PORT: 9200
+    volumes:
+      - "./.docker/es-search/config:/usr/share/logstash/config"
+      - "./.docker/es-search/pipelines:/usr/share/logstash/pipeline"
+    depends_on: 
+      - ssdb
+      - elasticsearch
+    networks: 
+      - nep-test-network
+  ssdb:
+    image: postgres:13.1
+    container_name: studysnap_db
+    restart: on-failure
+    environment:
+      POSTGRES_DB: studysnap_db
+      POSTGRES_USER: studysnap
+      POSTGRES_PASSWORD: snapstudy
+    volumes:
+      - ssdb_test_data:/var/lib/postgresql/data
+    ports:
+      - 8888:5432
+    networks:
+      - nep-test-network
+  authentication:
+    image: studysnap/authentication:1.x
+    container_name: authentication
+    restart: on-failure
+    environment:
+      PORT: 5555
+      DB_USER: studysnap
+      DB_PASS: snapstudy
+      DB_HOST: ssdb
+      DB_USER_DATABASE: studysnap_db
+      JWT_SECRET: test
+      JWT_ACCESS_TOKEN_EXPIRE_TIME: 999m
+    depends_on:
+      - ssdb
+    ports:
+      - 5555:5555
+    networks:
+      - nep-test-network
+
+networks:
+  nep-test-network:
+    driver: bridge
+volumes:
+  ssdb_test_data:
