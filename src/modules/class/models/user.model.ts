@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger'
 import {
 	AllowNull,
 	AutoIncrement,
@@ -18,25 +19,30 @@ import { Classroom } from './classroom.model'
 // !! DO NOT TOUCH !! //
 @Table({ tableName: 'users', underscored: true })
 export class User extends Model<User> {
+	@ApiProperty({ type: Number })
 	@PrimaryKey
 	@AutoIncrement
 	@Column(DataType.INTEGER)
 	id: number
 
+	@ApiProperty()
 	@Unique
 	@IsEmail
 	@AllowNull(false)
 	@Column(DataType.STRING)
 	email: string
 
+	@ApiProperty()
 	@AllowNull(false)
 	@Column(DataType.STRING)
 	password: string
 
+	@ApiProperty()
 	@AllowNull(false)
 	@Column(DataType.STRING)
 	firstName: string
 
+	@ApiProperty()
 	@AllowNull(false)
 	@Column(DataType.STRING)
 	lastName: string
