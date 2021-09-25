@@ -31,7 +31,7 @@ async function bootstrap() {
 		.setTitle('StudySnap Neptune')
 		.setDescription('Documentation for the StudySnap Neptune API')
 		.setVersion(PROJECT_VERSION)
-		.addTag('notes')
+		.addTag('Neptune')
 		.build()
 	const document = SwaggerModule.createDocument(app, swaggerConfig)
 	SwaggerModule.setup('docs', app, document, {
