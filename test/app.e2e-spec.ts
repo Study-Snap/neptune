@@ -758,7 +758,7 @@ describe('Neptune', () => {
 					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
-				expect(res.status).toBe(HttpStatus.CREATED)
+				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body).toBeInstanceOf(Object)
 				expect(res.body.message).toMatch(`${testClasses[3].id}`)
