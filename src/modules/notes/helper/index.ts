@@ -41,35 +41,26 @@ export function editFileName(req, file: Express.Multer.File, cb) {
 	cb(null, `${name}-${uuid()}${fileExtName}`)
 }
 
-// Used to compare notes by rating
-export function compareNotesByRating(a: Note, b: Note): number {
-	// Get the highest rating
-	const aRating = a.rating.indexOf(Math.max(...a.rating))
-	const bRating = b.rating.indexOf(Math.max(...b.rating))
+/**
+ * 
+ * @param a A Note object to be compared
+ * @param b A Note object to be compared
+ * @returns A number, positive Indicates that note B wins and negative indicates that note A wins
+ */
+export function compareNotesWithCombinedFeatures(a: Note, b: Note): number {
+	// Establish points (weights)
+	let aPoints = 0
+	let bPoints = 0
 
-	// Get total ratings
-	const aTotal = a.rating.reduce((a, b) => a + b, 0)
-	const bTotal = a.rating.reduce((a, b) => a + b, 0)
+	// First find our which is newer
+	const aCreated = new Date(a.createdAt)
+	const bCreated = new Date(b.createdAt)
+	aCreated < bCreated ? (aPoints += 30) : (bPoints += 30)
 
-	if (aRating < bRating) {
-		// Note b is higher rated
-		return 1
-	}
-	if (aRating > bRating) {
-		// Note a is higher rated
-		return -1
-	}
+	// Now calculate points for each notes ratings
+	aPoints += a.rating.reduce((a, b, i) => a + b * i, 0)
+	bPoints += b.rating.reduce((a, b, i) => a + b * i, 0)
 
-	// equal rated (check counts)
-	if (aTotal < bTotal) {
-		// B has more ratings in total
-		return 1
-	}
-	if (aTotal > bTotal) {
-		// A has more ratings in total
-		return -1
-	}
-
-	// Complete tie
-	return 0
+	// Finally compare and return
+	return bPoints - aPoints
 }

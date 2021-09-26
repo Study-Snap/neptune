@@ -256,9 +256,7 @@ describe('Neptune', () => {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
-					classId: testClasses[0].id,
-					isPublic: true,
-					allowDownloads: true
+					classId: testClasses[0].id
 				}
 
 				// Create actual note with file
@@ -429,7 +427,7 @@ describe('Neptune', () => {
 					}
 				}
 
-				// Perform update to isPublic and allowDownloads
+				// Perform update to title of the note
 				const res = await request(app.getHttpServer())
 					.put(`${NOTE_BASE_URL}`)
 					.set('Authorization', `Bearer ${jwtToken}`)
@@ -444,12 +442,11 @@ describe('Neptune', () => {
 				const reqData = {
 					noteId: noteId,
 					newData: {
-						isPublic: true,
-						allowDownloads: false
+						title: 'Good Title'
 					}
 				}
 
-				// Attempt unauthorized update to isPublic and allowDownloads
+				// Attempt unauthorized update title
 				const res = await request(app.getHttpServer()).put(`${NOTE_BASE_URL}`).send(reqData)
 
 				// Verify results

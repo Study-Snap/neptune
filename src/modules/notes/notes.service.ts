@@ -7,7 +7,12 @@ import {
 	NotFoundException
 } from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
-import { calculateReadTimeMinutes, compareNotesByRating, createEmptyRatings, extractBodyFromFile } from './helper'
+import {
+	calculateReadTimeMinutes,
+	compareNotesWithCombinedFeatures,
+	createEmptyRatings,
+	extractBodyFromFile
+} from './helper'
 import { NotesRepository } from './notes.repository'
 import { Note } from './models/notes.model'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
@@ -75,7 +80,7 @@ export class NotesService {
 			)
 		}
 
-		return results.sort(compareNotesByRating)
+		return results.sort(compareNotesWithCombinedFeatures)
 	}
 
 	async updateNoteWithID(authorId: number, id: number, data: object): Promise<Note> {
