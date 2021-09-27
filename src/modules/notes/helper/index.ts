@@ -9,7 +9,11 @@ import { Note } from '../models/notes.model'
 
 const config: IConfigAttributes = getConfig()
 
-// Works only on PDF
+/**
+ * Extracts the body/text from a note file for use in the current DB implementation
+ * @param path The path to the note file
+ * @returns A full-text extraction from the PDF document containing all content and some formatting
+ */
 export async function extractBodyFromFile(path: string): Promise<string | undefined> {
 	const pathComponents: string[] = path.split('.')
 	if (pathComponents[pathComponents.length - 1] !== 'pdf') {
@@ -23,6 +27,11 @@ export async function extractBodyFromFile(path: string): Promise<string | undefi
 	return pdfData.text
 }
 
+/**
+ * Calculates the average read time for a note
+ * @param body The body of the note being uploaded
+ * @returns A n average read time for the generic user
+ */
 export async function calculateReadTimeMinutes(body: string): Promise<number> {
 	// Source: https://irisreading.com/what-is-the-average-reading-speed/
 	const avgWordsPerMin = 200
@@ -30,11 +39,21 @@ export async function calculateReadTimeMinutes(body: string): Promise<number> {
 	return Math.round(body.split(' ').length / avgWordsPerMin) + 1
 }
 
-// Used to initialize a ratings format for a new note (stick to defaul)
+/**
+ * Used to initialize a ratings format for a new note (stick to defaul)
+ * @param ratingsSize The number of stars for this rating object
+ * @returns An array of ratingSize initialized with zeroes
+ */
 export function createEmptyRatings(ratingsSize = 5): number[] {
 	return Array(ratingsSize).fill(0)
 }
 
+/**
+ * Overrides default file name and allows additional elements to be part of the file name
+ * @param req The request object from the HTTP request
+ * @param file The Multer File object containing a buffer and file metadata
+ * @param cb The callback function for which to pass the resulting fileName back to the Multer upload middleware to override default filenames
+ */
 export function editFileName(req, file: Express.Multer.File, cb) {
 	const name = file.originalname.split('.')[0]
 	const fileExtName = extname(file.originalname)
