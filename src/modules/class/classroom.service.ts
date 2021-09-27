@@ -6,7 +6,7 @@ import {
 	InternalServerErrorException,
 	NotFoundException
 } from '@nestjs/common'
-import { compareNotesByRating } from '../notes/helper'
+import { compareNotesWithCombinedFeatures } from '../notes/helper'
 import { Note } from '../notes/models/notes.model'
 import { ClassroomRepository } from './classroom.repository'
 import { ClassroomUser } from './models/classroom-user.model'
@@ -99,7 +99,7 @@ export class ClassroomService {
 			throw new NotFoundException(`No notes were found in ${cr.name}`)
 		}
 
-		return notes.sort(compareNotesByRating)
+		return notes.sort(compareNotesWithCombinedFeatures)
 	}
 
 	async getClassroomUsers(classId: string, userId: number): Promise<User[]> {
