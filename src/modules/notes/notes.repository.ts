@@ -16,7 +16,8 @@ export class NotesRepository {
 		return this.noteModel.findAll({
 			where: {
 				classId
-			}
+			},
+			include: [{ model: User, attributes: { exclude: [DB_USERS_PASSWORD_FIELD] } }]
 		})
 	}
 

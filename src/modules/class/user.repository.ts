@@ -19,16 +19,21 @@ export class UserRepository {
 				id
 			},
 			attributes: {
-				exclude: [ DB_USERS_PASSWORD_FIELD ]
+				exclude: [DB_USERS_PASSWORD_FIELD]
 			}
 		})
 	}
 
 	async getClassrooms(id: number): Promise<Classroom[] | undefined> {
-		return (await this.userModel.findOne({ where: { id }, include: [ Classroom ] })).classes
+		return (await this.userModel.findOne({ where: { id }, include: [Classroom] })).classes
 	}
 
 	async getNotes(id: number): Promise<Note[] | undefined> {
-		return (await this.userModel.findOne({ where: { id }, include: [ Note ] })).notes
+		return (
+			await this.userModel.findOne({
+				where: { id },
+				include: [{ model: Note, include: [{ model: User, attributes: { exclude: [DB_USERS_PASSWORD_FIELD] } }] }]
+			})
+		).notes
 	}
 }
