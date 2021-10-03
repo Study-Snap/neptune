@@ -159,7 +159,9 @@ describe('Neptune', () => {
 				const buffer = Buffer.from('some note data')
 
 				// Attempt to create a note file without authorization header (or invalid one)
-				const res = await request(app.getHttpServer()).post(`${FILE_BASE_URL}`).attach('file', buffer, 'test_file.pdf')
+				const res = await request(app.getHttpServer())
+					.post(`${FILE_BASE_URL}`)
+					.attach('file', buffer, 'test_file.pdf')
 
 				// Verify results from file upload
 				expect(res.status).toBe(HttpStatus.UNAUTHORIZED)
@@ -330,6 +332,18 @@ describe('Neptune', () => {
 				expect(res.body.title).toBeDefined()
 			})
 
+			it('should include a user (author) in note response objects', async () => {
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/${noteId}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body.user).toBeDefined()
+				expect(res.body.user.firstName.length).toBeGreaterThan(0)
+			})
+
 			it('should respond with not found if invalid id is passed', async () => {
 				const res = await request(app.getHttpServer())
 					.get(`${NOTE_BASE_URL}/by-id/999999`)
@@ -381,6 +395,8 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Array)
 				expect(res.body.length).toBeGreaterThanOrEqual(1)
 				expect(res.body[0].title).toMatch('Science 101')
+				expect(res.body[0].user).toBeDefined()
+				expect(res.body[0].user.firstName.length).toBeGreaterThan(0)
 				expect(res.body.filter((note) => note.id === testNoteIds[0]).length).toEqual(0)
 			})
 
@@ -405,6 +421,8 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Array)
 				expect(res.body.length).toBeGreaterThanOrEqual(1)
 				expect(res.body[0].title).toMatch('Science 101')
+				expect(res.body[0].user).toBeDefined()
+				expect(res.body[0].user.firstName.length).toBeGreaterThan(0)
 				expect(res.body.filter((note) => note.id === testNoteIds[0]).length).toEqual(0)
 			})
 
@@ -436,6 +454,10 @@ describe('Neptune', () => {
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body.title).toMatch(reqData.newData.title)
+
+				// Verify the modifying author is returned with the response
+				expect(res.body.user).toBeDefined()
+				expect(res.body.user.firstName.length).toBeGreaterThan(0)
 			})
 
 			it('should fail to update without authorization of author', async () => {
@@ -577,6 +599,8 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Array)
 				expect(res.body.length).toBeGreaterThan(0)
 				expect(res.body[0].title).toMatch(/^.*(Science).*/g)
+				expect(res.body[0].user).toBeDefined()
+				expect(res.body[0].user.firstName.length).toBeGreaterThan(0)
 			})
 		})
 		describe('Classroom CRUD', () => {
@@ -745,6 +769,8 @@ describe('Neptune', () => {
 				expect(res.body).toBeDefined()
 				expect(res.body).toBeInstanceOf(Array)
 				expect(res.body.length).toBeGreaterThan(0)
+				expect(res.body[0].user).toBeDefined()
+				expect(res.body[0].user.firstName.length).toBeGreaterThan(0)
 			})
 		})
 

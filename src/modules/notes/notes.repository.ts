@@ -17,7 +17,7 @@ export class NotesRepository {
 			where: {
 				classId
 			},
-			include: [{ model: User, attributes: { exclude: [DB_USERS_PASSWORD_FIELD] } }]
+			include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } } ]
 		})
 	}
 
@@ -28,14 +28,14 @@ export class NotesRepository {
 						id,
 						classId
 					},
-					include: [{ model: User, attributes: { exclude: [DB_USERS_PASSWORD_FIELD] } }]
-			  })
+					include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } } ]
+				})
 			: this.noteModel.findOne({
 					where: {
 						id
 					},
-					include: [{ model: User, attributes: { exclude: [DB_USERS_PASSWORD_FIELD] } }]
-			  })
+					include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } } ]
+				})
 	}
 
 	async createNote(
@@ -63,7 +63,7 @@ export class NotesRepository {
 				bibtextCitation,
 				classId
 			},
-			{ validate: false, include: [{ model: User, attributes: { exclude: [DB_USERS_PASSWORD_FIELD] } }] }
+			{ validate: false }
 		)
 	}
 
