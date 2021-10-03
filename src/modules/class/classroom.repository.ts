@@ -82,7 +82,7 @@ export class ClassroomRepository {
 	}
 
 	async getNotes(cr: Classroom): Promise<Note[] | undefined> {
-		return (await this.crModel.findOne({ where: { id: cr.id }, include: [ Note ] })).notes
+		return (await this.crModel.findOne({ where: { id: cr.id }, include: [ {model: Note, include: [{model: User, attributes: {exclude: [DB_USERS_PASSWORD_FIELD]}}]} ] })).notes
 	}
 
 	async getNoteWithIDInClass(cr: Classroom, noteId: number): Promise<Note | undefined> {
