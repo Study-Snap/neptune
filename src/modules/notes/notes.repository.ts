@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Op } from 'sequelize'
-import { DB_CONNECTION_NAME } from '../../common/constants'
+import { DB_CONNECTION_NAME, DB_USERS_PASSWORD_FIELD } from '../../common/constants'
+import { User } from '../class/models/user.model'
 import { Note } from './models/notes.model'
 
 @Injectable()
@@ -25,24 +26,15 @@ export class NotesRepository {
 					where: {
 						id,
 						classId
-					}
-				})
+					},
+					include: [{ model: User, attributes: { exclude: [DB_USERS_PASSWORD_FIELD] } }]
+			  })
 			: this.noteModel.findOne({
 					where: {
 						id
-					}
-				})
-	}
-
-	/** !!MAYBE: LEGACY!! */
-	async findNotesMatchesTitle(title: string): Promise<Note[] | undefined> {
-		return this.noteModel.findAll({
-			where: {
-				title: {
-					[Op.like]: `%${title}%`
-				}
-			}
-		})
+					},
+					include: [{ model: User, attributes: { exclude: [DB_USERS_PASSWORD_FIELD] } }]
+			  })
 	}
 
 	async createNote(
@@ -70,7 +62,7 @@ export class NotesRepository {
 				bibtextCitation,
 				classId
 			},
-			{ validate: false }
+			{ validate: false, include: [{ model: User, attributes: { exclude: [DB_USERS_PASSWORD_FIELD] } }] }
 		)
 	}
 
