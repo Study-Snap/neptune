@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Modified
 
 - (SSPP-240): Fixed comparison function for note ranking by ratings
+- (SSPP-247): Ensured any operations that return a note object also include author (user) data model in the response
+- (SSPP-247): Documentation updated
+- (SSPP-247): Implemented new tests to ensure proper functionality of user data model being included in note response objects
 
 ## [Released]
 

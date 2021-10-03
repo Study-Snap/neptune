@@ -78,6 +78,7 @@ export class Note extends Model<Note> {
 	@Column
 	authorId: number
 
+	@ApiProperty({ description: 'A user object containing details about the author of this note' })
 	@BelongsTo(() => User)
 	user: User
 
