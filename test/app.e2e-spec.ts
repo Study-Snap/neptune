@@ -20,6 +20,8 @@ import { SearchNoteDto } from 'src/modules/notes/dto/search-note.dto'
 import { CreateClassroomDto } from 'src/modules/class/dto/create-classroom.dto'
 import { UpdateClassroomDto } from 'src/modules/class/dto/update-classroom.dto'
 import { DeleteClassroomDto } from 'src/modules/class/dto/delete-classroom.dto'
+import { existsSync } from 'fs'
+import { resolve } from 'path'
 
 const config: IConfigAttributes = getConfig()
 
@@ -288,6 +290,31 @@ describe('Neptune', () => {
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.NOT_FOUND)
+			})
+
+			it('should delete the note file if encounters a problem with note publish', async () => {
+				const reqData: CreateNoteDto = {
+					title: 'Science 101',
+					shortDescription: 'A short description about the note',
+					fileUri: resBadFileUri,
+					keywords: [ 'biology', 'chemestry', 'Physics' ],
+					classId: testClasses[3].id // Use classId which test user is not a member of
+				}
+
+				// Create actual note with file
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Stat the file that should be deleted
+				const badFileExists = existsSync(resolve(config.fileStorageLocation, resBadFileUri))
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.FORBIDDEN)
+				expect(res.body.message).toBeDefined()
+				expect(res.body.message).toMatch('not in a class')
+				expect(badFileExists).toBeFalsy()
 			})
 		})
 
