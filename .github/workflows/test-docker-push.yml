@@ -39,6 +39,7 @@ jobs:
         with:
           push: true
           tags: |
+            ${{ secrets.DOCKER_ID }}/neptune:${{ steps.current_branch.outputs.branch }}.${{ steps.package_info.outputs.version }}_${{ github.sha }}
             ${{ secrets.DOCKER_ID }}/neptune:${{ steps.current_branch.outputs.branch }}.${{ steps.package_info.outputs.version }}
             ${{ secrets.DOCKER_ID }}/neptune:${{ steps.current_branch.outputs.branch }}.${{ steps.version_split.outputs._0 }}.x
             ${{ secrets.DOCKER_ID }}/neptune:${{ steps.current_branch.outputs.branch }}.${{ steps.version_split.outputs._0 }}.${{ steps.version_split.outputs._1 }}.x
