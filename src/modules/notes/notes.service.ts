@@ -107,10 +107,12 @@ export class NotesService {
 			'bibtextCitation'
 		]
 
-		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
-			obj[key] = data[key]
-			return obj
-		}, {})
+		const filteredData: object = Object.keys(data)
+			.filter((key) => allowedFields.includes(key))
+			.reduce((obj, key) => {
+				obj[key] = data[key]
+				return obj
+			}, {})
 
 		return this.notesRepository.updateNote(note, filteredData)
 	}
@@ -146,15 +148,25 @@ export class NotesService {
 		const fileStat = existsSync(`${config.fileStorageLocation}/${data.fileUri}`)
 		const userInClass = await this.classroomService.userInClass(data.classId, authorId)
 
-		if (!userInClass) {
-			throw new ForbiddenException(
-				`Cannot create not in a class (${data.classId}) you (${authorId}) are not a part of.`
-			)
-		}
-
 		if (!fileStat) {
 			throw new NotFoundException(
 				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /files'
+			)
+		}
+
+		if (!userInClass) {
+			// Delete the uploaded file
+			const res = await this.filesService.deleteFileWithID(data.fileUri)
+
+			if (!res) {
+				throw new InternalServerErrorException(
+					`Failed to delete file after encountering create error for file with URI ${data.fileUri}`
+				)
+			}
+
+			// Throw appropriate exception now
+			throw new ForbiddenException(
+				`Cannot create not in a class (${data.classId}) you (${authorId}) are not a part of.`
 			)
 		}
 
@@ -180,6 +192,16 @@ export class NotesService {
 
 			return res
 		} catch (err) {
+			// Delete the uploaded file
+			const res = await this.filesService.deleteFileWithID(data.fileUri)
+
+			if (!res) {
+				throw new InternalServerErrorException(
+					`Failed to delete file after encountering create error for file with URI ${data.fileUri}`
+				)
+			}
+
+			// Finally throw the appropriate exception
 			throw new InternalServerErrorException(`Failed to create note. Reason: ${err.message}`)
 		}
 	}
