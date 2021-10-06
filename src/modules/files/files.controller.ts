@@ -8,7 +8,7 @@ import {
 	UseInterceptors
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { ApiBody, ApiHeader, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { diskStorage } from 'multer'
 import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
