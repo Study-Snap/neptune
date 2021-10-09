@@ -36,7 +36,10 @@ const appConfig: IConfig = {
 		dbDatabaseName: process.env.DB_DATABASE_NAME || 'studysnap_db',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
 		jwtSecret: process.env.JWT_SECRET || 'dev_secret_do_change_in_prod',
-		fileStorageLocation: process.env.FILE_STORE
+		spacesEndpoint: process.env.SPACES_ENDPOINT || 'nyc3.digitaloceanspaces.com',
+		spacesKey: process.env.SPACES_KEY,
+		spacesSecret: process.env.SPACES_SECRET,
+		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notedata'
 	},
 	test: {
 		listenPort: process.env.PORT || 7777,
@@ -55,7 +58,10 @@ const appConfig: IConfig = {
 		dbDatabaseName: process.env.DB_DATABASE_NAME || 'studysnap_db',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 2,
 		jwtSecret: process.env.JWT_SECRET || 'test',
-		fileStorageLocation: process.env.FILE_STORE || './tmp/'
+		spacesEndpoint: process.env.SPACES_ENDPOINT || 'nyc3.digitaloceanspaces.com',
+		spacesKey: process.env.SPACES_KEY,
+		spacesSecret: process.env.SPACES_SECRET,
+		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notedata'
 	},
 	production: {
 		listenPort: process.env.PORT || 5555,
@@ -71,7 +77,10 @@ const appConfig: IConfig = {
 		dbDatabaseName: process.env.DB_DATABASE_NAME || 'studysnap_db',
 		dbRetryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 5,
 		jwtSecret: process.env.JWT_SECRET,
-		fileStorageLocation: process.env.FILE_STORE
+		spacesEndpoint: process.env.SPACES_ENDPOINT || 'nyc3.digitaloceanspaces.com',
+		spacesKey: process.env.SPACES_KEY,
+		spacesSecret: process.env.SPACES_SECRET,
+		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notedata'
 	}
 }
 
