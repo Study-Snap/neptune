@@ -3,6 +3,8 @@ import { IConfigAttributes } from '../../src/common/interfaces/config/app-config
 import { getConfig } from '../../src/config'
 import { Client } from '@elastic/elasticsearch'
 import { Note } from '../../src/modules/notes/models/notes.model'
+import { Endpoint, S3 } from 'aws-sdk'
+import { InternalServerErrorException } from '@nestjs/common'
 
 // Init
 const config: IConfigAttributes = getConfig()
@@ -114,5 +116,31 @@ export const populateESIndexForTest = async (noteId: number) => {
 		})
 	} else {
 		throw new Error('Failed to create ES index...is the client configured properly? Is the service running?')
+	}
+}
+
+export const testRemoteFileExists = async (fileUri: string): Promise<boolean> => {
+	// Init Spaces Connection
+	const s3 = new S3({
+		endpoint: new Endpoint(config.spacesEndpoint),
+		accessKeyId: config.spacesKey,
+		secretAccessKey: config.spacesSecret
+	})
+
+	// Configure params for S3
+	const params = {
+		Bucket: config.noteDataSpace,
+		Key: fileUri
+	}
+
+	// Check if object exists in S3
+	try {
+		const headCode = await s3.headObject(params).promise()
+		return headCode.ContentLength > 0
+	} catch (err) {
+		if (err.code === 'NotFound') {
+			return false
+		}
+		throw new InternalServerErrorException(`An unknown error occurred when verifying file exists`)
 	}
 }

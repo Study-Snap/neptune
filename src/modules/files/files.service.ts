@@ -133,6 +133,12 @@ export class FilesService {
 	 * @returns A full-text extraction from the PDF document containing all content and some formatting
 	*/
 	async extractBodyFromPDF(fileUri: string): Promise<string | undefined> {
+		// Ensure proper file format
+		if (fileUri.split('.').pop() !== 'pdf') {
+			// TODO: Realistically, we should throw an error here
+			return 'Cannot automatically extract content from this file.'
+		}
+
 		// Initialize DO Spaces (s3 client)
 		const s3 = new S3({
 			endpoint: new Endpoint(config.spacesEndpoint),

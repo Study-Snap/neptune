@@ -10,7 +10,8 @@ import {
 	getAccessTokenFromAuth,
 	TEST_PASSWORD,
 	TEST_USERNAME,
-	populateESIndexForTest
+	populateESIndexForTest,
+	testRemoteFileExists
 } from './util'
 import { IConfigAttributes } from '../src/common/interfaces/config/app-config.interface'
 import { getConfig } from '../src/config'
@@ -20,8 +21,6 @@ import { SearchNoteDto } from 'src/modules/notes/dto/search-note.dto'
 import { CreateClassroomDto } from 'src/modules/class/dto/create-classroom.dto'
 import { UpdateClassroomDto } from 'src/modules/class/dto/update-classroom.dto'
 import { DeleteClassroomDto } from 'src/modules/class/dto/delete-classroom.dto'
-import { existsSync } from 'fs'
-import { resolve } from 'path'
 
 const config: IConfigAttributes = getConfig()
 
@@ -252,7 +251,7 @@ describe('Neptune', () => {
 				// Verify results
 				expect(res.status).toBe(HttpStatus.CREATED)
 				expect(res.body.title).toMatch(reqData.title)
-				expect(res.body.body).toMatch('BAD FORMAT')
+				expect(res.body.noteAbstract).toMatch('Cannot automatically extract content from this file')
 			})
 
 			it('should fail to create a new note if a file is not provided', async () => {
@@ -298,7 +297,7 @@ describe('Neptune', () => {
 					shortDescription: 'A short description about the note',
 					fileUri: resBadFileUri,
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
-					classId: testClasses[3].id // Use classId which test user is not a member of
+					classId: testClasses[3].id // PROBLEM: Use classId which test user is not a member of
 				}
 
 				// Create actual note with file
@@ -306,9 +305,7 @@ describe('Neptune', () => {
 					.post(`${NOTE_BASE_URL}`)
 					.set('Authorization', `Bearer ${jwtToken}`)
 					.send(reqData)
-
-				// Stat the file that should be deleted
-				const badFileExists = existsSync(resolve(config.fileStorageLocation, resBadFileUri))
+				const badFileExists = await testRemoteFileExists(resBadFileUri)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.FORBIDDEN)
@@ -342,7 +339,7 @@ describe('Neptune', () => {
 
 				// Add a note that is in a class the user is not a part of so that we can ensure ES search filtering
 				await connection.query(
-					`INSERT INTO notes (id, rating, time_length, title, keywords, short_description, body, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},'{0,0,0,0,0}',5,'Science 205','{science,row}','biology','biology body','fake.pdf',(SELECT id FROM classrooms WHERE id='${testClasses[0]
+					`INSERT INTO notes (id, rating, time_length, title, keywords, short_description, note_abstract, note_c_d_n, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},'{0,0,0,0,0}',5,'Science 205','{science,row}','biology','biology absract', 'https://badcdn.ca', 'fake.pdf',(SELECT id FROM classrooms WHERE id='${testClasses[0]
 						.id}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
 					{ logging: false }
 				)
@@ -504,8 +501,7 @@ describe('Neptune', () => {
 
 			it('should fail to delete note with fake id', async () => {
 				const badRequestData: DeleteNoteDto = {
-					noteId: 9999999,
-					fileUri: resGoodFileUri
+					noteId: 9999999
 				}
 				const res = await request(app.getHttpServer())
 					.del(`${NOTE_BASE_URL}`)
@@ -518,8 +514,7 @@ describe('Neptune', () => {
 
 			it('should fail to delete note without authorization', async () => {
 				const reqData: DeleteNoteDto = {
-					noteId,
-					fileUri: resGoodFileUri
+					noteId
 				}
 				const res = await request(app.getHttpServer()).del(`${NOTE_BASE_URL}`).send(reqData)
 

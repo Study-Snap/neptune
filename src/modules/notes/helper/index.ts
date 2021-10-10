@@ -7,7 +7,7 @@ import { Note } from '../models/notes.model'
  */
 export async function createNoteAbstract(body: string): Promise<string> {
 	const words = body.split(' ')
-	return `${words.slice(0, Math.max(50, words.length)).join(' ')} ...`
+	return `${words.slice(0, Math.min(50, words.length)).join(' ')} ...`
 }
 
 /**

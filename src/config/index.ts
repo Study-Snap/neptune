@@ -39,7 +39,7 @@ const appConfig: IConfig = {
 		spacesEndpoint: process.env.SPACES_ENDPOINT || 'nyc3.digitaloceanspaces.com',
 		spacesKey: process.env.SPACES_KEY,
 		spacesSecret: process.env.SPACES_SECRET,
-		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notedata'
+		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata'
 	},
 	test: {
 		listenPort: process.env.PORT || 7777,
@@ -61,7 +61,7 @@ const appConfig: IConfig = {
 		spacesEndpoint: process.env.SPACES_ENDPOINT || 'nyc3.digitaloceanspaces.com',
 		spacesKey: process.env.SPACES_KEY,
 		spacesSecret: process.env.SPACES_SECRET,
-		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notedata'
+		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata'
 	},
 	production: {
 		listenPort: process.env.PORT || 5555,
@@ -80,7 +80,7 @@ const appConfig: IConfig = {
 		spacesEndpoint: process.env.SPACES_ENDPOINT || 'nyc3.digitaloceanspaces.com',
 		spacesKey: process.env.SPACES_KEY,
 		spacesSecret: process.env.SPACES_SECRET,
-		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notedata'
+		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata'
 	}
 }
 
