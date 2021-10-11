@@ -5,6 +5,7 @@ import { getConfig } from '../../config'
 import { v4 as uuid } from 'uuid'
 import * as pdf from 'pdf-parse'
 import { PromiseResult } from 'aws-sdk/lib/request'
+import { SpaceType } from 'src/common/constants'
 
 const config: IConfigAttributes = getConfig()
 
@@ -15,7 +16,7 @@ export class FilesService {
 	 * @param file A File object containing a raw buffer
 	 * @returns A unique fileURI (or Key as known in S3 terms)
 	 */
-	async createFile(file: Express.Multer.File): Promise<string | undefined> {
+	async createFile(file: Express.Multer.File, spaceType: SpaceType = SpaceType.NOTES): Promise<string | undefined> {
 		if (!file) {
 			throw new BadRequestException('You must include a file')
 		}
@@ -29,12 +30,12 @@ export class FilesService {
 
 		// Generate DO Upload Params
 		const uParams = {
-			Bucket: config.noteDataSpace,
+			Bucket: spaceType === SpaceType.NOTES ? config.noteDataSpace : config.imageDataSpace,
 			Key: `${uuid()}.${file.originalname.split('.').pop()}`,
 			Body: file.buffer,
 			ACL: 'public-read',
 			Metadata: {
-				type: 'Note'
+				Type: spaceType === SpaceType.NOTES ? 'note' : 'image'
 			}
 		}
 		const res = await s3.putObject(uParams).promise()
@@ -51,7 +52,7 @@ export class FilesService {
 	 * @param fileUri A unique FileURI that points to a file in S3 object storage
 	 * @returns True if the file exists and is not empty
 	 */
-	async remoteFileExists(fileUri: string): Promise<boolean> {
+	async remoteFileExists(fileUri: string, spaceType: SpaceType = SpaceType.NOTES): Promise<boolean> {
 		// Init Spaces Connection
 		const s3 = new S3({
 			endpoint: new Endpoint(config.spacesEndpoint),
@@ -60,7 +61,7 @@ export class FilesService {
 		})
 
 		const params = {
-			Bucket: config.noteDataSpace,
+			Bucket: spaceType === SpaceType.NOTES ? config.noteDataSpace : config.imageDataSpace,
 			Key: fileUri
 		}
 
@@ -80,7 +81,10 @@ export class FilesService {
 	 * @param fileUri A unique File URI that points to the remote file in S3 object storage
 	 * @returns The response objects from S3
 	 */
-	async getFileObjectWithID(fileUri: string): Promise<PromiseResult<S3.GetObjectOutput, AWSError>> {
+	async getFileObjectWithID(
+		fileUri: string,
+		spaceType: SpaceType = SpaceType.NOTES
+	): Promise<PromiseResult<S3.GetObjectOutput, AWSError>> {
 		// Initialize DO Spaces (s3 client)
 		const s3 = new S3({
 			endpoint: new Endpoint(config.spacesEndpoint),
@@ -90,7 +94,7 @@ export class FilesService {
 
 		// Get object using fileUri (key) from spaces
 		const params = {
-			Bucket: config.noteDataSpace,
+			Bucket: spaceType === SpaceType.NOTES ? config.noteDataSpace : config.imageDataSpace,
 			Key: fileUri
 		}
 
@@ -111,7 +115,7 @@ export class FilesService {
 	 * Used to delete a file from S3 object storage
 	 * @param fileUri A unique fileURI that points to a file in S3 storage 
 	 */
-	async deleteFileWithID(fileUri: string): Promise<void> {
+	async deleteFileWithID(fileUri: string, spaceType: SpaceType = SpaceType.NOTES): Promise<void> {
 		// Init Spaces Connections
 		const s3 = new S3({
 			endpoint: new Endpoint(config.spacesEndpoint),
@@ -119,7 +123,7 @@ export class FilesService {
 			secretAccessKey: config.spacesSecret
 		})
 		const params = {
-			Bucket: config.noteDataSpace,
+			Bucket: spaceType === SpaceType.NOTES ? config.noteDataSpace : config.imageDataSpace,
 			Key: fileUri
 		}
 

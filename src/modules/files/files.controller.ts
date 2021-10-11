@@ -12,6 +12,7 @@ import { ApiBody, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { FileCreateResponseType } from './types/create-note-resp.type'
 import { FilesService } from './files.service'
+import { SpaceType } from 'src/common/constants'
 
 @ApiTags('files')
 @Controller('files')
@@ -34,9 +35,41 @@ export class FilesController {
 	})
 	@JwtAuth()
 	@UseInterceptors(FileInterceptor('file'))
-	@Post()
+	@Post('note')
 	async createNoteFile(@Request() req, @UploadedFile() file: Express.Multer.File): Promise<object> {
 		const fileUri = await this.fileService.createFile(file)
+
+		if (!fileUri) {
+			throw new InternalServerErrorException(`Did not get a valid FileURI for the file`)
+		}
+
+		// Return the uploaded file ID (URI)
+		return {
+			statusCode: HttpStatus.CREATED,
+			fileUri: fileUri,
+			message: 'File was successfully uploaded!'
+		}
+	}
+
+	@ApiBody({
+		type: Object,
+		description: 'A multi-part file attachment to upload to StudySnap'
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: FileCreateResponseType,
+		description: 'A status object that confirms success or failure of uploading an image file'
+	})
+	@ApiHeader({
+		name: 'Authorization',
+		example: 'Bearer <jwt_token>',
+		description: 'A JWT access token that proves authorization for this endpoint'
+	})
+	@JwtAuth()
+	@UseInterceptors(FileInterceptor('file'))
+	@Post('image')
+	async createImageFile(@Request() req, @UploadedFile() file: Express.Multer.File): Promise<object> {
+		const fileUri = await this.fileService.createFile(file, SpaceType.IMAGES)
 
 		if (!fileUri) {
 			throw new InternalServerErrorException(`Did not get a valid FileURI for the file`)
