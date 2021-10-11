@@ -21,6 +21,7 @@ export interface IConfigAttributes {
 	spacesKey: string
 	spacesSecret: string
 	noteDataSpace: string
+	imageDataSpace: string
 }
 
 export interface IConfig {

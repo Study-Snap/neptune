@@ -39,7 +39,8 @@ const appConfig: IConfig = {
 		spacesEndpoint: process.env.SPACES_ENDPOINT || 'nyc3.digitaloceanspaces.com',
 		spacesKey: process.env.SPACES_KEY,
 		spacesSecret: process.env.SPACES_SECRET,
-		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata'
+		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata',
+		imageDataSpace: process.env.IMAGE_DATA_SPACE || 'ssimages'
 	},
 	test: {
 		listenPort: process.env.PORT || 7777,
@@ -61,7 +62,8 @@ const appConfig: IConfig = {
 		spacesEndpoint: process.env.SPACES_ENDPOINT || 'nyc3.digitaloceanspaces.com',
 		spacesKey: process.env.SPACES_KEY,
 		spacesSecret: process.env.SPACES_SECRET,
-		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata'
+		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata',
+		imageDataSpace: process.env.IMAGE_DATA_SPACE || 'ssimages'
 	},
 	production: {
 		listenPort: process.env.PORT || 5555,
@@ -80,7 +82,8 @@ const appConfig: IConfig = {
 		spacesEndpoint: process.env.SPACES_ENDPOINT || 'nyc3.digitaloceanspaces.com',
 		spacesKey: process.env.SPACES_KEY,
 		spacesSecret: process.env.SPACES_SECRET,
-		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata'
+		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata',
+		imageDataSpace: process.env.IMAGE_DATA_SPACE || 'ssimages'
 	}
 }
 
