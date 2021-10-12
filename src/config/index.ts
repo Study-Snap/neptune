@@ -40,7 +40,9 @@ const appConfig: IConfig = {
 		spacesKey: process.env.SPACES_KEY,
 		spacesSecret: process.env.SPACES_SECRET,
 		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata',
-		imageDataSpace: process.env.IMAGE_DATA_SPACE || 'ssimages'
+		imageDataSpace: process.env.IMAGE_DATA_SPACE || 'ssimages',
+		classThumbnailDefaultURI: process.env.CLASS_THUMBNAIL_DEFAULT_URI || 'classthumb.jpg',
+		profileImageDefaultURI: process.env.PROFILE_IMAGE_DEFAULT_URI || 'profile.jpg'
 	},
 	test: {
 		listenPort: process.env.PORT || 7777,
@@ -63,7 +65,9 @@ const appConfig: IConfig = {
 		spacesKey: process.env.SPACES_KEY,
 		spacesSecret: process.env.SPACES_SECRET,
 		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata',
-		imageDataSpace: process.env.IMAGE_DATA_SPACE || 'ssimages'
+		imageDataSpace: process.env.IMAGE_DATA_SPACE || 'ssimages',
+		classThumbnailDefaultURI: process.env.CLASS_THUMBNAIL_DEFAULT_URI || 'classthumb.jpg',
+		profileImageDefaultURI: process.env.PROFILE_IMAGE_DEFAULT_URI || 'profile.jpg'
 	},
 	production: {
 		listenPort: process.env.PORT || 5555,
@@ -83,7 +87,9 @@ const appConfig: IConfig = {
 		spacesKey: process.env.SPACES_KEY,
 		spacesSecret: process.env.SPACES_SECRET,
 		noteDataSpace: process.env.NOTE_DATA_SPACE || 'notesdata',
-		imageDataSpace: process.env.IMAGE_DATA_SPACE || 'ssimages'
+		imageDataSpace: process.env.IMAGE_DATA_SPACE || 'ssimages',
+		classThumbnailDefaultURI: process.env.CLASS_THUMBNAIL_DEFAULT_URI || 'classthumb.jpg',
+		profileImageDefaultURI: process.env.PROFILE_IMAGE_DEFAULT_URI || 'profile.jpg'
 	}
 }
 

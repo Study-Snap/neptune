@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	ForbiddenException,
 	forwardRef,
 	Inject,
@@ -137,10 +138,17 @@ export class NotesService {
 
 	async createNoteWithFile(data: CreateNoteDto, authorId: number): Promise<Note> {
 		const userInClass = await this.classroomService.userInClass(data.classId, authorId)
-		const fileExists = await this.filesService.remoteFileExists(data.fileUri)
 
+		// Ensure Note File Exists
+		const fileExists = await this.filesService.remoteFileExists(data.fileUri)
 		if (!fileExists) {
 			throw new NotFoundException(`File with URI of ${data.fileUri} does not exist. Try uploading again`)
+		}
+
+		// Ensure Note File is valid Format
+		const fileValid = await this.filesService.isValidFileType(data.fileUri)
+		if (!fileValid) {
+			throw new BadRequestException(`Invalid note file type provided`)
 		}
 
 		if (!userInClass) {

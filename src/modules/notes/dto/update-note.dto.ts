@@ -11,5 +11,5 @@ export class UpdateNoteDto {
 	@ApiProperty({ default: '{title: "Lecture 6"}', type: CreateNoteDto, required: true })
 	@IsObject()
 	@IsNotEmptyObject({ message: 'Missing: "newData". You must specify some data to change on the note.' })
-	newData: object
+	data: object
 }

@@ -12,7 +12,7 @@ import { ApiBody, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { JwtAuth } from '../../common/decorators/jwt-auth.decorator'
 import { FileCreateResponseType } from './types/create-note-resp.type'
 import { FilesService } from './files.service'
-import { SpaceType } from 'src/common/constants'
+import { SpaceType } from '../../common/constants'
 
 @ApiTags('files')
 @Controller('files')
@@ -37,7 +37,7 @@ export class FilesController {
 	@UseInterceptors(FileInterceptor('file'))
 	@Post('note')
 	async createNoteFile(@Request() req, @UploadedFile() file: Express.Multer.File): Promise<object> {
-		const fileUri = await this.fileService.createFile(file)
+		const fileUri = await this.fileService.createFile(file, SpaceType.NOTES)
 
 		if (!fileUri) {
 			throw new InternalServerErrorException(`Did not get a valid FileURI for the file`)

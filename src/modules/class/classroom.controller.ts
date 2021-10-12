@@ -132,7 +132,7 @@ export class ClassroomController {
 	@JwtAuth()
 	@Post()
 	async createClassroom(@Request() req, @Body() createCrDto: CreateClassroomDto): Promise<Classroom> {
-		return this.classroomService.createClassroom(createCrDto.name, req.user.id)
+		return this.classroomService.createClassroom(createCrDto.name, req.user.id, createCrDto.thumbnailUri)
 	}
 
 	@ApiBody({

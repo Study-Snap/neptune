@@ -16,13 +16,14 @@ export class ClassroomRepository {
 		private cuModel: typeof ClassroomUser
 	) {}
 
-	async insert(name: string, ownerId: number): Promise<Classroom | undefined> {
+	async insert(name: string, ownerId: number, thumbnailUri: string): Promise<Classroom | undefined> {
 		const id: string = uuid()
 		return this.crModel.create(
 			{
 				id,
 				name,
-				ownerId
+				ownerId,
+				thumbnailUri
 			},
 			{ validate: true }
 		)

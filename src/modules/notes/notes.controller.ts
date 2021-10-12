@@ -131,7 +131,7 @@ export class NotesController {
 	@JwtAuth()
 	@Put()
 	async updateNoteWithID(@Request() req, @Body() updateDto: UpdateNoteDto): Promise<Note> {
-		return this.notesService.updateNoteWithID(req.user.id, updateDto.noteId, updateDto.newData)
+		return this.notesService.updateNoteWithID(req.user.id, updateDto.noteId, updateDto.data)
 	}
 
 	@ApiBody({

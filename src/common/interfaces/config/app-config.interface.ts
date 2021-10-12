@@ -22,6 +22,8 @@ export interface IConfigAttributes {
 	spacesSecret: string
 	noteDataSpace: string
 	imageDataSpace: string
+	classThumbnailDefaultURI: string
+	profileImageDefaultURI: string
 }
 
 export interface IConfig {

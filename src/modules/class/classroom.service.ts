@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	ForbiddenException,
 	forwardRef,
 	Inject,
@@ -6,6 +7,10 @@ import {
 	InternalServerErrorException,
 	NotFoundException
 } from '@nestjs/common'
+import { SpaceType } from '../../common/constants'
+import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
+import { getConfig } from '../../config'
+import { FilesService } from '../files/files.service'
 import { compareNotesWithCombinedFeatures } from '../notes/helper'
 import { Note } from '../notes/models/notes.model'
 import { ClassroomRepository } from './classroom.repository'
@@ -14,17 +19,38 @@ import { Classroom } from './models/classroom.model'
 import { User } from './models/user.model'
 import { UserService } from './user.service'
 
+const config: IConfigAttributes = getConfig()
+
 @Injectable()
 export class ClassroomService {
 	constructor(
 		private readonly classroomRepository: ClassroomRepository,
+		private readonly filesService: FilesService,
 		@Inject(forwardRef(() => UserService))
 		private readonly userService: UserService
 	) {}
 
-	async createClassroom(name: string, ownerId: number): Promise<Classroom> {
+	async createClassroom(name: string, ownerId: number, thumbnailUri?: string): Promise<Classroom> {
 		// Create classroom
-		const cr: Classroom = await this.classroomRepository.insert(name, ownerId)
+		const thumbUri = thumbnailUri ? thumbnailUri : config.classThumbnailDefaultURI
+
+		// Ensure thumbnail exists on remote
+		const fileExists = await this.filesService.remoteFileExists(thumbUri, SpaceType.IMAGES)
+		if (!fileExists) {
+			throw new NotFoundException(`File with URI of ${thumbUri} does not exist. Try uploading again`)
+		}
+
+		// Confirm valid URI
+		const validImage = await this.filesService.isValidFileType(thumbUri, SpaceType.IMAGES)
+		if (!validImage) {
+			throw new BadRequestException(`Invalid Thumbnail was submitted to create the classroom`)
+		}
+
+		const cr: Classroom = await this.classroomRepository.insert(
+			name,
+			ownerId,
+			`https://${config.imageDataSpace}.${config.spacesEndpoint}/${thumbUri}`
+		)
 
 		// Join the owner to the classroom
 		const user: User = await this.userService.getUserWithID(ownerId)

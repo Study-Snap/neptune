@@ -5,12 +5,27 @@ import { getConfig } from '../../config'
 import { v4 as uuid } from 'uuid'
 import * as pdf from 'pdf-parse'
 import { PromiseResult } from 'aws-sdk/lib/request'
-import { SpaceType } from 'src/common/constants'
+import { SpaceType } from '../../common/constants'
 
 const config: IConfigAttributes = getConfig()
 
 @Injectable()
 export class FilesService {
+	/**
+	 * Will determine whether or not the given file is valid to be stored in the specified space
+	 * @param fileName The fullname of the original uploaded file
+	 * @param spaceType The space the file is attempting to be uploaded to
+	 * @returns True iff the file is the correct format for the desired space
+	 */
+	async isValidFileType(fileName: string, spaceType: SpaceType = SpaceType.NOTES): Promise<boolean> {
+		switch (spaceType) {
+			case SpaceType.NOTES:
+				return [ 'pdf', 'doc', 'docx' ].includes(fileName.split('.').pop())
+			case SpaceType.IMAGES:
+				return [ 'png', 'jpg' ].includes(fileName.split('.').pop())
+		}
+	}
+
 	/**
 	 * Creates the file in S3 object storage on the cloud
 	 * @param file A File object containing a raw buffer
@@ -19,6 +34,11 @@ export class FilesService {
 	async createFile(file: Express.Multer.File, spaceType: SpaceType = SpaceType.NOTES): Promise<string | undefined> {
 		if (!file) {
 			throw new BadRequestException('You must include a file')
+		}
+
+		const fileValid = await this.isValidFileType(file.originalname, spaceType)
+		if (!fileValid) {
+			throw new BadRequestException(`Invalid file type for target space...`)
 		}
 
 		// Init Spaces Connection
