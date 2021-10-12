@@ -723,6 +723,25 @@ describe('Neptune', () => {
 				expect(res.body.thumbnailUri).toMatch(reqData.thumbnailUri)
 			})
 
+			it('should create a classroom with a default thumbnail if one is not specified', async () => {
+				const reqData: CreateClassroomDto = {
+					name: 'HTY Classroom'
+				}
+
+				// Make the request to create classroom
+				const res = await request(app.getHttpServer())
+					.post(`${CLASSROOM_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.CREATED)
+				expect(res.body).toBeDefined()
+				expect(res.body.name).toMatch(reqData.name)
+				expect(res.body.thumbnailUri).toBeDefined()
+				expect(res.body.thumbnailUri).toMatch(config.classThumbnailDefaultURI)
+			})
+
 			it('should update classroom name to new value provided in request', async () => {
 				const reqData: UpdateClassroomDto = {
 					classId: testClassID,
