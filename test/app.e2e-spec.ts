@@ -782,10 +782,14 @@ describe('Neptune', () => {
 					.set('Authorization', `Bearer ${jwtToken}`)
 					.send(reqData)
 
+				// Validate that the thumbnail was deleted
+				const thumbExists = await testRemoteFileExists(resGoodImageUri)
+
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body.message).toMatch(`${testClassID}`)
+				expect(thumbExists).toBeFalsy()
 			})
 		})
 	})

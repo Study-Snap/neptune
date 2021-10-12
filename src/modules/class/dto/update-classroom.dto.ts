@@ -8,5 +8,5 @@ export class UpdateClassroomDto {
 
 	@ApiProperty({ default: { name: 'History 101' }, required: true })
 	@IsNotEmptyObject({ message: 'Must provide valid data object to update' })
-	data: { name?: string; ownerId?: number }
+	data: { name?: string; ownerId?: number; thumbnailUri?: string }
 }

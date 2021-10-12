@@ -30,6 +30,14 @@ export class ClassroomService {
 		private readonly userService: UserService
 	) {}
 
+	async deleteClassroomThumbnail(thumbUri: string): Promise<void> {
+		const thumbnailCustom = !(thumbUri === config.classThumbnailDefaultURI)
+		if (thumbnailCustom) {
+			// Delete the uploaded thumbnail
+			await this.filesService.deleteFileWithID(thumbUri, SpaceType.IMAGES)
+		}
+	}
+
 	async createClassroom(name: string, ownerId: number, thumbnailUri?: string): Promise<Classroom> {
 		// Create classroom
 		const thumbUri = thumbnailUri ? thumbnailUri : config.classThumbnailDefaultURI
@@ -43,7 +51,9 @@ export class ClassroomService {
 		// Confirm valid URI
 		const validImage = await this.filesService.isValidFileType(thumbUri, SpaceType.IMAGES)
 		if (!validImage) {
-			throw new BadRequestException(`Invalid Thumbnail was submitted to create the classroom`)
+			throw new BadRequestException(
+				`Invalid thumbnail format was submitted to create the classroom. Supported are (jpg, png)`
+			)
 		}
 
 		const cr: Classroom = await this.classroomRepository.insert(
@@ -51,6 +61,12 @@ export class ClassroomService {
 			ownerId,
 			`https://${config.imageDataSpace}.${config.spacesEndpoint}/${thumbUri}`
 		)
+
+		// Ensure classroom object was created (inserted)
+		if (!cr) {
+			await this.deleteClassroomThumbnail(thumbUri)
+			throw new InternalServerErrorException(`Failed to create(insert) the classroom ...`)
+		}
 
 		// Join the owner to the classroom
 		const user: User = await this.userService.getUserWithID(ownerId)
@@ -61,6 +77,7 @@ export class ClassroomService {
 			const success: boolean = await this.deleteClassroom(cr.id, ownerId)
 			const crName: string = cr.name
 			if (!success) {
+				await this.deleteClassroomThumbnail(thumbUri) // Ensure thumbnail file deleted
 				throw new InternalServerErrorException(
 					`After failing to add ${user.firstName} to ${crName}, also failed to delete ${crName}`
 				)
@@ -163,7 +180,7 @@ export class ClassroomService {
 	async updateClassroom(
 		classId: string,
 		ownerId: number,
-		newData: { name?: string; ownerId?: number }
+		data: { name?: string; ownerId?: number; thumbnailUri?: string }
 	): Promise<Classroom> {
 		const cr: Classroom = await this.classroomRepository.get(classId)
 
@@ -175,7 +192,12 @@ export class ClassroomService {
 			throw new ForbiddenException(`You are not authorized to update this classroom (not owner)`)
 		}
 
-		return this.classroomRepository.update(cr, newData)
+		if (data.thumbnailUri) {
+			// Delete old thumbnail
+			await this.deleteClassroomThumbnail(cr.thumbnailUri)
+		}
+
+		return this.classroomRepository.update(cr, data)
 	}
 
 	async deleteClassroom(classId: string, ownerId: number): Promise<boolean> {
@@ -189,6 +211,8 @@ export class ClassroomService {
 			throw new ForbiddenException(`You are not authorized to delete this classroom (not owner)`)
 		}
 
+		// Ensure thumbnail is deleted with the classroom
+		await this.deleteClassroomThumbnail(cr.thumbnailUri)
 		return this.classroomRepository.delete(cr)
 	}
 

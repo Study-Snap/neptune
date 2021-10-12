@@ -83,7 +83,11 @@ export class NotesService {
 		return results.sort(compareNotesWithCombinedFeatures)
 	}
 
-	async updateNoteWithID(authorId: number, id: number, data: object): Promise<Note> {
+	async updateNoteWithID(
+		authorId: number,
+		id: number,
+		data: { title?: string; keywords?: string[]; shortDescription?: string; rating?: number[]; fileUri?: string }
+	): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
@@ -94,27 +98,11 @@ export class NotesService {
 			throw new ForbiddenException('You cannot edit this note as you are not the author')
 		}
 
-		// Filter out unallowed fields
-		const allowedFields = [
-			'title',
-			'keywords',
-			'body',
-			'shortDescription',
-			'rating',
-			'classId',
-			'authorId',
-			'timeLength',
-			'bibtextCitation'
-		]
+		if (data.fileUri) {
+			await this.filesService.deleteFileWithID(note.fileUri)
+		}
 
-		const filteredData: object = Object.keys(data)
-			.filter((key) => allowedFields.includes(key))
-			.reduce((obj, key) => {
-				obj[key] = data[key]
-				return obj
-			}, {})
-
-		return this.notesRepository.updateNote(note, filteredData)
+		return this.notesRepository.updateNote(note, data)
 	}
 
 	async deleteNoteWithID(authorId: number, id: number): Promise<boolean> {
