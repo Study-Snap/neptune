@@ -66,17 +66,25 @@ export class UserService {
 
 	async leaveClassroom(userId: number, classId: string): Promise<void> {
 		// First check if user is already in the class
-		const alreadyJoined: boolean = await this.classroomService.userInClass(classId, userId)
-		if (!alreadyJoined) {
+		const isMember: boolean = await this.classroomService.userInClass(classId, userId)
+		if (!isMember) {
 			throw new InternalServerErrorException(`Cannot leave a class that you are not a part of`)
 		}
 
-		const user: User = await this.getUserWithID(userId)
-		const res: boolean = await this.classroomService.remUserFromClassroom(classId, user)
+		const cr: Classroom = await this.classroomService.getClassroomWithID(classId)
+		let res: boolean
+
+		// Check for ownership of classroom (if owner leaves ... classroom is destroyed)
+		if (cr.ownerId === userId) {
+			res = await this.classroomService.deleteClassroom(classId, userId)
+		} else {
+			const user: User = await this.getUserWithID(userId)
+			res = await this.classroomService.remUserFromClassroom(classId, user)
+		}
 
 		if (!res) {
 			throw new InternalServerErrorException(
-				`Failed to remove user ${user.firstName} from classroom with ID, ${classId}`
+				`Failed to remove user with ID ${userId} from classroom with ID, ${classId}`
 			)
 		}
 	}
