@@ -8,11 +8,13 @@ import {
 	Table,
 	Unique,
 	ForeignKey,
-	BelongsTo
+	BelongsTo,
+	HasMany
 } from 'sequelize-typescript'
 import { User } from '../../../modules/class/models/user.model'
 import { Classroom } from '../../../modules/class/models/classroom.model'
 import { ApiProperty } from '@nestjs/swagger'
+import { Rating } from 'src/modules/ratings/models/rating.model'
 
 @Table({ tableName: 'notes', underscored: true })
 export class Note extends Model<Note> {
@@ -78,9 +80,12 @@ export class Note extends Model<Note> {
 	@Column
 	authorId: number
 
-	@ApiProperty({ description: 'A user object containing details about the author of this note' })
 	@BelongsTo(() => User)
 	user: User
+
+	@ApiProperty()
+	@HasMany(() => Rating)
+	ratings: Rating[]
 
 	/**
 	 * Note: updated_at, created_at fields are automatically generated

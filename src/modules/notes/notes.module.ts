@@ -14,6 +14,7 @@ import { ClassroomService } from '../class/classroom.service'
 import { UserService } from '../class/user.service'
 import { ClassroomRepository } from '../class/classroom.repository'
 import { UserRepository } from '../class/user.repository'
+import { Rating } from '../ratings/models/rating.model'
 
 @Module({
 	imports: [ SequelizeModule.forFeature([ User, Classroom, ClassroomUser, Note ], DB_CONNECTION_NAME) ],
