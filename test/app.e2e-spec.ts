@@ -46,22 +46,26 @@ describe('Neptune', () => {
 		{
 			id: 'test',
 			name: 'ABC Class',
-			ownerId: 1
+			ownerId: 1,
+			thumbnailUri: 'https://ssimages.nyc3.digitaloceanspaces.com/classthumb.jpg'
 		},
 		{
 			id: 'test2',
 			name: 'Software Class',
-			ownerId: 2
+			ownerId: 2,
+			thumbnailUri: 'https://ssimages.nyc3.digitaloceanspaces.com/classthumb.jpg'
 		},
 		{
 			id: 'test3',
 			name: 'Testing Class',
-			ownerId: 1
+			ownerId: 1,
+			thumbnailUri: 'https://ssimages.nyc3.digitaloceanspaces.com/classthumb.jpg'
 		},
 		{
 			id: 'test4',
 			name: 'Sheharyaar Class',
-			ownerId: 1
+			ownerId: 1,
+			thumbnailUri: 'https://ssimages.nyc3.digitaloceanspaces.com/classthumb.jpg'
 		}
 	]
 
@@ -94,7 +98,7 @@ describe('Neptune', () => {
 		// Add some test data for classrooms
 		for (const c of testClasses) {
 			await connection.query(
-				`INSERT INTO classrooms (id, name, owner_id, created_at, updated_at) VALUES ('${c.id}', '${c.name}', ${c.ownerId}, '2021-01-01', '2021-01-01')`,
+				`INSERT INTO classrooms (id, name, owner_id, thumbnail_uri, created_at, updated_at) VALUES ('${c.id}', '${c.name}', ${c.ownerId}, '${c.thumbnailUri}', '2021-01-01', '2021-01-01')`,
 				{
 					logging: false
 				}
