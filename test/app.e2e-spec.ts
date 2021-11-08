@@ -161,9 +161,7 @@ describe('Neptune', () => {
 				const buffer = Buffer.from('some note data')
 
 				// Attempt to create a note file without authorization header (or invalid one)
-				const res = await request(app.getHttpServer())
-					.post(`${FILE_BASE_URL}`)
-					.attach('file', buffer, 'test_file.pdf')
+				const res = await request(app.getHttpServer()).post(`${FILE_BASE_URL}`).attach('file', buffer, 'test_file.pdf')
 
 				// Verify results from file upload
 				expect(res.status).toBe(HttpStatus.UNAUTHORIZED)
@@ -342,7 +340,7 @@ describe('Neptune', () => {
 
 				// Add a note that is in a class the user is not a part of so that we can ensure ES search filtering
 				await connection.query(
-					`INSERT INTO notes (id, rating, time_length, title, keywords, short_description, body, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},'{0,0,0,0,0}',5,'Science 205','{science,row}','biology','biology body','fake.pdf',(SELECT id FROM classrooms WHERE id='${testClasses[0]
+					`INSERT INTO notes (id, time_length, title, keywords, short_description, body, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},5,'Science 205','{science,row}','biology','biology body','fake.pdf',(SELECT id FROM classrooms WHERE id='${testClasses[0]
 						.id}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
 					{ logging: false }
 				)
