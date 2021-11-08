@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (SSPP-239): Support for Digital Ocean Spaces (S3-compatible object storage)
 - (SSPP-239): Configuration options to extend S3 functionality with **optional** classroom thumbnails
 - (SSPP-239): Added additional checks to remove any stale files from S3 storage
+- (SSPP-263): Implemented destroy classroom on owner leave (automatically)
 
 ### Modified
 
