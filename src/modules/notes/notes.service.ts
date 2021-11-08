@@ -7,12 +7,7 @@ import {
 	NotFoundException
 } from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
-import {
-	calculateReadTimeMinutes,
-	compareNotesWithCombinedFeatures,
-	createEmptyRatings,
-	extractBodyFromFile
-} from './helper'
+import { calculateReadTimeMinutes, compareNotesWithCombinedFeatures, extractBodyFromFile } from './helper'
 import { NotesRepository } from './notes.repository'
 import { Note } from './models/notes.model'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
@@ -21,6 +16,8 @@ import { existsSync } from 'fs'
 import { FilesService } from '../files/files.service'
 import { ElasticsearchService } from './elasticsearch.service'
 import { ClassroomService } from '../class/classroom.service'
+import { RatingsService } from '../ratings/ratings.service'
+import { Rating } from '../ratings/models/rating.model'
 
 const config: IConfigAttributes = getConfig()
 
@@ -30,6 +27,7 @@ export class NotesService {
 		private readonly notesRepository: NotesRepository,
 		private readonly filesService: FilesService,
 		private readonly elasticsearchService: ElasticsearchService,
+		private readonly ratingsService: RatingsService,
 		@Inject(forwardRef(() => ClassroomService))
 		private readonly classroomService: ClassroomService
 	) {}
@@ -83,6 +81,16 @@ export class NotesService {
 		return results.sort(compareNotesWithCombinedFeatures)
 	}
 
+	// TODO: Complete implementation
+	async addOrUpdateRating(noteId: number, userId: number, value: number): Promise<Note> {
+		return
+	}
+
+	// TODO: Complete implementation
+	async getAllRatings(noteId: number, userId: number): Promise<Rating[]> {
+		return
+	}
+
 	async updateNoteWithID(authorId: number, id: number, data: object): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
@@ -100,7 +108,6 @@ export class NotesService {
 			'keywords',
 			'body',
 			'shortDescription',
-			'rating',
 			'classId',
 			'authorId',
 			'timeLength',
@@ -173,7 +180,6 @@ export class NotesService {
 		// Perform some preprocessing before note creation
 		const body = await extractBodyFromFile(data.fileUri)
 		const readTime = await calculateReadTimeMinutes(body)
-		const ratings = createEmptyRatings()
 
 		// Create the note in the database
 		try {
@@ -185,7 +191,6 @@ export class NotesService {
 				data.fileUri,
 				body,
 				data.shortDescription,
-				ratings,
 				readTime,
 				data.bibtextCitation
 			)

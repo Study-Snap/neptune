@@ -15,9 +15,11 @@ import { UserService } from '../class/user.service'
 import { ClassroomRepository } from '../class/classroom.repository'
 import { UserRepository } from '../class/user.repository'
 import { Rating } from '../ratings/models/rating.model'
+import { RatingsService } from '../ratings/ratings.service'
+import { RatingsRepository } from '../ratings/ratings.repository'
 
 @Module({
-	imports: [ SequelizeModule.forFeature([ User, Classroom, ClassroomUser, Note ], DB_CONNECTION_NAME) ],
+	imports: [ SequelizeModule.forFeature([ User, Classroom, ClassroomUser, Note, Rating ], DB_CONNECTION_NAME) ],
 	controllers: [ NotesController ],
 	providers: [
 		NotesService,
@@ -27,7 +29,9 @@ import { Rating } from '../ratings/models/rating.model'
 		ClassroomService,
 		ClassroomRepository,
 		UserService,
-		UserRepository
+		UserRepository,
+		RatingsService,
+		RatingsRepository
 	],
 	exports: [ SequelizeModule ]
 })

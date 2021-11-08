@@ -24,11 +24,6 @@ export class Note extends Model<Note> {
 	@Column(DataType.INTEGER)
 	id: number
 
-	@ApiProperty({ type: Number, isArray: true })
-	@AllowNull(true)
-	@Column(DataType.ARRAY(DataType.INTEGER))
-	rating: number[]
-
 	@ApiProperty()
 	@AllowNull(true)
 	@Column(DataType.INTEGER)
@@ -67,7 +62,7 @@ export class Note extends Model<Note> {
 
 	/** Entity Relationships */
 
-	@ApiProperty()
+	@ApiProperty({ description: 'The classroom for which this note belongs' })
 	@ForeignKey(() => Classroom)
 	@Column
 	classId: string
@@ -75,7 +70,7 @@ export class Note extends Model<Note> {
 	@BelongsTo(() => Classroom)
 	class: Classroom
 
-	@ApiProperty()
+	@ApiProperty({ description: 'The author of this note' })
 	@ForeignKey(() => User)
 	@Column
 	authorId: number
@@ -83,7 +78,7 @@ export class Note extends Model<Note> {
 	@BelongsTo(() => User)
 	user: User
 
-	@ApiProperty()
+	@ApiProperty({ description: 'A list of ratings made by users for this note' })
 	@HasMany(() => Rating)
 	ratings: Rating[]
 
