@@ -14,7 +14,7 @@ import {
 import { User } from '../../../modules/class/models/user.model'
 import { Classroom } from '../../../modules/class/models/classroom.model'
 import { ApiProperty } from '@nestjs/swagger'
-import { Rating } from 'src/modules/ratings/models/rating.model'
+import { Rating } from '../../../modules/ratings/models/rating.model'
 
 @Table({ tableName: 'notes', underscored: true })
 export class Note extends Model<Note> {

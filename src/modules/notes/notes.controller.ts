@@ -21,6 +21,7 @@ import { SearchNoteDto } from './dto/search-note.dto'
 import { ApiBody, ApiHeader, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { TestResponseType } from './types/test-auth.type'
 import { NoteDeleteResponseType } from './types/note-delete-response.type'
+import { RateNoteDto } from './dto/rate-note.dto'
 
 @ApiTags('notes')
 @Controller('notes')
@@ -66,6 +67,27 @@ export class NotesController {
 	@Get('by-id/:id')
 	async getNote(@Request() req, @Param('id') id: number): Promise<Note> {
 		return this.notesService.getNoteWithID(id, req.user.id)
+	}
+
+	@ApiParam({
+		name: 'id',
+		description: 'A unique id that identifies a note',
+		required: true
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: Number,
+		description: ''
+	})
+	@ApiHeader({
+		name: 'Authorization',
+		example: 'Bearer <jwt_token>',
+		description: 'A JWT access token that proves authorization for this endpoint'
+	})
+	@JwtAuth()
+	@Get('by-id/:id/rating')
+	async getAverageRating(@Request() req, @Param('id') id: number): Promise<number> {
+		return this.notesService.getAverageRating(id, req.user.id)
 	}
 
 	@ApiBody({
@@ -134,6 +156,32 @@ export class NotesController {
 	@Put()
 	async updateNoteWithID(@Request() req, @Body() updateDto: UpdateNoteDto): Promise<Note> {
 		return this.notesService.updateNoteWithID(req.user.id, updateDto.noteId, updateDto.newData)
+	}
+
+	@ApiParam({
+		name: 'id',
+		description: 'The ID for the note to add the rating to',
+		required: true
+	})
+	@ApiBody({
+		type: RateNoteDto,
+		description: 'The new rating value provided by the user',
+		required: true
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: Note,
+		description: 'A note object that contains data about the note (including the new rating)'
+	})
+	@ApiHeader({
+		name: 'Authorization',
+		example: 'Bearer <jwt_token>',
+		description: 'A JWT access token that proves authorization for this endpoint'
+	})
+	@JwtAuth()
+	@Put('by-id/:id/rate')
+	async addOrUpdateRating(@Request() req, @Param('id') id: number, rating: RateNoteDto): Promise<Note> {
+		return this.notesService.addOrUpdateRating(id, req.user.id, rating.value)
 	}
 
 	@ApiBody({

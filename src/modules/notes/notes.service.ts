@@ -7,7 +7,12 @@ import {
 	NotFoundException
 } from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
-import { calculateReadTimeMinutes, compareNotesWithCombinedFeatures, extractBodyFromFile } from './helper'
+import {
+	calculateReadTimeMinutes,
+	compareNotesWithCombinedFeatures,
+	extractBodyFromFile,
+	getRatingTotals
+} from './helper'
 import { NotesRepository } from './notes.repository'
 import { Note } from './models/notes.model'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
@@ -81,24 +86,36 @@ export class NotesService {
 		return results.sort(compareNotesWithCombinedFeatures)
 	}
 
-	// TODO: Complete implementation
 	async addOrUpdateRating(noteId: number, userId: number, value: number): Promise<Note> {
-		return
-	}
+		const note: Note = await this.getNoteWithID(noteId, userId)
+		const ratings: Rating[] = note.ratings.filter((r) => r.userId === userId)
 
-	// TODO: Complete implementation
-	async getAllRatings(noteId: number, userId: number): Promise<Rating[]> {
-		return
-	}
-
-	async updateNoteWithID(authorId: number, id: number, data: object): Promise<Note> {
-		const note: Note = await this.notesRepository.findNoteById(id)
-
-		if (!note) {
-			throw new NotFoundException(`Could not find note with ID, ${id}`)
+		if (ratings.length) {
+			// This user has no existing rating
+			await this.ratingsService.addRating(value, userId, noteId)
+			return note
 		}
 
-		if (authorId !== note.authorId) {
+		await this.ratingsService.updateRating(ratings.pop().id, value)
+		return note
+	}
+
+	async getAverageRating(noteId: number, userId: number): Promise<number> {
+		const note: Note = await this.getNoteWithID(noteId, userId)
+
+		// Get all the rating values
+		let totalRating = 0
+		for (const r of note.ratings) {
+			totalRating += r.value
+		}
+
+		return Math.floor(totalRating / note.ratings.length)
+	}
+
+	async updateNoteWithID(userId: number, id: number, data: object): Promise<Note> {
+		const note: Note = await this.getNoteWithID(id, userId)
+
+		if (userId !== note.authorId) {
 			throw new ForbiddenException('You cannot edit this note as you are not the author')
 		}
 
@@ -114,24 +131,18 @@ export class NotesService {
 			'bibtextCitation'
 		]
 
-		const filteredData: object = Object.keys(data)
-			.filter((key) => allowedFields.includes(key))
-			.reduce((obj, key) => {
-				obj[key] = data[key]
-				return obj
-			}, {})
+		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
+			obj[key] = data[key]
+			return obj
+		}, {})
 
 		return this.notesRepository.updateNote(note, filteredData)
 	}
 
-	async deleteNoteWithID(authorId: number, id: number, fileUri?: string): Promise<boolean> {
-		const note: Note = await this.notesRepository.findNoteById(id)
+	async deleteNoteWithID(userId: number, id: number, fileUri?: string): Promise<boolean> {
+		const note: Note = await this.getNoteWithID(id, userId)
 
-		if (!note) {
-			throw new NotFoundException(`Could not find note with ID, ${id}`)
-		}
-
-		if (authorId !== note.authorId) {
+		if (userId !== note.authorId) {
 			throw new ForbiddenException('You are not allowed to delete this note as you are not its author')
 		}
 

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (SSPP-247): Documentation updated
 - (SSPP-247): Implemented new tests to ensure proper functionality of user data model being included in note response objects
 - (SSPP-285): Implemented new rating model to track ratings on notes
+- (SSPP-285): Added note rating controller functions to the note controller that uses the `ratingsService` in conjunction with other note helpers
 
 ## [Released]
 
