@@ -109,7 +109,7 @@ export class NotesService {
 			totalRating += r.value
 		}
 
-		return Math.floor(totalRating / note.ratings.length)
+		return Math.floor(totalRating / note.ratings.length === 0 ? 1 : note.ratings.length)
 	}
 
 	async updateNoteWithID(userId: number, id: number, data: object): Promise<Note> {
