@@ -1,4 +1,5 @@
 import { Note } from '../models/notes.model'
+import { Rating } from 'src/modules/ratings/models/rating.model'
 
 /**
  * Takes the full contents of a note upload and trims it to 50 words or less
@@ -23,12 +24,17 @@ export async function calculateReadTimeMinutes(body: string): Promise<number> {
 }
 
 /**
- * Used to initialize a ratings format for a new note (stick to defaul)
- * @param ratingsSize The number of stars for this rating object
- * @returns An array of ratingSize initialized with zeroes
+ * Get all ratings sorted by category for the purposes of comparing weighted ratings in *compareNotesWithCombinedFeatures()*
+ * @param ratings A list of valid rating objects
+ * @returns A compatible rating total by value for every rating in ratings
  */
-export function createEmptyRatings(ratingsSize = 5): number[] {
-	return Array(ratingsSize).fill(0)
+export function getRatingTotals(ratings: Rating[]): number[] {
+	const totals: number[] = [ 0, 0, 0, 0, 0 ]
+	for (const r of ratings) {
+		totals[r.value - 1] += 1
+	}
+
+	return totals
 }
 
 /**
@@ -48,8 +54,10 @@ export function compareNotesWithCombinedFeatures(a: Note, b: Note): number {
 	aCreated < bCreated ? (aPoints += 30) : (bPoints += 30)
 
 	// Now calculate points for each notes ratings
-	aPoints += a.rating.reduce((a, b, i) => a + b * i, 0)
-	bPoints += b.rating.reduce((a, b, i) => a + b * i, 0)
+	const aRatings: number[] = this.getRatingTotals(a.ratings)
+	const bRatings: number[] = this.getRatingTotals(b.ratings)
+	aPoints += aRatings.reduce((a, b, i) => a + b * i, 0)
+	bPoints += bRatings.reduce((a, b, i) => a + b * i, 0)
 
 	// Finally compare and return
 	return bPoints - aPoints

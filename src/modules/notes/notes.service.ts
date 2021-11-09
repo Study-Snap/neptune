@@ -8,12 +8,7 @@ import {
 	NotFoundException
 } from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
-import {
-	calculateReadTimeMinutes,
-	compareNotesWithCombinedFeatures,
-	createEmptyRatings,
-	createNoteAbstract
-} from './helper'
+import { calculateReadTimeMinutes, compareNotesWithCombinedFeatures, createNoteAbstract } from './helper'
 import { NotesRepository } from './notes.repository'
 import { Note } from './models/notes.model'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
@@ -21,6 +16,8 @@ import { getConfig } from '../../config'
 import { FilesService } from '../files/files.service'
 import { ElasticsearchService } from './elasticsearch.service'
 import { ClassroomService } from '../class/classroom.service'
+import { RatingsService } from '../ratings/ratings.service'
+import { Rating } from '../ratings/models/rating.model'
 
 const config: IConfigAttributes = getConfig()
 
@@ -30,6 +27,7 @@ export class NotesService {
 		private readonly notesRepository: NotesRepository,
 		private readonly filesService: FilesService,
 		private readonly elasticsearchService: ElasticsearchService,
+		private readonly ratingsService: RatingsService,
 		@Inject(forwardRef(() => ClassroomService))
 		private readonly classroomService: ClassroomService
 	) {}
@@ -83,10 +81,36 @@ export class NotesService {
 		return results.sort(compareNotesWithCombinedFeatures)
 	}
 
+	async addOrUpdateRating(noteId: number, userId: number, value: number): Promise<Note> {
+		const note: Note = await this.getNoteWithID(noteId, userId)
+		const ratings: Rating[] = note.ratings.filter((r) => r.userId === userId)
+
+		if (ratings.length === 0) {
+			// This user has no existing rating
+			await this.ratingsService.addRating(value, userId, noteId)
+			return note
+		}
+
+		await this.ratingsService.updateRating(ratings[0].id, value)
+		return note
+	}
+
+	async getAverageRating(noteId: number, userId: number): Promise<number> {
+		const note: Note = await this.getNoteWithID(noteId, userId)
+
+		// Get all the rating values
+		let totalRating = 0
+		for (const r of note.ratings) {
+			totalRating += r.value
+		}
+
+		return Math.floor(totalRating / note.ratings.length === 0 ? 1 : note.ratings.length)
+	}
+
 	async updateNoteWithID(
-		authorId: number,
+		userId: number,
 		id: number,
-		data: { title?: string; keywords?: string[]; shortDescription?: string; rating?: number[]; fileUri?: string }
+		data: { title?: string; keywords?: string[]; noteAbstract?: string; rating?: number[]; fileUri?: string }
 	): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
@@ -94,7 +118,7 @@ export class NotesService {
 			throw new NotFoundException(`Could not find note with ID, ${id}`)
 		}
 
-		if (authorId !== note.authorId) {
+		if (userId !== note.authorId) {
 			throw new ForbiddenException('You cannot edit this note as you are not the author')
 		}
 
@@ -105,14 +129,14 @@ export class NotesService {
 		return this.notesRepository.updateNote(note, data)
 	}
 
-	async deleteNoteWithID(authorId: number, id: number): Promise<boolean> {
+	async deleteNoteWithID(userId: number, id: number): Promise<boolean> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
 			throw new NotFoundException(`Could not find note with ID, ${id}`)
 		}
 
-		if (authorId !== note.authorId) {
+		if (userId !== note.authorId) {
 			throw new ForbiddenException('You are not allowed to delete this note as you are not its author')
 		}
 
@@ -153,7 +177,6 @@ export class NotesService {
 		const body = await this.filesService.extractBodyFromPDF(data.fileUri)
 		const readTime = await calculateReadTimeMinutes(body)
 		const abstract = await createNoteAbstract(body)
-		const ratings = createEmptyRatings()
 		const noteCDN = `https://${config.noteDataSpace}.${config.spacesEndpoint}/${data.fileUri}`
 
 		// Create the note in the database
@@ -167,7 +190,6 @@ export class NotesService {
 				noteCDN,
 				abstract,
 				data.shortDescription,
-				ratings,
 				readTime,
 				data.bibtextCitation
 			)

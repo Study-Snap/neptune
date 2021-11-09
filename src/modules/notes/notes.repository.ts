@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { DB_CONNECTION_NAME, DB_USERS_PASSWORD_FIELD } from '../../common/constants'
 import { User } from '../class/models/user.model'
+import { Rating } from '../ratings/models/rating.model'
 import { Note } from './models/notes.model'
 
 @Injectable()
@@ -16,7 +17,7 @@ export class NotesRepository {
 			where: {
 				classId
 			},
-			include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } } ]
+			include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } }, Rating ]
 		})
 	}
 
@@ -27,13 +28,13 @@ export class NotesRepository {
 						id,
 						classId
 					},
-					include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } } ]
+					include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } }, Rating ]
 				})
 			: this.noteModel.findOne({
 					where: {
 						id
 					},
-					include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } } ]
+					include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } }, Rating ]
 				})
 	}
 
@@ -46,7 +47,6 @@ export class NotesRepository {
 		noteCDN: string,
 		noteAbstract: string,
 		shortDescription: string,
-		rating?: number[],
 		timeLength?: number,
 		bibtextCitation?: string
 	): Promise<Note | undefined> {
@@ -59,7 +59,6 @@ export class NotesRepository {
 				noteCDN,
 				shortDescription,
 				noteAbstract,
-				rating,
 				timeLength,
 				bibtextCitation,
 				classId

@@ -21,8 +21,7 @@ import { SearchNoteDto } from 'src/modules/notes/dto/search-note.dto'
 import { CreateClassroomDto } from 'src/modules/class/dto/create-classroom.dto'
 import { UpdateClassroomDto } from 'src/modules/class/dto/update-classroom.dto'
 import { DeleteClassroomDto } from 'src/modules/class/dto/delete-classroom.dto'
-import { existsSync } from 'fs'
-import { resolve } from 'path'
+import { RateNoteDto } from '../src/modules/notes/dto/rate-note.dto'
 import { Classroom } from '../src/modules/class/models/classroom.model'
 
 const config: IConfigAttributes = getConfig()
@@ -376,6 +375,92 @@ describe('Neptune', () => {
 			})
 		})
 
+		/** NOTE RATING FUNCTION TESTING */
+		describe('Note Rating Functionality', () => {
+			it('should allow the user to add a rating to the note', async () => {
+				const reqData: RateNoteDto = {
+					value: 4
+				}
+
+				// Rate the note
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body.id).toBe(noteId)
+			})
+
+			it('should disallow ratings of greater than 5', async () => {
+				const reqData: RateNoteDto = {
+					value: 8
+				}
+
+				// Rate the note
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body.message).toBeDefined()
+			})
+
+			it('should disallow ratings of less than 1', async () => {
+				const reqData: RateNoteDto = {
+					value: 0
+				}
+
+				// Rate the note
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body.message).toBeDefined()
+			})
+
+			it('should replace existing an existing rating on the same note if one already exists', async () => {
+				const reqData: RateNoteDto[] = [ { value: 2 }, { value: 1 } ]
+
+				// Rate the note (first time to value of 2)
+				await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData[0])
+
+				// Rate the note (second time to value of 1 ... this is what should persist after)
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData[0])
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body.ratings).toBeDefined()
+			})
+
+			it('should get the average rating for the note by querying the note /ratings', async () => {
+				// Query the average note rating
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/${noteId}/rating`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Object)
+				expect(res.body.value).toBeLessThanOrEqual(5)
+				expect(res.body.value).toBeGreaterThanOrEqual(1)
+			})
+		})
+
 		describe('Note Querying', () => {
 			beforeAll(async () => {
 				/**
@@ -400,7 +485,7 @@ describe('Neptune', () => {
 
 				// Add a note that is in a class the user is not a part of so that we can ensure ES search filtering
 				await connection.query(
-					`INSERT INTO notes (id, rating, time_length, title, keywords, short_description, note_abstract, note_c_d_n, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},'{0,0,0,0,0}',5,'Science 205','{science,row}','biology','biology absract', 'https://badcdn.ca', 'fake.pdf',(SELECT id FROM classrooms WHERE id='${testClasses[0]
+					`INSERT INTO notes (id, time_length, title, keywords, short_description, note_abstract, note_c_d_n, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},5,'Science 205','{science,row}','biology','biology absract', 'https://badcdn.ca', 'fake.pdf',(SELECT id FROM classrooms WHERE id='${testClasses[0]
 						.id}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
 					{ logging: false }
 				)
