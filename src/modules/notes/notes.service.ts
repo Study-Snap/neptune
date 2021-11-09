@@ -90,13 +90,13 @@ export class NotesService {
 		const note: Note = await this.getNoteWithID(noteId, userId)
 		const ratings: Rating[] = note.ratings.filter((r) => r.userId === userId)
 
-		if (ratings.length) {
+		if (ratings.length === 0) {
 			// This user has no existing rating
 			await this.ratingsService.addRating(value, userId, noteId)
 			return note
 		}
 
-		await this.ratingsService.updateRating(ratings.pop().id, value)
+		await this.ratingsService.updateRating(ratings[0].id, value)
 		return note
 	}
 

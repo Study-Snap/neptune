@@ -22,6 +22,7 @@ import { UpdateClassroomDto } from 'src/modules/class/dto/update-classroom.dto'
 import { DeleteClassroomDto } from 'src/modules/class/dto/delete-classroom.dto'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
+import { RateNoteDto } from '../src/modules/notes/dto/rate-note.dto'
 
 const config: IConfigAttributes = getConfig()
 
@@ -313,6 +314,92 @@ describe('Neptune', () => {
 				expect(res.body.message).toBeDefined()
 				expect(res.body.message).toMatch('not in a class')
 				expect(badFileExists).toBeFalsy()
+			})
+		})
+
+		/** NOTE RATING FUNCTION TESTING */
+		describe('Note Rating Functionality', () => {
+			it('should allow the user to add a rating to the note', async () => {
+				const reqData: RateNoteDto = {
+					value: 4
+				}
+
+				// Rate the note
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body.id).toBe(noteId)
+			})
+
+			it('should disallow ratings of greater than 5', async () => {
+				const reqData: RateNoteDto = {
+					value: 8
+				}
+
+				// Rate the note
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body.message).toBeDefined()
+			})
+
+			it('should disallow ratings of less than 1', async () => {
+				const reqData: RateNoteDto = {
+					value: 0
+				}
+
+				// Rate the note
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body.message).toBeDefined()
+			})
+
+			it('should replace existing an existing rating on the same note if one already exists', async () => {
+				const reqData: RateNoteDto[] = [ { value: 2 }, { value: 1 } ]
+
+				// Rate the note (first time to value of 2)
+				await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData[0])
+
+				// Rate the note (second time to value of 1 ... this is what should persist after)
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData[0])
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body.ratings).toBeDefined()
+			})
+
+			it('should get the average rating for the note by querying the note /ratings', async () => {
+				// Query the average note rating
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/${noteId}/rating`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Object)
+				expect(res.body.value).toBeLessThanOrEqual(5)
+				expect(res.body.value).toBeGreaterThanOrEqual(1)
 			})
 		})
 

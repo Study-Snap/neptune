@@ -22,6 +22,7 @@ import { ApiBody, ApiHeader, ApiParam, ApiResponse, ApiTags } from '@nestjs/swag
 import { TestResponseType } from './types/test-auth.type'
 import { NoteDeleteResponseType } from './types/note-delete-response.type'
 import { RateNoteDto } from './dto/rate-note.dto'
+import { NoteRatingResponse } from './types/note-rating-response.type'
 
 @ApiTags('notes')
 @Controller('notes')
@@ -76,8 +77,8 @@ export class NotesController {
 	})
 	@ApiResponse({
 		status: HttpStatus.OK,
-		type: Number,
-		description: ''
+		type: NoteRatingResponse,
+		description: 'The average rating for the note specified by the id query parameter'
 	})
 	@ApiHeader({
 		name: 'Authorization',
@@ -86,8 +87,12 @@ export class NotesController {
 	})
 	@JwtAuth()
 	@Get('by-id/:id/rating')
-	async getAverageRating(@Request() req, @Param('id') id: number): Promise<number> {
-		return this.notesService.getAverageRating(id, req.user.id)
+	async getAverageRating(@Request() req, @Param('id') id: number): Promise<NoteRatingResponse> {
+		const avgRating = await this.notesService.getAverageRating(id, req.user.id)
+		return {
+			statusCode: HttpStatus.OK,
+			value: avgRating
+		}
 	}
 
 	@ApiBody({
@@ -180,7 +185,7 @@ export class NotesController {
 	})
 	@JwtAuth()
 	@Put('by-id/:id/rate')
-	async addOrUpdateRating(@Request() req, @Param('id') id: number, rating: RateNoteDto): Promise<Note> {
+	async addOrUpdateRating(@Request() req, @Param('id') id: number, @Body() rating: RateNoteDto): Promise<Note> {
 		return this.notesService.addOrUpdateRating(id, req.user.id, rating.value)
 	}
 
