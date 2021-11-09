@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	ForbiddenException,
 	forwardRef,
 	Inject,
@@ -11,13 +12,12 @@ import {
 	calculateReadTimeMinutes,
 	compareNotesWithCombinedFeatures,
 	createEmptyRatings,
-	extractBodyFromFile
+	createNoteAbstract
 } from './helper'
 import { NotesRepository } from './notes.repository'
 import { Note } from './models/notes.model'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
 import { getConfig } from '../../config'
-import { existsSync } from 'fs'
 import { FilesService } from '../files/files.service'
 import { ElasticsearchService } from './elasticsearch.service'
 import { ClassroomService } from '../class/classroom.service'
@@ -83,7 +83,11 @@ export class NotesService {
 		return results.sort(compareNotesWithCombinedFeatures)
 	}
 
-	async updateNoteWithID(authorId: number, id: number, data: object): Promise<Note> {
+	async updateNoteWithID(
+		authorId: number,
+		id: number,
+		data: { title?: string; keywords?: string[]; shortDescription?: string; rating?: number[]; fileUri?: string }
+	): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
@@ -94,30 +98,14 @@ export class NotesService {
 			throw new ForbiddenException('You cannot edit this note as you are not the author')
 		}
 
-		// Filter out unallowed fields
-		const allowedFields = [
-			'title',
-			'keywords',
-			'body',
-			'shortDescription',
-			'rating',
-			'classId',
-			'authorId',
-			'timeLength',
-			'bibtextCitation'
-		]
+		if (data.fileUri) {
+			await this.filesService.deleteFileWithID(note.fileUri)
+		}
 
-		const filteredData: object = Object.keys(data)
-			.filter((key) => allowedFields.includes(key))
-			.reduce((obj, key) => {
-				obj[key] = data[key]
-				return obj
-			}, {})
-
-		return this.notesRepository.updateNote(note, filteredData)
+		return this.notesRepository.updateNote(note, data)
 	}
 
-	async deleteNoteWithID(authorId: number, id: number, fileUri?: string): Promise<boolean> {
+	async deleteNoteWithID(authorId: number, id: number): Promise<boolean> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
@@ -130,39 +118,30 @@ export class NotesService {
 
 		// Remove the note from the elasticsearch index
 		await this.elasticsearchService.deleteNoteWithIDFromES(id)
+		await this.filesService.deleteFileWithID(note.fileUri)
 
-		// Delete the actual file for the note
-		const fileDelSuccess = await this.filesService.deleteFileWithID(fileUri ? fileUri : note.fileUri)
-
-		if (!fileDelSuccess) {
-			throw new InternalServerErrorException(
-				'For some reason, we could not delete the file associated with this note. Aborting delete operation.'
-			)
-		}
-
-		// Delete the actual note from the database now
+		// Delete the database entry now
 		return this.notesRepository.deleteNote(note)
 	}
 
 	async createNoteWithFile(data: CreateNoteDto, authorId: number): Promise<Note> {
-		const fileStat = existsSync(`${config.fileStorageLocation}/${data.fileUri}`)
 		const userInClass = await this.classroomService.userInClass(data.classId, authorId)
 
-		if (!fileStat) {
-			throw new NotFoundException(
-				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /files'
-			)
+		// Ensure Note File Exists
+		const fileExists = await this.filesService.remoteFileExists(data.fileUri)
+		if (!fileExists) {
+			throw new NotFoundException(`File with URI of ${data.fileUri} does not exist. Try uploading again`)
+		}
+
+		// Ensure Note File is valid Format
+		const fileValid = await this.filesService.isValidFileType(data.fileUri)
+		if (!fileValid) {
+			throw new BadRequestException(`Invalid note file type provided`)
 		}
 
 		if (!userInClass) {
-			// Delete the uploaded file
-			const res = await this.filesService.deleteFileWithID(data.fileUri)
-
-			if (!res) {
-				throw new InternalServerErrorException(
-					`Failed to delete file after encountering create error for file with URI ${data.fileUri}`
-				)
-			}
+			// Delete the uploaded file (if exists)
+			await this.filesService.deleteFileWithID(data.fileUri)
 
 			// Throw appropriate exception now
 			throw new ForbiddenException(
@@ -171,9 +150,11 @@ export class NotesService {
 		}
 
 		// Perform some preprocessing before note creation
-		const body = await extractBodyFromFile(data.fileUri)
+		const body = await this.filesService.extractBodyFromPDF(data.fileUri)
 		const readTime = await calculateReadTimeMinutes(body)
+		const abstract = await createNoteAbstract(body)
 		const ratings = createEmptyRatings()
+		const noteCDN = `https://${config.noteDataSpace}.${config.spacesEndpoint}/${data.fileUri}`
 
 		// Create the note in the database
 		try {
@@ -183,7 +164,8 @@ export class NotesService {
 				data.classId,
 				data.keywords,
 				data.fileUri,
-				body,
+				noteCDN,
+				abstract,
 				data.shortDescription,
 				ratings,
 				readTime,
@@ -192,14 +174,8 @@ export class NotesService {
 
 			return res
 		} catch (err) {
-			// Delete the uploaded file
-			const res = await this.filesService.deleteFileWithID(data.fileUri)
-
-			if (!res) {
-				throw new InternalServerErrorException(
-					`Failed to delete file after encountering create error for file with URI ${data.fileUri}`
-				)
-			}
+			// Delete the uploaded file (if exists)
+			await this.filesService.deleteFileWithID(data.fileUri)
 
 			// Finally throw the appropriate exception
 			throw new InternalServerErrorException(`Failed to create note. Reason: ${err.message}`)

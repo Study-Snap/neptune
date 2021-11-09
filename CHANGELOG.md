@@ -9,12 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0]
 
+### Added
+
+- (SSPP-239): Additional fields for Note model
+
+    - note_abstract: A small 120 or less word snippet from the note file
+
+    - note_cdn: The full CDN path including protocol for the note file (pdf) which can be used from client to directly stream the file
+
+- (SSPP-239): Support for Digital Ocean Spaces (S3-compatible object storage)
+- (SSPP-239): Configuration options to extend S3 functionality with **optional** classroom thumbnails
+- (SSPP-239): Added additional checks to remove any stale files from S3 storage
+- (SSPP-263): Implemented destroy classroom on owner leave (automatically)
+
 ### Modified
 
 - (SSPP-240): Fixed comparison function for note ranking by ratings
 - (SSPP-247): Ensured any operations that return a note object also include author (user) data model in the response
 - (SSPP-247): Documentation updated
 - (SSPP-247): Implemented new tests to ensure proper functionality of user data model being included in note response objects
+- (SSPP-239): A number of note operations and file service functions were impacted.
+- (SSPP-239): Refactored note helper/service functions + File service functions
+- (SSPP-239): Config options updated to replace local file storage with S3
+
+### Removed
+
+- (SSPP-239): Local file storage is completely remove now and replaced by Cloud S3 storage
 
 ## [Released]
 

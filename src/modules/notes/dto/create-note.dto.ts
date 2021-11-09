@@ -7,7 +7,7 @@ export class CreateNoteDto {
 	@IsString()
 	title: string
 
-	@ApiProperty({ default: 'attachment-91fasffsa48-42fas14-42fsaf1.pdf', required: true })
+	@ApiProperty({ default: '91fasffsa48-42fas14-42fsaf1.pdf', required: true })
 	@IsNotEmpty({ message: 'Must include a fileUri' })
 	@IsString({ message: 'FileUri must be a string' })
 	fileUri: string

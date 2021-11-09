@@ -109,10 +109,8 @@ export class NotesController {
 	@JwtAuth()
 	@Post()
 	async createNote(@Request() req, @Body() createDto: CreateNoteDto): Promise<Note> {
-		const authorId = req.user.id
-
 		// Create the note in the notes database with file reference
-		return this.notesService.createNoteWithFile(createDto, authorId)
+		return this.notesService.createNoteWithFile(createDto, req.user.id)
 	}
 
 	@ApiBody({
@@ -133,7 +131,7 @@ export class NotesController {
 	@JwtAuth()
 	@Put()
 	async updateNoteWithID(@Request() req, @Body() updateDto: UpdateNoteDto): Promise<Note> {
-		return this.notesService.updateNoteWithID(req.user.id, updateDto.noteId, updateDto.newData)
+		return this.notesService.updateNoteWithID(req.user.id, updateDto.noteId, updateDto.data)
 	}
 
 	@ApiBody({
@@ -155,7 +153,7 @@ export class NotesController {
 	@JwtAuth()
 	@Delete()
 	async deleteNoteWithID(@Request() req, @Body() deleteDto: DeleteNoteDto): Promise<object> {
-		const resNote = await this.notesService.deleteNoteWithID(req.user.id, deleteDto.noteId, deleteDto.fileUri)
+		const resNote = await this.notesService.deleteNoteWithID(req.user.id, deleteDto.noteId)
 
 		if (!resNote) {
 			throw new InternalServerErrorException(`Could not delete note with ID ${deleteDto.noteId}`)

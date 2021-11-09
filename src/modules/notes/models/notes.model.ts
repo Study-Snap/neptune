@@ -55,13 +55,19 @@ export class Note extends Model<Note> {
 	@ApiProperty()
 	@AllowNull(true)
 	@Column(DataType.TEXT)
-	body: string
+	noteAbstract: string
 
 	@ApiProperty()
 	@Unique
-	@AllowNull(true)
+	@AllowNull(false)
 	@Column(DataType.STRING)
 	fileUri: string
+
+	@ApiProperty()
+	@Unique
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	noteCDN: string
 
 	/** Entity Relationships */
 
