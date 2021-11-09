@@ -23,6 +23,7 @@ import { DeleteClassroomDto } from 'src/modules/class/dto/delete-classroom.dto'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
 import { RateNoteDto } from '../src/modules/notes/dto/rate-note.dto'
+import { Classroom } from '../src/modules/class/models/classroom.model'
 
 const config: IConfigAttributes = getConfig()
 
@@ -899,16 +900,56 @@ describe('Neptune', () => {
 				expect(res.body.message).toMatch(`${testClasses[3].id}`)
 			})
 
-			it('should remove user from classroom when requested to leave', async () => {
+			it('should allow the user to join multiple classrooms', async () => {
 				const res = await request(app.getHttpServer())
-					.post(`${USER_BASE_URL}/classroom/leave/${testClasses[3].id}`)
+					.post(`${USER_BASE_URL}/classroom/join/${testClasses[1].id}`)
 					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body).toBeInstanceOf(Object)
+				expect(res.body.message).toMatch(`${testClasses[1].id}`)
+			})
+
+			it('should remove user from classroom when requested to leave', async () => {
+				const res = await request(app.getHttpServer())
+					.post(`${USER_BASE_URL}/classroom/leave/${testClasses[1].id}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Get classroom (if exists)
+				const classrooms = await connection.query(`SELECT * FROM classrooms WHERE id='${testClasses[1]}'`, {
+					model: Classroom,
+					mapToModel: true,
+					logging: false
+				})
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Object)
+				expect(res.body.message).toMatch(`${testClasses[1].id}`)
+				expect(classrooms.length === 1) // Ensures that if the user is **NOT** the owner of the class, the classroom is not destroyed
+			})
+
+			it('should delete classroom when owner leaves the classroom', async () => {
+				const res = await request(app.getHttpServer())
+					.post(`${USER_BASE_URL}/classroom/leave/${testClasses[3].id}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Get classroom (if exists)
+				const classrooms = await connection.query(`SELECT * FROM classrooms WHERE id='${testClasses[3]}'`, {
+					model: Classroom,
+					mapToModel: true,
+					logging: false
+				})
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Object)
 				expect(res.body.message).toMatch(`${testClasses[3].id}`)
+				expect(classrooms.length === 0) // Ensures classroom is destroyed if the owner leaves
 			})
 		})
 	})
