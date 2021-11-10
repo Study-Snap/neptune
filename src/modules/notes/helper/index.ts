@@ -54,8 +54,8 @@ export function compareNotesWithCombinedFeatures(a: Note, b: Note): number {
 	aCreated < bCreated ? (aPoints += 30) : (bPoints += 30)
 
 	// Now calculate points for each notes ratings
-	const aRatings: number[] = this.getRatingTotals(a.ratings)
-	const bRatings: number[] = this.getRatingTotals(b.ratings)
+	const aRatings: number[] = getRatingTotals(a.ratings)
+	const bRatings: number[] = getRatingTotals(b.ratings)
 	aPoints += aRatings.reduce((a, b, i) => a + b * i, 0)
 	bPoints += bRatings.reduce((a, b, i) => a + b * i, 0)
 

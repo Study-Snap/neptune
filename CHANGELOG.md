@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (SSPP-239): Configuration options to extend S3 functionality with **optional** classroom thumbnails
 - (SSPP-239): Added additional checks to remove any stale files from S3 storage
 - (SSPP-263): Implemented destroy classroom on owner leave (automatically)
+- (SSPP-285): Implemented new rating model to track ratings on notes
+- (SSPP-285): Added note rating controller functions to the note controller that uses the `ratingsService` in conjunction with other note helpers
 
 ### Modified
 
@@ -31,12 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (SSPP-239): A number of note operations and file service functions were impacted.
 - (SSPP-239): Refactored note helper/service functions + File service functions
 - (SSPP-239): Config options updated to replace local file storage with S3
+- (SSPP-294): Fixed bug introduced with rating function in `SSPP-285` in `notes/helper/index.ts`
 
 ### Removed
 
 - (SSPP-239): Local file storage is completely remove now and replaced by Cloud S3 storage
-- (SSPP-285): Implemented new rating model to track ratings on notes
-- (SSPP-285): Added note rating controller functions to the note controller that uses the `ratingsService` in conjunction with other note helpers
 
 ## [0.2.0]
 
