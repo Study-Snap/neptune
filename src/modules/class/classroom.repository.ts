@@ -6,6 +6,7 @@ import { ClassroomUser } from './models/classroom-user.model'
 import { v4 as uuid } from 'uuid'
 import { User } from './models/user.model'
 import { Note } from '../notes/models/notes.model'
+import { Rating } from '../ratings/models/rating.model'
 
 @Injectable()
 export class ClassroomRepository {
@@ -86,7 +87,10 @@ export class ClassroomRepository {
 		return (await this.crModel.findOne({
 			where: { id: cr.id },
 			include: [
-				{ model: Note, include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } } ] }
+				{
+					model: Note,
+					include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } }, Rating ]
+				}
 			]
 		})).notes
 	}

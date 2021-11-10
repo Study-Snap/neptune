@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { DB_CONNECTION_NAME, DB_USERS_PASSWORD_FIELD } from '../../common/constants'
 import { Note } from '../notes/models/notes.model'
+import { Rating } from '../ratings/models/rating.model'
 import { Classroom } from './models/classroom.model'
 import { User } from './models/user.model'
 
@@ -19,21 +20,21 @@ export class UserRepository {
 				id
 			},
 			attributes: {
-				exclude: [DB_USERS_PASSWORD_FIELD]
+				exclude: [ DB_USERS_PASSWORD_FIELD ]
 			}
 		})
 	}
 
 	async getClassrooms(id: number): Promise<Classroom[] | undefined> {
-		return (await this.userModel.findOne({ where: { id }, include: [Classroom] })).classes
+		return (await this.userModel.findOne({ where: { id }, include: [ Classroom ] })).classes
 	}
 
 	async getNotes(id: number): Promise<Note[] | undefined> {
-		return (
-			await this.userModel.findOne({
-				where: { id },
-				include: [{ model: Note, include: [{ model: User, attributes: { exclude: [DB_USERS_PASSWORD_FIELD] } }] }]
-			})
-		).notes
+		return (await this.userModel.findOne({
+			where: { id },
+			include: [
+				{ model: Note, include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } }, Rating ] }
+			]
+		})).notes
 	}
 }
