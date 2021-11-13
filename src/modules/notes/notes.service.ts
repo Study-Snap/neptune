@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	ForbiddenException,
 	forwardRef,
 	Inject,
@@ -7,15 +8,16 @@ import {
 	NotFoundException
 } from '@nestjs/common'
 import { CreateNoteDto } from './dto/create-note.dto'
-import { calculateReadTimeMinutes, compareNotesByRating, createEmptyRatings, extractBodyFromFile } from './helper'
+import { calculateReadTimeMinutes, compareNotesWithCombinedFeatures, createNoteAbstract } from './helper'
 import { NotesRepository } from './notes.repository'
 import { Note } from './models/notes.model'
 import { IConfigAttributes } from '../../common/interfaces/config/app-config.interface'
 import { getConfig } from '../../config'
-import { existsSync } from 'fs'
 import { FilesService } from '../files/files.service'
 import { ElasticsearchService } from './elasticsearch.service'
 import { ClassroomService } from '../class/classroom.service'
+import { RatingsService } from '../ratings/ratings.service'
+import { Rating } from '../ratings/models/rating.model'
 
 const config: IConfigAttributes = getConfig()
 
@@ -25,6 +27,7 @@ export class NotesService {
 		private readonly notesRepository: NotesRepository,
 		private readonly filesService: FilesService,
 		private readonly elasticsearchService: ElasticsearchService,
+		private readonly ratingsService: RatingsService,
 		@Inject(forwardRef(() => ClassroomService))
 		private readonly classroomService: ClassroomService
 	) {}
@@ -75,88 +78,106 @@ export class NotesService {
 			)
 		}
 
-		return results.sort(compareNotesByRating)
+		return results.sort(compareNotesWithCombinedFeatures)
 	}
 
-	async updateNoteWithID(authorId: number, id: number, data: object): Promise<Note> {
+	async addOrUpdateRating(noteId: number, userId: number, value: number): Promise<Note> {
+		const note: Note = await this.getNoteWithID(noteId, userId)
+		const ratings: Rating[] = note.ratings.filter((r) => r.userId === userId)
+
+		if (ratings.length === 0) {
+			// This user has no existing rating
+			await this.ratingsService.addRating(value, userId, noteId)
+			return note
+		}
+
+		await this.ratingsService.updateRating(ratings[0].id, value)
+		return note
+	}
+
+	async getAverageRating(noteId: number, userId: number): Promise<number> {
+		const note: Note = await this.getNoteWithID(noteId, userId)
+
+		// Get all the rating values
+		let totalRating = 0
+		for (const r of note.ratings) {
+			totalRating += r.value
+		}
+
+		return Math.floor(totalRating / note.ratings.length === 0 ? 1 : note.ratings.length)
+	}
+
+	async updateNoteWithID(
+		userId: number,
+		id: number,
+		data: { title?: string; keywords?: string[]; noteAbstract?: string; rating?: number[]; fileUri?: string }
+	): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
 			throw new NotFoundException(`Could not find note with ID, ${id}`)
 		}
 
-		if (authorId !== note.authorId) {
+		if (userId !== note.authorId) {
 			throw new ForbiddenException('You cannot edit this note as you are not the author')
 		}
 
-		// Filter out unallowed fields
-		const allowedFields = [
-			'title',
-			'keywords',
-			'body',
-			'shortDescription',
-			'rating',
-			'classId',
-			'authorId',
-			'timeLength',
-			'bibtextCitation'
-		]
+		if (data.fileUri) {
+			await this.filesService.deleteFileWithID(note.fileUri)
+		}
 
-		const filteredData: object = Object.keys(data).filter((key) => allowedFields.includes(key)).reduce((obj, key) => {
-			obj[key] = data[key]
-			return obj
-		}, {})
-
-		return this.notesRepository.updateNote(note, filteredData)
+		return this.notesRepository.updateNote(note, data)
 	}
 
-	async deleteNoteWithID(authorId: number, id: number, fileUri?: string): Promise<boolean> {
+	async deleteNoteWithID(userId: number, id: number): Promise<boolean> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
 		if (!note) {
 			throw new NotFoundException(`Could not find note with ID, ${id}`)
 		}
 
-		if (authorId !== note.authorId) {
+		if (userId !== note.authorId) {
 			throw new ForbiddenException('You are not allowed to delete this note as you are not its author')
 		}
 
 		// Remove the note from the elasticsearch index
 		await this.elasticsearchService.deleteNoteWithIDFromES(id)
+		await this.filesService.deleteFileWithID(note.fileUri)
 
-		// Delete the actual file for the note
-		const fileDelSuccess = await this.filesService.deleteFileWithID(fileUri ? fileUri : note.fileUri)
-
-		if (!fileDelSuccess) {
-			throw new InternalServerErrorException(
-				'For some reason, we could not delete the file associated with this note. Aborting delete operation.'
-			)
-		}
-
-		// Delete the actual note from the database now
+		// Delete the database entry now
 		return this.notesRepository.deleteNote(note)
 	}
 
 	async createNoteWithFile(data: CreateNoteDto, authorId: number): Promise<Note> {
-		const fileStat = existsSync(`${config.fileStorageLocation}/${data.fileUri}`)
 		const userInClass = await this.classroomService.userInClass(data.classId, authorId)
 
+		// Ensure Note File Exists
+		const fileExists = await this.filesService.remoteFileExists(data.fileUri)
+		if (!fileExists) {
+			throw new NotFoundException(`File with URI of ${data.fileUri} does not exist. Try uploading again`)
+		}
+
+		// Ensure Note File is valid Format
+		const fileValid = await this.filesService.isValidFileType(data.fileUri)
+		if (!fileValid) {
+			throw new BadRequestException(`Invalid note file type provided`)
+		}
+
 		if (!userInClass) {
+			// Delete the uploaded file (if exists)
+			await this.filesService.deleteFileWithID(data.fileUri)
+
+			// Throw appropriate exception now
 			throw new ForbiddenException(
 				`Cannot create not in a class (${data.classId}) you (${authorId}) are not a part of.`
 			)
 		}
 
-		if (!fileStat) {
-			throw new NotFoundException(
-				'Could not find a file with that URI. If you have not done so already, ensure you upload a file by issuing POST request to /files'
-			)
-		}
-
 		// Perform some preprocessing before note creation
-		const body = await extractBodyFromFile(data.fileUri)
+		const body = await this.filesService.extractBodyFromPDF(data.fileUri)
 		const readTime = await calculateReadTimeMinutes(body)
-		const ratings = createEmptyRatings()
+		const abstract = await createNoteAbstract(body)
+		const noteCDN = `https://${config.noteDataSpace}.${config.spacesEndpoint}/${data.fileUri}`
 
 		// Create the note in the database
 		try {
@@ -166,15 +187,19 @@ export class NotesService {
 				data.classId,
 				data.keywords,
 				data.fileUri,
-				body,
+				noteCDN,
+				abstract,
 				data.shortDescription,
-				ratings,
 				readTime,
 				data.bibtextCitation
 			)
 
 			return res
 		} catch (err) {
+			// Delete the uploaded file (if exists)
+			await this.filesService.deleteFileWithID(data.fileUri)
+
+			// Finally throw the appropriate exception
 			throw new InternalServerErrorException(`Failed to create note. Reason: ${err.message}`)
 		}
 	}

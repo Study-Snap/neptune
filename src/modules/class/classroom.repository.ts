@@ -6,6 +6,7 @@ import { ClassroomUser } from './models/classroom-user.model'
 import { v4 as uuid } from 'uuid'
 import { User } from './models/user.model'
 import { Note } from '../notes/models/notes.model'
+import { Rating } from '../ratings/models/rating.model'
 
 @Injectable()
 export class ClassroomRepository {
@@ -16,13 +17,14 @@ export class ClassroomRepository {
 		private cuModel: typeof ClassroomUser
 	) {}
 
-	async insert(name: string, ownerId: number): Promise<Classroom | undefined> {
+	async insert(name: string, ownerId: number, thumbnailUri: string): Promise<Classroom | undefined> {
 		const id: string = uuid()
 		return this.crModel.create(
 			{
 				id,
 				name,
-				ownerId
+				ownerId,
+				thumbnailUri
 			},
 			{ validate: true }
 		)
@@ -82,7 +84,15 @@ export class ClassroomRepository {
 	}
 
 	async getNotes(cr: Classroom): Promise<Note[] | undefined> {
-		return (await this.crModel.findOne({ where: { id: cr.id }, include: [ Note ] })).notes
+		return (await this.crModel.findOne({
+			where: { id: cr.id },
+			include: [
+				{
+					model: Note,
+					include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } }, Rating ]
+				}
+			]
+		})).notes
 	}
 
 	async getNoteWithIDInClass(cr: Classroom, noteId: number): Promise<Note | undefined> {

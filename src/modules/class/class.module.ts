@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { SequelizeModule } from '@nestjs/sequelize'
 import { DB_CONNECTION_NAME } from '../../common/constants'
+import { FilesService } from '../files/files.service'
 import { Note } from '../notes/models/notes.model'
 import { ClassroomController } from './classroom.controller'
 import { ClassroomRepository } from './classroom.repository'
@@ -15,6 +16,6 @@ import { UserService } from './user.service'
 @Module({
 	imports: [ SequelizeModule.forFeature([ User, Classroom, ClassroomUser, Note ], DB_CONNECTION_NAME) ],
 	controllers: [ ClassroomController, UserController ],
-	providers: [ ClassroomRepository, ClassroomService, UserRepository, UserService ]
+	providers: [ ClassroomRepository, ClassroomService, UserRepository, UserService, FilesService ]
 })
 export class ClassModule {}

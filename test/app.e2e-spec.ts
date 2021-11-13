@@ -10,7 +10,8 @@ import {
 	getAccessTokenFromAuth,
 	TEST_PASSWORD,
 	TEST_USERNAME,
-	populateESIndexForTest
+	populateESIndexForTest,
+	testRemoteFileExists
 } from './util'
 import { IConfigAttributes } from '../src/common/interfaces/config/app-config.interface'
 import { getConfig } from '../src/config'
@@ -20,6 +21,8 @@ import { SearchNoteDto } from 'src/modules/notes/dto/search-note.dto'
 import { CreateClassroomDto } from 'src/modules/class/dto/create-classroom.dto'
 import { UpdateClassroomDto } from 'src/modules/class/dto/update-classroom.dto'
 import { DeleteClassroomDto } from 'src/modules/class/dto/delete-classroom.dto'
+import { RateNoteDto } from '../src/modules/notes/dto/rate-note.dto'
+import { Classroom } from '../src/modules/class/models/classroom.model'
 
 const config: IConfigAttributes = getConfig()
 
@@ -29,8 +32,10 @@ describe('Neptune', () => {
 
 	// File params
 	const goodFileTestPath = 'test/files/capstone_pp.pdf'
+	const goodClassImageTestPath = 'test/files/classroom.jpg'
 	let resGoodFileUri: string
 	let resBadFileUri: string
+	let resGoodImageUri: string
 
 	// For use in testing prodected endpoints
 	let jwtToken: string
@@ -40,22 +45,26 @@ describe('Neptune', () => {
 		{
 			id: 'test',
 			name: 'ABC Class',
-			ownerId: 1
+			ownerId: 1,
+			thumbnailUri: 'https://ssimages.nyc3.digitaloceanspaces.com/classthumb.jpg'
 		},
 		{
 			id: 'test2',
 			name: 'Software Class',
-			ownerId: 2
+			ownerId: 2,
+			thumbnailUri: 'https://ssimages.nyc3.digitaloceanspaces.com/classthumb.jpg'
 		},
 		{
 			id: 'test3',
 			name: 'Testing Class',
-			ownerId: 1
+			ownerId: 1,
+			thumbnailUri: 'https://ssimages.nyc3.digitaloceanspaces.com/classthumb.jpg'
 		},
 		{
 			id: 'test4',
 			name: 'Sheharyaar Class',
-			ownerId: 1
+			ownerId: 1,
+			thumbnailUri: 'https://ssimages.nyc3.digitaloceanspaces.com/classthumb.jpg'
 		}
 	]
 
@@ -88,7 +97,7 @@ describe('Neptune', () => {
 		// Add some test data for classrooms
 		for (const c of testClasses) {
 			await connection.query(
-				`INSERT INTO classrooms (id, name, owner_id, created_at, updated_at) VALUES ('${c.id}', '${c.name}', ${c.ownerId}, '2021-01-01', '2021-01-01')`,
+				`INSERT INTO classrooms (id, name, owner_id, thumbnail_uri, created_at, updated_at) VALUES ('${c.id}', '${c.name}', ${c.ownerId}, '${c.thumbnailUri}', '2021-01-01', '2021-01-01')`,
 				{
 					logging: false
 				}
@@ -123,7 +132,7 @@ describe('Neptune', () => {
 
 				// Create note file with ID
 				const res = await request(app.getHttpServer())
-					.post(`${FILE_BASE_URL}`)
+					.post(`${FILE_BASE_URL}/note`)
 					.set('Authorization', `Bearer ${jwtToken}`)
 					.attach('file', buffer, 'test_file.docx')
 
@@ -142,7 +151,7 @@ describe('Neptune', () => {
 
 				// Create note file with ID
 				const res = await request(app.getHttpServer())
-					.post(`${FILE_BASE_URL}`)
+					.post(`${FILE_BASE_URL}/note`)
 					.set('Authorization', `Bearer ${jwtToken}`)
 					.attach('file', buffer, 'test_pdf_file.pdf')
 
@@ -159,10 +168,64 @@ describe('Neptune', () => {
 				const buffer = Buffer.from('some note data')
 
 				// Attempt to create a note file without authorization header (or invalid one)
-				const res = await request(app.getHttpServer()).post(`${FILE_BASE_URL}`).attach('file', buffer, 'test_file.pdf')
+				const res = await request(app.getHttpServer())
+					.post(`${FILE_BASE_URL}/note`)
+					.attach('file', buffer, 'test_file.pdf')
 
 				// Verify results from file upload
 				expect(res.status).toBe(HttpStatus.UNAUTHORIZED)
+			})
+
+			it('should fail to create a new note upload if the file type is not supported (.rtf)', async () => {
+				const file = await readFile(goodFileTestPath)
+				const buffer = Buffer.from(file)
+
+				// Create note file with ID
+				const res = await request(app.getHttpServer())
+					.post(`${FILE_BASE_URL}/note`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.attach('file', buffer, 'test_pdf_file.rtf')
+
+				// Verify results from file upload
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body.message).toBeDefined()
+				expect(res.body.message).toMatch('Invalid file type for target space')
+			})
+
+			it('should create a new image upload with full valid DTO', async () => {
+				// Get valid image from path
+				const image = await readFile(goodClassImageTestPath)
+				const buffer = Buffer.from(image)
+
+				// Attempt to create a new image
+				const res = await request(app.getHttpServer())
+					.post(`${FILE_BASE_URL}/image`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.attach('file', buffer, 'classroom.jpg')
+
+				// Verify results from file upload
+				expect(res.status).toBe(HttpStatus.CREATED)
+				expect(res.body.fileUri).toBeDefined()
+
+				// Store good image fileUri
+				resGoodImageUri = res.body.fileUri
+			})
+
+			it('should fail to create a new image that is not a supported format (png or jpg)', async () => {
+				// Get valid image from path
+				const image = await readFile(goodClassImageTestPath)
+				const buffer = Buffer.from(image)
+
+				// Attempt to create a new image with bad/unsupported format
+				const res = await request(app.getHttpServer())
+					.post(`${FILE_BASE_URL}/image`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.attach('file', buffer, 'classroom.gif')
+
+				// Verify results from file upload
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body.message).toBeDefined()
+				expect(res.body.message).toMatch('Invalid file type for target space')
 			})
 		})
 	})
@@ -248,7 +311,7 @@ describe('Neptune', () => {
 				// Verify results
 				expect(res.status).toBe(HttpStatus.CREATED)
 				expect(res.body.title).toMatch(reqData.title)
-				expect(res.body.body).toMatch('BAD FORMAT')
+				expect(res.body.noteAbstract).toMatch('Cannot automatically extract content from this file')
 			})
 
 			it('should fail to create a new note if a file is not provided', async () => {
@@ -256,9 +319,7 @@ describe('Neptune', () => {
 					title: 'Science 101',
 					shortDescription: 'A short description about the note',
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
-					classId: testClasses[0].id,
-					isPublic: true,
-					allowDownloads: true
+					classId: testClasses[0].id
 				}
 
 				// Create actual note with file
@@ -289,6 +350,115 @@ describe('Neptune', () => {
 				// Verify results
 				expect(res.status).toBe(HttpStatus.NOT_FOUND)
 			})
+
+			it('should delete the note file if encounters a problem with note publish', async () => {
+				const reqData: CreateNoteDto = {
+					title: 'Science 101',
+					shortDescription: 'A short description about the note',
+					fileUri: resBadFileUri,
+					keywords: [ 'biology', 'chemestry', 'Physics' ],
+					classId: testClasses[3].id // PROBLEM: Use classId which test user is not a member of
+				}
+
+				// Create actual note with file
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+				const badFileExists = await testRemoteFileExists(resBadFileUri)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.FORBIDDEN)
+				expect(res.body.message).toBeDefined()
+				expect(res.body.message).toMatch('not in a class')
+				expect(badFileExists).toBeFalsy()
+			})
+		})
+
+		/** NOTE RATING FUNCTION TESTING */
+		describe('Note Rating Functionality', () => {
+			it('should allow the user to add a rating to the note', async () => {
+				const reqData: RateNoteDto = {
+					value: 4
+				}
+
+				// Rate the note
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body.id).toBe(noteId)
+			})
+
+			it('should disallow ratings of greater than 5', async () => {
+				const reqData: RateNoteDto = {
+					value: 8
+				}
+
+				// Rate the note
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body.message).toBeDefined()
+			})
+
+			it('should disallow ratings of less than 1', async () => {
+				const reqData: RateNoteDto = {
+					value: 0
+				}
+
+				// Rate the note
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body.message).toBeDefined()
+			})
+
+			it('should replace existing an existing rating on the same note if one already exists', async () => {
+				const reqData: RateNoteDto[] = [ { value: 2 }, { value: 1 } ]
+
+				// Rate the note (first time to value of 2)
+				await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData[0])
+
+				// Rate the note (second time to value of 1 ... this is what should persist after)
+				const res = await request(app.getHttpServer())
+					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData[0])
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body.ratings).toBeDefined()
+			})
+
+			it('should get the average rating for the note by querying the note /ratings', async () => {
+				// Query the average note rating
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/${noteId}/rating`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Object)
+				expect(res.body.value).toBeLessThanOrEqual(5)
+				expect(res.body.value).toBeGreaterThanOrEqual(1)
+			})
 		})
 
 		describe('Note Querying', () => {
@@ -315,7 +485,7 @@ describe('Neptune', () => {
 
 				// Add a note that is in a class the user is not a part of so that we can ensure ES search filtering
 				await connection.query(
-					`INSERT INTO notes (id, rating, time_length, title, keywords, short_description, body, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},'{0,0,0,0,0}',5,'Science 205','{science,row}','biology','biology body','fake.pdf',(SELECT id FROM classrooms WHERE id='${testClasses[0]
+					`INSERT INTO notes (id, time_length, title, keywords, short_description, note_abstract, note_c_d_n, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},5,'Science 205','{science,row}','biology','biology absract', 'https://badcdn.ca', 'fake.pdf',(SELECT id FROM classrooms WHERE id='${testClasses[0]
 						.id}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
 					{ logging: false }
 				)
@@ -330,6 +500,18 @@ describe('Neptune', () => {
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body.title).toBeDefined()
+			})
+
+			it('should include a user (author) in note response objects', async () => {
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/${noteId}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body.user).toBeDefined()
+				expect(res.body.user.firstName.length).toBeGreaterThan(0)
 			})
 
 			it('should respond with not found if invalid id is passed', async () => {
@@ -383,6 +565,8 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Array)
 				expect(res.body.length).toBeGreaterThanOrEqual(1)
 				expect(res.body[0].title).toMatch('Science 101')
+				expect(res.body[0].user).toBeDefined()
+				expect(res.body[0].user.firstName.length).toBeGreaterThan(0)
 				expect(res.body.filter((note) => note.id === testNoteIds[0]).length).toEqual(0)
 			})
 
@@ -407,6 +591,8 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Array)
 				expect(res.body.length).toBeGreaterThanOrEqual(1)
 				expect(res.body[0].title).toMatch('Science 101')
+				expect(res.body[0].user).toBeDefined()
+				expect(res.body[0].user.firstName.length).toBeGreaterThan(0)
 				expect(res.body.filter((note) => note.id === testNoteIds[0]).length).toEqual(0)
 			})
 
@@ -424,12 +610,12 @@ describe('Neptune', () => {
 			it('should update a note with given id with set of acceptable fields', async () => {
 				const reqData = {
 					noteId: noteId,
-					newData: {
+					data: {
 						title: 'ABC Note'
 					}
 				}
 
-				// Perform update to isPublic and allowDownloads
+				// Perform update to title of the note
 				const res = await request(app.getHttpServer())
 					.put(`${NOTE_BASE_URL}`)
 					.set('Authorization', `Bearer ${jwtToken}`)
@@ -437,19 +623,22 @@ describe('Neptune', () => {
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
-				expect(res.body.title).toMatch(reqData.newData.title)
+				expect(res.body.title).toMatch(reqData.data.title)
+
+				// Verify the modifying author is returned with the response
+				expect(res.body.user).toBeDefined()
+				expect(res.body.user.firstName.length).toBeGreaterThan(0)
 			})
 
 			it('should fail to update without authorization of author', async () => {
 				const reqData = {
 					noteId: noteId,
-					newData: {
-						isPublic: true,
-						allowDownloads: false
+					data: {
+						title: 'Good Title'
 					}
 				}
 
-				// Attempt unauthorized update to isPublic and allowDownloads
+				// Attempt unauthorized update title
 				const res = await request(app.getHttpServer()).put(`${NOTE_BASE_URL}`).send(reqData)
 
 				// Verify results
@@ -458,8 +647,7 @@ describe('Neptune', () => {
 
 			it('should fail to delete note with fake id', async () => {
 				const badRequestData: DeleteNoteDto = {
-					noteId: 9999999,
-					fileUri: resGoodFileUri
+					noteId: 9999999
 				}
 				const res = await request(app.getHttpServer())
 					.del(`${NOTE_BASE_URL}`)
@@ -472,8 +660,7 @@ describe('Neptune', () => {
 
 			it('should fail to delete note without authorization', async () => {
 				const reqData: DeleteNoteDto = {
-					noteId,
-					fileUri: resGoodFileUri
+					noteId
 				}
 				const res = await request(app.getHttpServer()).del(`${NOTE_BASE_URL}`).send(reqData)
 
@@ -580,13 +767,15 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Array)
 				expect(res.body.length).toBeGreaterThan(0)
 				expect(res.body[0].title).toMatch(/^.*(Science).*/g)
+				expect(res.body[0].user).toBeDefined()
+				expect(res.body[0].user.firstName.length).toBeGreaterThan(0)
 			})
 		})
 		describe('Classroom CRUD', () => {
 			let testClassID: string
 			let testUserId: number
 
-			it('should return the created classroom that is owned by the requesting user', async () => {
+			it('should create and return the created classroom that is owned by the requesting user', async () => {
 				const reqData: CreateClassroomDto = {
 					name: 'XYZ Classroom'
 				}
@@ -605,6 +794,44 @@ describe('Neptune', () => {
 				// Store some data for later tests
 				testClassID = res.body.id
 				testUserId = res.body.ownerId
+			})
+
+			it('should create a classroom with a custom thumbnail image', async () => {
+				const reqData: CreateClassroomDto = {
+					name: 'ABC Classroom',
+					thumbnailUri: resGoodImageUri
+				}
+
+				// Make the request to create classroom
+				const res = await request(app.getHttpServer())
+					.post(`${CLASSROOM_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.CREATED)
+				expect(res.body).toBeDefined()
+				expect(res.body.name).toMatch(reqData.name)
+				expect(res.body.thumbnailUri).toMatch(reqData.thumbnailUri)
+			})
+
+			it('should create a classroom with a default thumbnail if one is not specified', async () => {
+				const reqData: CreateClassroomDto = {
+					name: 'HTY Classroom'
+				}
+
+				// Make the request to create classroom
+				const res = await request(app.getHttpServer())
+					.post(`${CLASSROOM_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.CREATED)
+				expect(res.body).toBeDefined()
+				expect(res.body.name).toMatch(reqData.name)
+				expect(res.body.thumbnailUri).toBeDefined()
+				expect(res.body.thumbnailUri).toMatch(config.classThumbnailDefaultURI)
 			})
 
 			it('should update classroom name to new value provided in request', async () => {
@@ -666,10 +893,14 @@ describe('Neptune', () => {
 					.set('Authorization', `Bearer ${jwtToken}`)
 					.send(reqData)
 
+				// Validate that the thumbnail was deleted
+				const thumbExists = await testRemoteFileExists(resGoodImageUri)
+
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body.message).toMatch(`${testClassID}`)
+				expect(thumbExists).toBeFalsy()
 			})
 		})
 	})
@@ -748,6 +979,8 @@ describe('Neptune', () => {
 				expect(res.body).toBeDefined()
 				expect(res.body).toBeInstanceOf(Array)
 				expect(res.body.length).toBeGreaterThan(0)
+				expect(res.body[0].user).toBeDefined()
+				expect(res.body[0].user.firstName.length).toBeGreaterThan(0)
 			})
 		})
 
@@ -764,16 +997,56 @@ describe('Neptune', () => {
 				expect(res.body.message).toMatch(`${testClasses[3].id}`)
 			})
 
-			it('should remove user from classroom when requested to leave', async () => {
+			it('should allow the user to join multiple classrooms', async () => {
 				const res = await request(app.getHttpServer())
-					.post(`${USER_BASE_URL}/classroom/leave/${testClasses[3].id}`)
+					.post(`${USER_BASE_URL}/classroom/join/${testClasses[1].id}`)
 					.set('Authorization', `Bearer ${jwtToken}`)
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body).toBeInstanceOf(Object)
+				expect(res.body.message).toMatch(`${testClasses[1].id}`)
+			})
+
+			it('should remove user from classroom when requested to leave', async () => {
+				const res = await request(app.getHttpServer())
+					.post(`${USER_BASE_URL}/classroom/leave/${testClasses[1].id}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Get classroom (if exists)
+				const classrooms = await connection.query(`SELECT * FROM classrooms WHERE id='${testClasses[1]}'`, {
+					model: Classroom,
+					mapToModel: true,
+					logging: false
+				})
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Object)
+				expect(res.body.message).toMatch(`${testClasses[1].id}`)
+				expect(classrooms.length === 1) // Ensures that if the user is **NOT** the owner of the class, the classroom is not destroyed
+			})
+
+			it('should delete classroom when owner leaves the classroom', async () => {
+				const res = await request(app.getHttpServer())
+					.post(`${USER_BASE_URL}/classroom/leave/${testClasses[3].id}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Get classroom (if exists)
+				const classrooms = await connection.query(`SELECT * FROM classrooms WHERE id='${testClasses[3]}'`, {
+					model: Classroom,
+					mapToModel: true,
+					logging: false
+				})
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Object)
 				expect(res.body.message).toMatch(`${testClasses[3].id}`)
+				expect(classrooms.length === 0) // Ensures classroom is destroyed if the owner leaves
 			})
 		})
 	})

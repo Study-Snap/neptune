@@ -1,3 +1,4 @@
+import { RatingsModule } from './modules/ratings/ratings.module'
 import { ClassModule } from './modules/class/class.module'
 import { FilesModule } from './modules/files/files.module'
 import { NotesModule } from './modules/notes/notes.module'
@@ -14,6 +15,7 @@ const config: IConfigAttributes = getConfig()
 
 @Module({
 	imports: [
+		RatingsModule,
 		ClassModule,
 		FilesModule,
 		NotesModule,

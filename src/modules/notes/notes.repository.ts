@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
-import { Op } from 'sequelize'
-import { DB_CONNECTION_NAME } from '../../common/constants'
+import { DB_CONNECTION_NAME, DB_USERS_PASSWORD_FIELD } from '../../common/constants'
+import { User } from '../class/models/user.model'
+import { Rating } from '../ratings/models/rating.model'
 import { Note } from './models/notes.model'
 
 @Injectable()
@@ -15,7 +16,8 @@ export class NotesRepository {
 		return this.noteModel.findAll({
 			where: {
 				classId
-			}
+			},
+			include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } }, Rating ]
 		})
 	}
 
@@ -25,24 +27,15 @@ export class NotesRepository {
 					where: {
 						id,
 						classId
-					}
+					},
+					include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } }, Rating ]
 				})
 			: this.noteModel.findOne({
 					where: {
 						id
-					}
+					},
+					include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } }, Rating ]
 				})
-	}
-
-	/** !!MAYBE: LEGACY!! */
-	async findNotesMatchesTitle(title: string): Promise<Note[] | undefined> {
-		return this.noteModel.findAll({
-			where: {
-				title: {
-					[Op.like]: `%${title}%`
-				}
-			}
-		})
 	}
 
 	async createNote(
@@ -51,9 +44,9 @@ export class NotesRepository {
 		classId: string,
 		keywords: string[],
 		fileUri: string,
-		body: string,
+		noteCDN: string,
+		noteAbstract: string,
 		shortDescription: string,
-		rating?: number[],
 		timeLength?: number,
 		bibtextCitation?: string
 	): Promise<Note | undefined> {
@@ -63,9 +56,9 @@ export class NotesRepository {
 				authorId,
 				keywords,
 				fileUri,
-				body,
+				noteCDN,
 				shortDescription,
-				rating,
+				noteAbstract,
 				timeLength,
 				bibtextCitation,
 				classId

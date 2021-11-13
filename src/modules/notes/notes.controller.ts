@@ -21,6 +21,8 @@ import { SearchNoteDto } from './dto/search-note.dto'
 import { ApiBody, ApiHeader, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { TestResponseType } from './types/test-auth.type'
 import { NoteDeleteResponseType } from './types/note-delete-response.type'
+import { RateNoteDto } from './dto/rate-note.dto'
+import { NoteRatingResponse } from './types/note-rating-response.type'
 
 @ApiTags('notes')
 @Controller('notes')
@@ -68,6 +70,31 @@ export class NotesController {
 		return this.notesService.getNoteWithID(id, req.user.id)
 	}
 
+	@ApiParam({
+		name: 'id',
+		description: 'A unique id that identifies a note',
+		required: true
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: NoteRatingResponse,
+		description: 'The average rating for the note specified by the id query parameter'
+	})
+	@ApiHeader({
+		name: 'Authorization',
+		example: 'Bearer <jwt_token>',
+		description: 'A JWT access token that proves authorization for this endpoint'
+	})
+	@JwtAuth()
+	@Get('by-id/:id/rating')
+	async getAverageRating(@Request() req, @Param('id') id: number): Promise<NoteRatingResponse> {
+		const avgRating = await this.notesService.getAverageRating(id, req.user.id)
+		return {
+			statusCode: HttpStatus.OK,
+			value: avgRating
+		}
+	}
+
 	@ApiBody({
 		type: SearchNoteDto,
 		description: 'A set of query parameters that help to define the search for ElasticSearch',
@@ -109,10 +136,8 @@ export class NotesController {
 	@JwtAuth()
 	@Post()
 	async createNote(@Request() req, @Body() createDto: CreateNoteDto): Promise<Note> {
-		const authorId = req.user.id
-
 		// Create the note in the notes database with file reference
-		return this.notesService.createNoteWithFile(createDto, authorId)
+		return this.notesService.createNoteWithFile(createDto, req.user.id)
 	}
 
 	@ApiBody({
@@ -133,7 +158,33 @@ export class NotesController {
 	@JwtAuth()
 	@Put()
 	async updateNoteWithID(@Request() req, @Body() updateDto: UpdateNoteDto): Promise<Note> {
-		return this.notesService.updateNoteWithID(req.user.id, updateDto.noteId, updateDto.newData)
+		return this.notesService.updateNoteWithID(req.user.id, updateDto.noteId, updateDto.data)
+	}
+
+	@ApiParam({
+		name: 'id',
+		description: 'The ID for the note to add the rating to',
+		required: true
+	})
+	@ApiBody({
+		type: RateNoteDto,
+		description: 'The new rating value provided by the user',
+		required: true
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: Note,
+		description: 'A note object that contains data about the note (including the new rating)'
+	})
+	@ApiHeader({
+		name: 'Authorization',
+		example: 'Bearer <jwt_token>',
+		description: 'A JWT access token that proves authorization for this endpoint'
+	})
+	@JwtAuth()
+	@Put('by-id/:id/rate')
+	async addOrUpdateRating(@Request() req, @Param('id') id: number, @Body() rating: RateNoteDto): Promise<Note> {
+		return this.notesService.addOrUpdateRating(id, req.user.id, rating.value)
 	}
 
 	@ApiBody({
@@ -155,7 +206,7 @@ export class NotesController {
 	@JwtAuth()
 	@Delete()
 	async deleteNoteWithID(@Request() req, @Body() deleteDto: DeleteNoteDto): Promise<object> {
-		const resNote = await this.notesService.deleteNoteWithID(req.user.id, deleteDto.noteId, deleteDto.fileUri)
+		const resNote = await this.notesService.deleteNoteWithID(req.user.id, deleteDto.noteId)
 
 		if (!resNote) {
 			throw new InternalServerErrorException(`Could not delete note with ID ${deleteDto.noteId}`)

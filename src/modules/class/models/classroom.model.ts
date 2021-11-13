@@ -21,6 +21,10 @@ export class Classroom extends Model<Classroom> {
 	@Column(DataType.INTEGER)
 	ownerId: number
 
+	@ApiProperty()
+	@Column(DataType.STRING)
+	thumbnailUri: string
+
 	/** Entity Relationships */
 
 	@HasMany(() => Note)

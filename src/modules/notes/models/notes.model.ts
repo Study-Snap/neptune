@@ -8,11 +8,13 @@ import {
 	Table,
 	Unique,
 	ForeignKey,
-	BelongsTo
+	BelongsTo,
+	HasMany
 } from 'sequelize-typescript'
 import { User } from '../../../modules/class/models/user.model'
 import { Classroom } from '../../../modules/class/models/classroom.model'
 import { ApiProperty } from '@nestjs/swagger'
+import { Rating } from '../../../modules/ratings/models/rating.model'
 
 @Table({ tableName: 'notes', underscored: true })
 export class Note extends Model<Note> {
@@ -21,11 +23,6 @@ export class Note extends Model<Note> {
 	@AutoIncrement
 	@Column(DataType.INTEGER)
 	id: number
-
-	@ApiProperty({ type: Number, isArray: true })
-	@AllowNull(true)
-	@Column(DataType.ARRAY(DataType.INTEGER))
-	rating: number[]
 
 	@ApiProperty()
 	@AllowNull(true)
@@ -55,17 +52,23 @@ export class Note extends Model<Note> {
 	@ApiProperty()
 	@AllowNull(true)
 	@Column(DataType.TEXT)
-	body: string
+	noteAbstract: string
 
 	@ApiProperty()
 	@Unique
-	@AllowNull(true)
+	@AllowNull(false)
 	@Column(DataType.STRING)
 	fileUri: string
 
+	@ApiProperty()
+	@Unique
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	noteCDN: string
+
 	/** Entity Relationships */
 
-	@ApiProperty()
+	@ApiProperty({ description: 'The classroom for which this note belongs' })
 	@ForeignKey(() => Classroom)
 	@Column
 	classId: string
@@ -73,13 +76,17 @@ export class Note extends Model<Note> {
 	@BelongsTo(() => Classroom)
 	class: Classroom
 
-	@ApiProperty()
+	@ApiProperty({ description: 'The author of this note' })
 	@ForeignKey(() => User)
 	@Column
 	authorId: number
 
 	@BelongsTo(() => User)
 	user: User
+
+	@ApiProperty({ description: 'A list of ratings made by users for this note' })
+	@HasMany(() => Rating)
+	ratings: Rating[]
 
 	/**
 	 * Note: updated_at, created_at fields are automatically generated
