@@ -73,7 +73,7 @@ export class Note extends Model<Note> {
 	@Column
 	classId: string
 
-	@BelongsTo(() => Classroom)
+	@BelongsTo(() => Classroom, { onDelete: 'cascade' })
 	class: Classroom
 
 	@ApiProperty({ description: 'The author of this note' })
@@ -85,7 +85,7 @@ export class Note extends Model<Note> {
 	user: User
 
 	@ApiProperty({ description: 'A list of ratings made by users for this note' })
-	@HasMany(() => Rating)
+	@HasMany(() => Rating, { onDelete: 'cascade', hooks: true })
 	ratings: Rating[]
 
 	/**

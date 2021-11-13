@@ -37,7 +37,7 @@ export class Rating extends Model<Rating> {
 	@Column
 	noteId: number
 
-	@BelongsTo(() => Note)
+	@BelongsTo(() => Note, { onDelete: 'cascade' })
 	note: Note
 
 	@ApiProperty()

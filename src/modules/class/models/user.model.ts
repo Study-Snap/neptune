@@ -51,7 +51,7 @@ export class User extends Model<User> {
 	@BelongsToMany(() => Classroom, () => ClassroomUser)
 	classes: Classroom[]
 
-	@HasMany(() => Note)
+	@HasMany(() => Note, { onDelete: 'cascade', hooks: true })
 	notes: Note[]
 
 	/**

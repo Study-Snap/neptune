@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [0.3.2] - Hotfix
+
+### Fixed
+
+- (SSPP-298): Fixed issue where classroom deletion was not able to cascade deletion to notes contained within.
+- (SSPP-298): Applied fix to note ratings to also cascade delete when a note is deleted or a user who left the rating is deleted
+
 ## [0.3.1] - Hotfix
 
 ### Fixed

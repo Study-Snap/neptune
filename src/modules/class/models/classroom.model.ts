@@ -27,7 +27,7 @@ export class Classroom extends Model<Classroom> {
 
 	/** Entity Relationships */
 
-	@HasMany(() => Note)
+	@HasMany(() => Note, { onDelete: 'cascade', hooks: true })
 	notes: Note[]
 
 	@BelongsToMany(() => User, () => ClassroomUser)
