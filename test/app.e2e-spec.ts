@@ -272,7 +272,7 @@ describe('Neptune', () => {
 				// Create the note with file
 				const reqData: CreateNoteDto = {
 					title: 'Science 101',
-					shortDescription: 'A short description about the note',
+					shortDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada',
 					fileUri: resGoodFileUri,
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
 					classId: testClasses[0].id
@@ -296,7 +296,7 @@ describe('Neptune', () => {
 				// Create the note with file
 				const reqData: CreateNoteDto = {
 					title: 'A Science note',
-					shortDescription: 'A short description about the docx note',
+					shortDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada',
 					fileUri: resBadFileUri,
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
 					classId: testClasses[0].id
@@ -314,10 +314,107 @@ describe('Neptune', () => {
 				expect(res.body.noteAbstract).toMatch('Cannot automatically extract content from this file')
 			})
 
+			it('should throw a validation error if title is empty (or less than 5 characters long)', async () => {
+				// Create the note with file
+				const reqData: CreateNoteDto = {
+					title: '',
+					shortDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada',
+					fileUri: resGoodFileUri,
+					keywords: [ 'biology', 'chemestry', 'Physics' ],
+					classId: testClasses[0].id
+				}
+
+				// Create actual note with file
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body).toBeDefined()
+				expect(res.body.message).toBeDefined()
+				expect(res.body.message).toBeInstanceOf(Array)
+				expect(res.body.message[0]).toMatch('Note title must be at least 5 characters long')
+			})
+
+			it('should throw a validation error if title is longer than 25 characters', async () => {
+				// Create the note with file
+				const reqData: CreateNoteDto = {
+					title: 'Note titles should be less than 25 characters',
+					shortDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada',
+					fileUri: resGoodFileUri,
+					keywords: [ 'biology', 'chemestry', 'Physics' ],
+					classId: testClasses[0].id
+				}
+
+				// Create actual note with file
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body).toBeDefined()
+				expect(res.body.message).toBeDefined()
+				expect(res.body.message).toBeInstanceOf(Array)
+				expect(res.body.message[0]).toMatch('Note title must be less than 25 characters long')
+			})
+
+			it('should throw a validation error if shortDescription is shorter than 60 characters long', async () => {
+				// Create the note with file
+				const reqData: CreateNoteDto = {
+					title: 'Science Lecture 5',
+					shortDescription:
+						'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada vitae metus nec lobortis.',
+					fileUri: resGoodFileUri,
+					keywords: [ 'biology', 'chemestry', 'Physics' ],
+					classId: testClasses[0].id
+				}
+
+				// Create actual note with file
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+				expect(res.body).toBeDefined()
+				expect(res.body.message).toBeDefined()
+				expect(res.body.message).toMatch('Validation error')
+			})
+
+			it('should throw a validation error if shortDescription is longer than 120 characters', async () => {
+				// Create the note with file
+				const reqData: CreateNoteDto = {
+					title: 'Science Lecture 5',
+					shortDescription:
+						'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada vitae metus nec lobortis. Mauris eget enim felis. Felis',
+					fileUri: resGoodFileUri,
+					keywords: [ 'biology', 'chemestry', 'Physics' ],
+					classId: testClasses[0].id
+				}
+
+				// Create actual note with file
+				const res = await request(app.getHttpServer())
+					.post(`${NOTE_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body).toBeDefined()
+				expect(res.body.message).toBeDefined()
+				expect(res.body.message).toBeInstanceOf(Array)
+				expect(res.body.message[0]).toMatch('Short description must be less than 120 characters long')
+			})
+
 			it('should fail to create a new note if a file is not provided', async () => {
 				const reqData = {
 					title: 'Science 101',
-					shortDescription: 'A short description about the note',
+					shortDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada',
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
 					classId: testClasses[0].id
 				}
@@ -335,7 +432,7 @@ describe('Neptune', () => {
 			it('should fail to create a new note if specified file does not exist', async () => {
 				const reqData: CreateNoteDto = {
 					title: 'Science 101',
-					shortDescription: 'A short description about the note',
+					shortDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada',
 					fileUri: 'fake-nonexist-file-id',
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
 					classId: testClasses[0].id
@@ -354,7 +451,7 @@ describe('Neptune', () => {
 			it('should delete the note file if encounters a problem with note publish', async () => {
 				const reqData: CreateNoteDto = {
 					title: 'Science 101',
-					shortDescription: 'A short description about the note',
+					shortDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada',
 					fileUri: resBadFileUri,
 					keywords: [ 'biology', 'chemestry', 'Physics' ],
 					classId: testClasses[3].id // PROBLEM: Use classId which test user is not a member of
@@ -832,6 +929,43 @@ describe('Neptune', () => {
 				expect(res.body.name).toMatch(reqData.name)
 				expect(res.body.thumbnailUri).toBeDefined()
 				expect(res.body.thumbnailUri).toMatch(config.classThumbnailDefaultURI)
+			})
+
+			it('should throw BAD_REQUEST when supplied an empty name for the class', async () => {
+				const reqData: CreateClassroomDto = {
+					name: ''
+				}
+
+				// Make the request to create classroom
+				const res = await request(app.getHttpServer())
+					.post(`${CLASSROOM_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body).toBeDefined()
+				expect(res.body.message).toBeDefined()
+				expect(res.body.message).toBeInstanceOf(Array)
+				expect(res.body.message[0]).toMatch('Name must be at least 5 characters long')
+			})
+
+			it('should throw validation error when name is too long (more than 25 characters)', async () => {
+				const reqData: CreateClassroomDto = {
+					name: 'Classroom names should less than 25 characters'
+				}
+
+				// Make the request to create classroom
+				const res = await request(app.getHttpServer())
+					.post(`${CLASSROOM_BASE_URL}`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+					.send(reqData)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.BAD_REQUEST)
+				expect(res.body).toBeDefined()
+				expect(res.body.message).toBeDefined()
+				expect(res.body.message[0]).toMatch('Name must not be more than 25 characters long')
 			})
 
 			it('should update classroom name to new value provided in request', async () => {

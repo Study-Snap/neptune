@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [0.3.1] - Hotfix
+
+### Fixed
+
+- (SSPP-300): Fixed validation issues for classroom creation
+- (add): Additional fixes for validation issues that may be present on note creation similar to SSPP-300
+
 ## [0.3.0]
 
 ### Added
