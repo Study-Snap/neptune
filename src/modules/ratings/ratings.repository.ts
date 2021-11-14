@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
-import { DB_CONNECTION_NAME } from '../../common/constants'
+import { DB_CONNECTION_NAME, DB_USERS_PASSWORD_FIELD } from '../../common/constants'
 import { User } from '../class/models/user.model'
 import { Note } from '../notes/models/notes.model'
 import { Rating } from './models/rating.model'
@@ -17,7 +17,7 @@ export class RatingsRepository {
 			where: {
 				id
 			},
-			include: [ User, Note ]
+			include: [ { model: User, attributes: { exclude: [ DB_USERS_PASSWORD_FIELD ] } }, Note ]
 		})
 	}
 

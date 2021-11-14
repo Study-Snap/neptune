@@ -870,7 +870,6 @@ describe('Neptune', () => {
 		})
 		describe('Classroom CRUD', () => {
 			let testClassID: string
-			let testUserId: number
 
 			it('should create and return the created classroom that is owned by the requesting user', async () => {
 				const reqData: CreateClassroomDto = {
@@ -890,7 +889,6 @@ describe('Neptune', () => {
 
 				// Store some data for later tests
 				testClassID = res.body.id
-				testUserId = res.body.ownerId
 			})
 
 			it('should create a classroom with a custom thumbnail image', async () => {
@@ -1017,6 +1015,14 @@ describe('Neptune', () => {
 			})
 
 			it('should delete classroom when requester is owner of the classroom', async () => {
+				/**
+				 * Create a note inside of the classroom which should be deleted when the classroom is deleted
+				 */
+				await connection.query(
+					`INSERT INTO notes (id, time_length, title, keywords, short_description, note_abstract, note_c_d_n, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},5,'Science 205','{science,row}','biology','biology absract', 'https://badcdn.ca', 'fake.pdf',(SELECT id FROM classrooms WHERE id='${testClassID}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
+					{ logging: false }
+				)
+
 				const reqData: DeleteClassroomDto = {
 					classId: testClassID
 				}
@@ -1030,11 +1036,17 @@ describe('Neptune', () => {
 				// Validate that the thumbnail was deleted
 				const thumbExists = await testRemoteFileExists(resGoodImageUri)
 
+				// Check if notes were deleted that belonged to classroom
+				const noteCountRes = await connection.query(`SELECT COUNT(*) FROM notes WHERE class_id='${testClassID}'`, {
+					logging: false
+				})
+
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body.message).toMatch(`${testClassID}`)
 				expect(thumbExists).toBeFalsy()
+				expect(parseInt(noteCountRes.values().next().value[0]['count'])).toBe(0) // Ensures all notes within are deleted as well
 			})
 		})
 	})

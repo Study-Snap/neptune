@@ -23,7 +23,7 @@ export class Rating extends Model<Rating> {
 	@Column(DataType.INTEGER)
 	id: number
 
-	@ApiProperty({ minimum: 1, maximum: 5 })
+	@ApiProperty({ minimum: 1, maximum: 5, description: 'Rating for the note' })
 	@AllowNull(false)
 	@Min(1)
 	@Max(5)
@@ -32,12 +32,12 @@ export class Rating extends Model<Rating> {
 
 	/** Entity Relationships */
 
-	@ApiProperty()
+	@ApiProperty({ description: 'Note that we want to rate' })
 	@ForeignKey(() => Note)
 	@Column
 	noteId: number
 
-	@BelongsTo(() => Note)
+	@BelongsTo(() => Note, { onDelete: 'cascade' })
 	note: Note
 
 	@ApiProperty()
