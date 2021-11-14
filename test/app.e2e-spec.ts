@@ -870,7 +870,6 @@ describe('Neptune', () => {
 		})
 		describe('Classroom CRUD', () => {
 			let testClassID: string
-			let testUserId: number
 
 			it('should create and return the created classroom that is owned by the requesting user', async () => {
 				const reqData: CreateClassroomDto = {
@@ -890,7 +889,6 @@ describe('Neptune', () => {
 
 				// Store some data for later tests
 				testClassID = res.body.id
-				testUserId = res.body.ownerId
 			})
 
 			it('should create a classroom with a custom thumbnail image', async () => {
