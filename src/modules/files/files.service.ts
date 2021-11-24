@@ -9,6 +9,9 @@ import { SpaceType } from '../../common/constants'
 
 const config: IConfigAttributes = getConfig()
 
+/**
+ * Injectable class for functionality that deals with local and remote files
+ */
 @Injectable()
 export class FilesService {
 	/**

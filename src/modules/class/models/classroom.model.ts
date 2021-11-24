@@ -4,6 +4,9 @@ import { Note } from '../../../modules/notes/models/notes.model'
 import { ClassroomUser } from './classroom-user.model'
 import { User } from './user.model'
 
+/**
+ * The model that describes attributes and relationships for a classroom
+ */
 @Table({ tableName: 'classrooms', underscored: true })
 export class Classroom extends Model<Classroom> {
 	@ApiProperty()

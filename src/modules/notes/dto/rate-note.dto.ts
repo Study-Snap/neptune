@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNumber, Max, Min } from 'class-validator'
 
+/**
+ * Data transfer object specification for rating a note
+ */
 export class RateNoteDto {
 	@ApiProperty({ default: 4, type: RateNoteDto, required: true })
 	@IsNumber({ allowNaN: false })

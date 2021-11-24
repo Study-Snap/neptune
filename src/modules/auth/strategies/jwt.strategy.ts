@@ -17,6 +17,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY) {
 		})
 	}
 
+	/**
+	 * Validates the JWT payload and provides the payload values in cleartext
+	 * @param payload The JWT payload to validate and decode
+	 * @returns The decoded JWT object with clear-text values
+	 */
 	async validate(payload: any) {
 		return {
 			id: payload.sub,

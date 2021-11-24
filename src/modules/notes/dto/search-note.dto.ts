@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmptyObject, IsObject, IsString } from 'class-validator'
 
+/**
+ * Data transfer object specification for searching for notes
+ */
 export class SearchNoteDto {
 	@ApiProperty({ default: 'query_string', required: true })
 	@IsString({ message: 'Ensure a query type is specified' })

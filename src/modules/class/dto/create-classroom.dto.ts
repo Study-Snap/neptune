@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator'
 
+/**
+ * The data transfer object for creating a classroom
+ */
 export class CreateClassroomDto {
 	@ApiProperty({ default: 'Science 100', required: true })
 	@IsString({ message: 'Must include a name for the classroom' })
