@@ -544,7 +544,7 @@ describe('Neptune', () => {
 				expect(res.body).toBeDefined()
 				expect(res.body.ratings).toBeDefined()
 				expect(res.body.ratings).toBeInstanceOf(Array)
-				expect(res.body.ratings.filter((r) => r.noteId === noteId)[0].value).toBe(1)
+				expect(res.body.ratings.filter((r) => r.noteId === noteId)[0].value).toBe(reqData[1])
 			})
 
 			it('should get the average rating for the note by querying the note /ratings', async () => {
