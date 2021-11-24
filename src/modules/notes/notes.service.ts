@@ -87,11 +87,11 @@ export class NotesService {
 
 		if (ratings.length === 0) {
 			// This user has no existing rating
-			await this.ratingsService.addRating(value, userId, noteId)
+			await this.ratingsService.addRating(Math.floor(value), userId, noteId)
 			return this.getNoteWithID(noteId, userId)
 		}
 
-		await this.ratingsService.updateRating(ratings[0].id, value)
+		await this.ratingsService.updateRating(ratings[0].id, Math.floor(value))
 		return this.getNoteWithID(noteId, userId)
 	}
 
@@ -104,7 +104,7 @@ export class NotesService {
 			totalRating += r.value
 		}
 
-		return Math.floor(totalRating / note.ratings.length === 0 ? 1 : note.ratings.length)
+		return Math.floor(totalRating / (note.ratings.length === 0 ? 1 : note.ratings.length))
 	}
 
 	async updateNoteWithID(
