@@ -488,6 +488,8 @@ describe('Neptune', () => {
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body.id).toBe(noteId)
+				expect(res.body.ratings).toBeInstanceOf(Array)
+				expect(res.body.ratings.length).toBeGreaterThan(0)
 			})
 
 			it('should disallow ratings of greater than 5', async () => {
@@ -535,12 +537,14 @@ describe('Neptune', () => {
 				const res = await request(app.getHttpServer())
 					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
 					.set('Authorization', `Bearer ${jwtToken}`)
-					.send(reqData[0])
+					.send(reqData[1])
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body.ratings).toBeDefined()
+				expect(res.body.ratings).toBeInstanceOf(Array)
+				expect(res.body.ratings.filter((r) => r.noteId === noteId)[0].value).toBe(1)
 			})
 
 			it('should get the average rating for the note by querying the note /ratings', async () => {
@@ -555,6 +559,7 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Object)
 				expect(res.body.value).toBeLessThanOrEqual(5)
 				expect(res.body.value).toBeGreaterThanOrEqual(1)
+				expect((res.body.value * 100) % 100).toBe(0)
 			})
 		})
 
