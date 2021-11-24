@@ -21,6 +21,9 @@ import { Rating } from '../ratings/models/rating.model'
 
 const config: IConfigAttributes = getConfig()
 
+/**
+ * Service functions for interacting with notes
+ */
 @Injectable()
 export class NotesService {
 	constructor(
@@ -32,6 +35,13 @@ export class NotesService {
 		private readonly classroomService: ClassroomService
 	) {}
 
+	/**
+	 * Get details about a note given its unique ID and other attributes
+	 * @param id Unique ID for a note
+	 * @param userId Unique ID for a user
+	 * @param classId Unique ID for a classroom (`optional`)
+	 * @returns A note object that meets the criteria
+	 */
 	async getNoteWithID(id: number, userId: number, classId?: string): Promise<Note> {
 		const note: Note = await this.notesRepository.findNoteById(id, classId) // Will filter by classId if passed in with function call
 
@@ -51,6 +61,14 @@ export class NotesService {
 		return note
 	}
 
+	/**
+	 * Searches with ES and provides a ranked result for the hits we get from ES for the users query
+	 * @param userId Unique ID for a user
+	 * @param searchType The searchType for ES to use when performing the search with the query
+	 * @param searchQuery The actually query to perform on the ES index
+	 * @param classId Unique ID for a classroom
+	 * @returns A list of search results (note objects) resulting from the ElasticSearch + the final note ranking with combined features
+	 */
 	async getNotesUsingES(userId: number, searchType: string, searchQuery: object, classId: string): Promise<Note[]> {
 		// Verify classroom membership
 		const userInClass = await this.classroomService.userInClass(classId, userId)
@@ -81,6 +99,13 @@ export class NotesService {
 		return results.sort(compareNotesWithCombinedFeatures)
 	}
 
+	/**
+	 * Adds a rating if none exists for the privated note or replaces an existing rating automatically
+	 * @param noteId Unique ID for the note
+	 * @param userId Unique ID for the user requesting to add a rating
+	 * @param value The value of the rating from 1-5
+	 * @returns The resulting note with the updated ratings attribute containing the new or updated rating
+	 */
 	async addOrUpdateRating(noteId: number, userId: number, value: number): Promise<Note> {
 		const note: Note = await this.getNoteWithID(noteId, userId)
 		const ratings: Rating[] = note.ratings.filter((r) => r.userId === userId)
@@ -95,6 +120,12 @@ export class NotesService {
 		return this.getNoteWithID(noteId, userId)
 	}
 
+	/**
+	 * Gets the average rating for the note
+	 * @param noteId Unique ID for the note
+	 * @param userId Unique ID for user requesting average rating
+	 * @returns A number which indicates the average (calculated) rating for the note
+	 */
 	async getAverageRating(noteId: number, userId: number): Promise<number> {
 		const note: Note = await this.getNoteWithID(noteId, userId)
 
@@ -107,6 +138,13 @@ export class NotesService {
 		return Math.floor(totalRating / (note.ratings.length === 0 ? 1 : note.ratings.length))
 	}
 
+	/**
+	 * Updates a note	
+	 * @param userId Unique User ID
+	 * @param id Unique Note ID
+	 * @param data Data to update (key-value pairs) for the note object specified
+	 * @returns The updated note object
+	 */
 	async updateNoteWithID(
 		userId: number,
 		id: number,
@@ -129,6 +167,12 @@ export class NotesService {
 		return this.notesRepository.updateNote(note, data)
 	}
 
+	/**
+	 * Removes a note (with file and ES index entry)
+	 * @param userId Unique User ID
+	 * @param id Unique Note ID for note to be deleted
+	 * @returns True iff the note is successfully removed
+	 */
 	async deleteNoteWithID(userId: number, id: number): Promise<boolean> {
 		const note: Note = await this.notesRepository.findNoteById(id)
 
@@ -148,6 +192,12 @@ export class NotesService {
 		return this.notesRepository.deleteNote(note)
 	}
 
+	/**
+	 * Creates a note and automatically generates a number of metadata fields which can be extracted from the provided data and associated note file
+	 * @param data Full DTO spec data which contains all the information required to fill out a note entry
+	 * @param authorId The current requester user ID who is creating the note
+	 * @returns The created note object
+	 */
 	async createNoteWithFile(data: CreateNoteDto, authorId: number): Promise<Note> {
 		const userInClass = await this.classroomService.userInClass(data.classId, authorId)
 

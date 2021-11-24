@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmptyObject, IsString } from 'class-validator'
 
+/**
+ * The data transfer object for updating a classroom
+ */
 export class UpdateClassroomDto {
 	@ApiProperty({ default: '602A2DDE-A15C-4257-A9D8-4EBB501A7C2C', required: true })
 	@IsString({ message: 'Must provide a classId to update' })

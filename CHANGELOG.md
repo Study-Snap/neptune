@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.3]
 
+### Added
+
+- (SSPP-302): Documentation to all functions to make auto-complete more useful when modifying the application
+
 ### Fixed
 
 - (SSPP-308): fixed boolean logic on average rating calculation to avoid bad values (*important!*)

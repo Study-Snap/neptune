@@ -16,6 +16,9 @@ import { Note } from '../../../modules/notes/models/notes.model'
 import { ClassroomUser } from './classroom-user.model'
 import { Classroom } from './classroom.model'
 
+/**
+ * The model that describes attributes and relationships for a User
+ */
 // !! DO NOT TOUCH !! //
 @Table({ tableName: 'users', underscored: true })
 export class User extends Model<User> {

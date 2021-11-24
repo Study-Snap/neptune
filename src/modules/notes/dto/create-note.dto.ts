@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { ArrayMinSize, IsArray, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator'
 
+/**
+ * Data transfer object specification for creating a note
+ */
 export class CreateNoteDto {
 	@ApiProperty({ default: 'Lecture 5', required: true })
 	@MinLength(5, { message: 'Note title must be at least 5 characters long' })

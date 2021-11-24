@@ -1,5 +1,5 @@
 // Project constants
-export const PROJECT_VERSION = '0.3.0'
+export const PROJECT_VERSION = '0.3.3'
 export const SEQUELIZE = 'SEQUELIZE'
 export const JWT_STRATEGY = 'jwt'
 export const DEVELOPMENT = 'development'

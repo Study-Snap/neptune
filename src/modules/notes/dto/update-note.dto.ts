@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty, IsNotEmptyObject, IsNumber, IsObject } from 'class-validator'
 
+/**
+ * Data transfer object specification for updating a note
+ */
 export class UpdateNoteDto {
 	@ApiProperty({ default: 5, required: true })
 	@IsNumber()

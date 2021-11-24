@@ -21,6 +21,9 @@ import { UserService } from './user.service'
 
 const config: IConfigAttributes = getConfig()
 
+/**
+ * Handles high-level service functions related to classroom functionality
+ */
 @Injectable()
 export class ClassroomService {
 	constructor(
@@ -30,6 +33,10 @@ export class ClassroomService {
 		private readonly userService: UserService
 	) {}
 
+	/**
+	 * Deletes a thumbnail from remote S3 cloud storage
+	 * @param thumbUri The URI that points to the remote thumbnail to be deleted from s3 object storage
+	 */
 	async deleteClassroomThumbnail(thumbUri: string): Promise<void> {
 		const thumbnailCustom = !(thumbUri === config.classThumbnailDefaultURI)
 		if (thumbnailCustom) {
@@ -38,6 +45,13 @@ export class ClassroomService {
 		}
 	}
 
+	/**
+	 * Creates a classroom given the provided attribute values as parameters
+	 * @param name Name of the classroom
+	 * @param ownerId User ID which is the owner of the classroom
+	 * @param thumbnailUri A URI that points to a custom thumbnail to use for this classroom
+	 * @returns The created classroom object
+	 */
 	async createClassroom(name: string, ownerId: number, thumbnailUri?: string): Promise<Classroom> {
 		// Create classroom
 		const thumbUri = thumbnailUri ? thumbnailUri : config.classThumbnailDefaultURI
@@ -88,6 +102,10 @@ export class ClassroomService {
 		return cr
 	}
 
+	/**
+	 * Gets a list of available classrooms for the user to join
+	 * @returns A list of available classrooms to the user
+	 */
 	async getAvailableClassrooms(): Promise<Classroom[]> {
 		const classrooms: Classroom[] = await this.classroomRepository.list()
 
@@ -98,6 +116,11 @@ export class ClassroomService {
 		return classrooms
 	}
 
+	/**
+	 * Gets the details for a classroom given it's unique ID
+	 * @param classId The unique ID for a classroom
+	 * @returns A classroom object (if found) that has the specified unique ID
+	 */
 	async getClassroomWithID(classId: string): Promise<Classroom> {
 		const cr: Classroom = await this.classroomRepository.get(classId)
 
@@ -108,6 +131,12 @@ export class ClassroomService {
 		return cr
 	}
 
+	/**
+	 * Gets all notes contained within a classroom provided the correct access requirements for the provided user
+	 * @param classId Unique ID for the classroom
+	 * @param userId Unique user ID for the User making the request
+	 * @returns A list of notes that are in the classroom
+	 */
 	async getClassroomNotes(classId: string, userId: number): Promise<Note[]> {
 		const userInClass = await this.userInClass(classId, userId)
 
@@ -125,6 +154,12 @@ export class ClassroomService {
 		return notes
 	}
 
+	/**
+	 * Gets the best rated and latest notes contained within a specified classroom
+	 * @param userId Unique ID for the user making request
+	 * @param classId Unique ID for the classroom
+	 * @returns A list of notes that have gone through a ranking algorithm to sort for the best notes
+	 */
 	async getTopClassroomNotesByRating(userId: number, classId: string): Promise<Note[]> {
 		const userInClass = await this.userInClass(classId, userId)
 
@@ -145,6 +180,12 @@ export class ClassroomService {
 		return notes.sort(compareNotesWithCombinedFeatures)
 	}
 
+	/**
+	 * Gets all users that are members of the specified classroom
+	 * @param classId Unique ID for a classroom
+	 * @param userId Unique ID for requesting user
+	 * @returns The list of users that are members of the specified classroom
+	 */
 	async getClassroomUsers(classId: string, userId: number): Promise<User[]> {
 		const userInClass = await this.userInClass(classId, userId)
 
@@ -162,6 +203,12 @@ export class ClassroomService {
 		return users
 	}
 
+	/**
+	 * performs a check to validate whether a user is a member of the specified classroom
+	 * @param classId Unique ID for a classroom
+	 * @param userId Unique ID for a User making the request
+	 * @returns True iff the user IS a member of the specified classroom
+	 */
 	async userInClass(classId: string, userId: number): Promise<boolean> {
 		const cr: Classroom = await this.getClassroomWithID(classId)
 		const crUsers: User[] = await this.classroomRepository.getUsers(cr)
@@ -177,6 +224,13 @@ export class ClassroomService {
 		return true
 	}
 
+	/**
+	 * Updates the classroom with given data in key-value pairs provided the correct access and a valid classroom is selected
+	 * @param classId Unique ID for the classroom to be updated
+	 * @param ownerId Unique ID for the user that makes the request and owns the classroom
+	 * @param data The new data object that specifies which attributes can be changed and allows new values to be entered
+	 * @returns The updated classroom object
+	 */
 	async updateClassroom(
 		classId: string,
 		ownerId: number,
@@ -200,6 +254,12 @@ export class ClassroomService {
 		return this.classroomRepository.update(cr, data)
 	}
 
+	/**
+	 * Deletes a classroom
+	 * @param classId Classroom ID for classroom to delete
+	 * @param ownerId The user who is requesting deletion and is owner of the classroom
+	 * @returns True iff the classroom is deleted successfully along with related data in S3 object storage
+	 */
 	async deleteClassroom(classId: string, ownerId: number): Promise<boolean> {
 		const cr: Classroom = await this.classroomRepository.get(classId)
 
@@ -216,11 +276,23 @@ export class ClassroomService {
 		return this.classroomRepository.delete(cr)
 	}
 
+	/**
+	 * Adds a user to a classroom
+	 * @param classId Unique ID for the classroom to add user to
+	 * @param user User object for user to add to the classroom
+	 * @returns Returns the created Classroom <-> User mapping describing the user being added as member of a classroom
+	 */
 	async addUserToClassroom(classId: string, user: User): Promise<ClassroomUser> {
 		const cr: Classroom = await this.classroomRepository.get(classId)
 		return await this.classroomRepository.join(cr, user)
 	}
 
+	/**
+	 * Removes a user from a classroom
+	 * @param classId Unique ID for the classroom to remove user from
+	 * @param user User object for user to remove from the classroom
+	 * @returns Returns True iff user is successfully removed from the classroom
+	 */
 	async remUserFromClassroom(classId: string, user: User): Promise<boolean> {
 		const cr: Classroom = await this.classroomRepository.get(classId)
 

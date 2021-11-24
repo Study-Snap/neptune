@@ -6,6 +6,9 @@ import { Classroom } from './models/classroom.model'
 import { User } from './models/user.model'
 import { UserRepository } from './user.repository'
 
+/**
+ * Service functions for user operations
+ */
 @Injectable()
 export class UserService {
 	constructor(
@@ -14,6 +17,11 @@ export class UserService {
 		private readonly classroomService: ClassroomService
 	) {}
 
+	/**
+	 * Gets user data for the provided user
+	 * @param userId Unique ID for the user
+	 * @returns A user object containing relevant user data
+	 */
 	async getUserWithID(userId: number): Promise<User> {
 		const user: User = await this.userRepository.get(userId)
 
@@ -24,6 +32,11 @@ export class UserService {
 		return user
 	}
 
+	/**
+	 * Gets all classrooms the specified user with userId is a part of
+	 * @param userId Unique id for the user
+	 * @returns a list of all classrooms the user is a part of
+	 */
 	async getUserClassrooms(userId: number): Promise<Classroom[]> {
 		const user: User = await this.getUserWithID(userId)
 		const classes: Classroom[] = await this.userRepository.getClassrooms(userId)
@@ -35,6 +48,11 @@ export class UserService {
 		return classes
 	}
 
+	/**
+	 * Gets a list of all notes owned by the specified user
+	 * @param userId Unique ID for user
+	 * @returns A list of notes that user owns
+	 */
 	async getUserNotes(userId: number): Promise<Note[]> {
 		const user: User = await this.getUserWithID(userId)
 		const notes: Note[] = await this.userRepository.getNotes(userId)
@@ -46,6 +64,11 @@ export class UserService {
 		return notes
 	}
 
+	/**
+	 * Joins a user to a classroom
+	 * @param userId Unique ID for the user
+	 * @param classId Unique ID for classroom to join
+	 */
 	async joinClassroom(userId: number, classId: string): Promise<void> {
 		// First check if user is already in the class
 		const alreadyJoined: boolean = await this.classroomService.userInClass(classId, userId)
@@ -64,6 +87,11 @@ export class UserService {
 		}
 	}
 
+	/**
+	 * Removes the specified user from the classroom
+	 * @param userId Unique ID for the user
+	 * @param classId Unique ID for the classroom
+	 */
 	async leaveClassroom(userId: number, classId: string): Promise<void> {
 		// First check if user is already in the class
 		const isMember: boolean = await this.classroomService.userInClass(classId, userId)
