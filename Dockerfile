@@ -10,7 +10,7 @@ RUN addgroup -g 10001 -S studysnap && adduser -u 10000 -S -G studysnap -h /home/
 # Install project dependencies
 WORKDIR /app
 COPY package.json .
-RUN npm i
+RUN npm i --legacy-peer-deps
 
 # Copy project files and create production build
 COPY . .
