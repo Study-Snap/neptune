@@ -88,11 +88,11 @@ export class NotesService {
 		if (ratings.length === 0) {
 			// This user has no existing rating
 			await this.ratingsService.addRating(Math.floor(value), userId, noteId)
-			return note
+			return this.getNoteWithID(noteId, userId)
 		}
 
 		await this.ratingsService.updateRating(ratings[0].id, Math.floor(value))
-		return note
+		return this.getNoteWithID(noteId, userId)
 	}
 
 	async getAverageRating(noteId: number, userId: number): Promise<number> {
