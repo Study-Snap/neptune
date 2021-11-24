@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - (SSPP-308): fixed boolean logic on average rating calculation to avoid bad values (*important!*)
 - (SSPP-308): Added check to ensure rating is integer
+- (develop): *hotfix* to Dockerfile to support legacy peer dependencies. (Note: will keep looking for real solution this is just a workaround)
 
 ## [Released]
 
