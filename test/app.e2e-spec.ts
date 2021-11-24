@@ -523,7 +523,7 @@ describe('Neptune', () => {
 			})
 
 			it('should replace existing an existing rating on the same note if one already exists', async () => {
-				const reqData: RateNoteDto[] = [ { value: 2 }, { value: 1 } ]
+				const reqData: RateNoteDto[] = [ { value: 2 }, { value: 4 } ]
 
 				// Rate the note (first time to value of 2)
 				await request(app.getHttpServer())
@@ -555,6 +555,24 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Object)
 				expect(res.body.value).toBeLessThanOrEqual(5)
 				expect(res.body.value).toBeGreaterThanOrEqual(1)
+			})
+
+			it('should get the average rating of 0 for a note with no ratings', async () => {
+				/**
+				 * Remove any existing ratings from the DB
+				 */
+				await connection.query(`DELETE FROM ratings WHERE note_id=${noteId}`, { logging: false })
+
+				// Query the average note rating
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/${noteId}/rating`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Object)
+				expect(res.body.value).toBe(0)
 			})
 		})
 
