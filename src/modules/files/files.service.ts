@@ -44,30 +44,35 @@ export class FilesService {
 			throw new BadRequestException(`Invalid file type for target space...`)
 		}
 
-		// Init Spaces Connection
-		const s3 = new S3({
-			endpoint: new Endpoint(config.spacesEndpoint),
-			accessKeyId: config.spacesKey,
-			secretAccessKey: config.spacesSecret
-		})
+		try {
+			// Init Spaces Connection
+			const s3 = new S3({
+				endpoint: new Endpoint(config.spacesEndpoint),
+				accessKeyId: config.spacesKey,
+				secretAccessKey: config.spacesSecret
+			})
 
-		// Generate DO Upload Params
-		const uParams = {
-			Bucket: spaceType === SpaceType.NOTES ? config.noteDataSpace : config.imageDataSpace,
-			Key: `${uuid()}.${file.originalname.split('.').pop()}`,
-			Body: file.buffer,
-			ACL: 'public-read',
-			Metadata: {
-				Type: spaceType === SpaceType.NOTES ? 'note' : 'image'
+			// Generate DO Upload Params
+			const uParams = {
+				Bucket: spaceType === SpaceType.NOTES ? config.noteDataSpace : config.imageDataSpace,
+				Key: `${uuid()}.${file.originalname.split('.').pop()}`,
+				Body: file.buffer,
+				ACL: 'public-read',
+				Metadata: {
+					Type: spaceType === SpaceType.NOTES ? 'note' : 'image'
+				}
 			}
-		}
-		const res = await s3.putObject(uParams).promise()
+			const res = await s3.putObject(uParams).promise()
 
-		if (!res || res.$response.error) {
-			throw new InternalServerErrorException(`Failed to upload file ... Reason: ${res.$response.error}`)
-		}
+			// Catch any obvious errors from the upload request
+			if (!res || res.$response.error) {
+				throw new InternalServerErrorException(`Failed to upload file ... Reason: ${res.$response.error}`)
+			}
 
-		return uParams.Key
+			return uParams.Key
+		} catch (err) {
+			throw new InternalServerErrorException(`Uncaught error when uploading a file. Reason: ${err}`)
+		}
 	}
 
 	/**
