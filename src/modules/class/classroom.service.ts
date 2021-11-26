@@ -5,6 +5,7 @@ import {
 	Inject,
 	Injectable,
 	InternalServerErrorException,
+	Logger,
 	NotFoundException
 } from '@nestjs/common'
 import { SpaceType } from '../../common/constants'
@@ -42,6 +43,30 @@ export class ClassroomService {
 		if (thumbnailCustom) {
 			// Delete the uploaded thumbnail
 			await this.filesService.deleteFileWithID(thumbUri, SpaceType.IMAGES)
+		}
+	}
+
+	/**
+	 * Deletes all files associated with note objects that are contained within the specified classroom
+	 * @param notes A list of notes
+	 */
+	async deleteNoteFile(notes: Note[]): Promise<void> {
+		for (const n of notes) {
+			await this.filesService.deleteFileWithID(n.fileUri)
+		}
+	}
+
+	/**
+	 * Performs a heavy cleanup of all files used in the 
+	 * selected/specified classroom. This includes deleting any note 
+	 * files contained within and images such as thumbnails for the classroom
+	 * @param classroom A valid classroom object
+	 */
+	async classroomFileCleanup(classroom: Classroom): Promise<void> {
+		try {
+			await Promise.all([ this.deleteClassroomThumbnail(classroom.thumbnailUri), this.deleteNoteFile(classroom.notes) ])
+		} catch (err) {
+			throw new InternalServerErrorException(`Failed to perform file cleanup. Reason: ${err}`)
 		}
 	}
 
@@ -271,8 +296,9 @@ export class ClassroomService {
 			throw new ForbiddenException(`You are not authorized to delete this classroom (not owner)`)
 		}
 
-		// Ensure thumbnail is deleted with the classroom
-		await this.deleteClassroomThumbnail(cr.thumbnailUri)
+		// Perform file cleanup
+		await this.classroomFileCleanup(cr)
+
 		return this.classroomRepository.delete(cr)
 	}
 

@@ -11,7 +11,8 @@ import {
 	TEST_PASSWORD,
 	TEST_USERNAME,
 	populateESIndexForTest,
-	testRemoteFileExists
+	testRemoteFileExists,
+	uploadRemoteTestFile
 } from './util'
 import { IConfigAttributes } from '../src/common/interfaces/config/app-config.interface'
 import { getConfig } from '../src/config'
@@ -1041,8 +1042,9 @@ describe('Neptune', () => {
 				/**
 				 * Create a note inside of the classroom which should be deleted when the classroom is deleted
 				 */
+				const testNoteFileUri = await uploadRemoteTestFile('./test/files/capstone_pp.pdf')
 				await connection.query(
-					`INSERT INTO notes (id, time_length, title, keywords, short_description, note_abstract, note_c_d_n, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},5,'Science 205','{science,row}','biology','biology absract', 'https://badcdn.ca', 'fake.pdf',(SELECT id FROM classrooms WHERE id='${testClassID}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
+					`INSERT INTO notes (id, time_length, title, keywords, short_description, note_abstract, note_c_d_n, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},5,'Science 205','{science,row}','biology','biology absract', 'https://badcdn.ca', '${testNoteFileUri}',(SELECT id FROM classrooms WHERE id='${testClassID}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
 					{ logging: false }
 				)
 
@@ -1056,8 +1058,9 @@ describe('Neptune', () => {
 					.set('Authorization', `Bearer ${jwtToken}`)
 					.send(reqData)
 
-				// Validate that the thumbnail was deleted
+				// Validate that the thumbnail and note files for all contained notes in the classrooms are deleted
 				const thumbExists = await testRemoteFileExists(resGoodImageUri)
+				const fileDeleted = await testRemoteFileExists(testNoteFileUri)
 
 				// Check if notes were deleted that belonged to classroom
 				const noteCountRes = await connection.query(`SELECT COUNT(*) FROM notes WHERE class_id='${testClassID}'`, {
@@ -1069,6 +1072,7 @@ describe('Neptune', () => {
 				expect(res.body).toBeDefined()
 				expect(res.body.message).toMatch(`${testClassID}`)
 				expect(thumbExists).toBeFalsy()
+				expect(fileDeleted).toBeFalsy()
 				expect(parseInt(noteCountRes.values().next().value[0]['count'])).toBe(0) // Ensures all notes within are deleted as well
 			})
 		})

@@ -5,6 +5,8 @@ import { Client } from '@elastic/elasticsearch'
 import { Note } from '../../src/modules/notes/models/notes.model'
 import { Endpoint, S3 } from 'aws-sdk'
 import { InternalServerErrorException } from '@nestjs/common'
+import { readFile } from 'fs/promises'
+import { resolve } from 'path'
 
 // Init
 const config: IConfigAttributes = getConfig()
@@ -117,6 +119,41 @@ export const populateESIndexForTest = async (noteId: number) => {
 	} else {
 		throw new Error('Failed to create ES index...is the client configured properly? Is the service running?')
 	}
+}
+
+/**
+ * Uploads a test file to S3 cloud object storage
+ * @param filePath Path to the local file to upload
+ * @returns A file URI that points to the remote file on cloud storage
+ */
+export const uploadRemoteTestFile = async (filePath: string): Promise<string> => {
+	// Init Spaces Connection
+	const s3 = new S3({
+		endpoint: new Endpoint(config.spacesEndpoint),
+		accessKeyId: config.spacesKey,
+		secretAccessKey: config.spacesSecret
+	})
+
+	// Get file buffer from path
+	const buffer = await readFile(resolve(filePath))
+
+	// Configure upload params
+	const uParams = {
+		Bucket: config.noteDataSpace,
+		Key: `${resolve(filePath)}`,
+		Body: buffer,
+		ACL: 'public-read',
+		Metadata: {
+			Type: 'note'
+		}
+	}
+	const res = await s3.putObject(uParams).promise()
+
+	if (!res || res.$response.error) {
+		throw new InternalServerErrorException(`Failed to upload file ... Reason: ${res.$response.error}`)
+	}
+
+	return uParams.Key
 }
 
 export const testRemoteFileExists = async (fileUri: string): Promise<boolean> => {
