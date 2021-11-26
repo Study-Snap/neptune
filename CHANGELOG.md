@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - (SSPP-302): Documentation to all functions to make auto-complete more useful when modifying the application
+- (SSPP-315): Automation to delete all related S3 stored note file data from cloud storage when a classroom is deleted
 
 ### Fixed
 

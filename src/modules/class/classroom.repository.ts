@@ -52,7 +52,8 @@ export class ClassroomRepository {
 		return this.crModel.findOne({
 			where: {
 				id
-			}
+			},
+			include: [ Note ]
 		})
 	}
 

@@ -137,6 +137,7 @@ export class FilesService {
 	/**
 	 * Used to delete a file from S3 object storage
 	 * @param fileUri A unique fileURI that points to a file in S3 storage 
+	 * @param spaceType The type of space where the file is being stored (NOTES or IMAGES) **(optional)** - `Default` = NOTES
 	 */
 	async deleteFileWithID(fileUri: string, spaceType: SpaceType = SpaceType.NOTES): Promise<void> {
 		// Init Spaces Connections
