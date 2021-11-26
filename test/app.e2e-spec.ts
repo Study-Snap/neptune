@@ -11,7 +11,8 @@ import {
 	TEST_PASSWORD,
 	TEST_USERNAME,
 	populateESIndexForTest,
-	testRemoteFileExists
+	testRemoteFileExists,
+	uploadRemoteTestFile
 } from './util'
 import { IConfigAttributes } from '../src/common/interfaces/config/app-config.interface'
 import { getConfig } from '../src/config'
@@ -488,6 +489,8 @@ describe('Neptune', () => {
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body.id).toBe(noteId)
+				expect(res.body.ratings).toBeInstanceOf(Array)
+				expect(res.body.ratings.length).toBeGreaterThan(0)
 			})
 
 			it('should disallow ratings of greater than 5', async () => {
@@ -523,7 +526,7 @@ describe('Neptune', () => {
 			})
 
 			it('should replace existing an existing rating on the same note if one already exists', async () => {
-				const reqData: RateNoteDto[] = [ { value: 2 }, { value: 1 } ]
+				const reqData: RateNoteDto[] = [ { value: 2 }, { value: 4 } ]
 
 				// Rate the note (first time to value of 2)
 				await request(app.getHttpServer())
@@ -535,12 +538,14 @@ describe('Neptune', () => {
 				const res = await request(app.getHttpServer())
 					.put(`${NOTE_BASE_URL}/by-id/${noteId}/rate`)
 					.set('Authorization', `Bearer ${jwtToken}`)
-					.send(reqData[0])
+					.send(reqData[1])
 
 				// Verify results
 				expect(res.status).toBe(HttpStatus.OK)
 				expect(res.body).toBeDefined()
 				expect(res.body.ratings).toBeDefined()
+				expect(res.body.ratings).toBeInstanceOf(Array)
+				expect(res.body.ratings.filter((r) => r.noteId === noteId)[0].value).toBe(reqData[1].value)
 			})
 
 			it('should get the average rating for the note by querying the note /ratings', async () => {
@@ -555,6 +560,25 @@ describe('Neptune', () => {
 				expect(res.body).toBeInstanceOf(Object)
 				expect(res.body.value).toBeLessThanOrEqual(5)
 				expect(res.body.value).toBeGreaterThanOrEqual(1)
+				expect((res.body.value * 100) % 100).toBe(0)
+			})
+
+			it('should get the average rating of 0 for a note with no ratings', async () => {
+				/**
+				 * Remove any existing ratings from the DB
+				 */
+				await connection.query(`DELETE FROM ratings WHERE note_id=${noteId}`, { logging: false })
+
+				// Query the average note rating
+				const res = await request(app.getHttpServer())
+					.get(`${NOTE_BASE_URL}/by-id/${noteId}/rating`)
+					.set('Authorization', `Bearer ${jwtToken}`)
+
+				// Verify results
+				expect(res.status).toBe(HttpStatus.OK)
+				expect(res.body).toBeDefined()
+				expect(res.body).toBeInstanceOf(Object)
+				expect(res.body.value).toBe(0)
 			})
 		})
 
@@ -1018,8 +1042,9 @@ describe('Neptune', () => {
 				/**
 				 * Create a note inside of the classroom which should be deleted when the classroom is deleted
 				 */
+				const testNoteFileUri = await uploadRemoteTestFile('./test/files/capstone_pp.pdf')
 				await connection.query(
-					`INSERT INTO notes (id, time_length, title, keywords, short_description, note_abstract, note_c_d_n, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},5,'Science 205','{science,row}','biology','biology absract', 'https://badcdn.ca', 'fake.pdf',(SELECT id FROM classrooms WHERE id='${testClassID}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
+					`INSERT INTO notes (id, time_length, title, keywords, short_description, note_abstract, note_c_d_n, file_uri, class_id, author_id, created_at, updated_at) VALUES (${testNoteIds[0]},5,'Science 205','{science,row}','biology','biology absract', 'https://badcdn.ca', '${testNoteFileUri}',(SELECT id FROM classrooms WHERE id='${testClassID}'),(SELECT id FROM users WHERE email='${TEST_USERNAME}'), '2021-01-01', '2021-01-01')`,
 					{ logging: false }
 				)
 
@@ -1033,8 +1058,9 @@ describe('Neptune', () => {
 					.set('Authorization', `Bearer ${jwtToken}`)
 					.send(reqData)
 
-				// Validate that the thumbnail was deleted
+				// Validate that the thumbnail and note files for all contained notes in the classrooms are deleted
 				const thumbExists = await testRemoteFileExists(resGoodImageUri)
+				const fileDeleted = await testRemoteFileExists(testNoteFileUri)
 
 				// Check if notes were deleted that belonged to classroom
 				const noteCountRes = await connection.query(`SELECT COUNT(*) FROM notes WHERE class_id='${testClassID}'`, {
@@ -1046,6 +1072,7 @@ describe('Neptune', () => {
 				expect(res.body).toBeDefined()
 				expect(res.body.message).toMatch(`${testClassID}`)
 				expect(thumbExists).toBeFalsy()
+				expect(fileDeleted).toBeFalsy()
 				expect(parseInt(noteCountRes.values().next().value[0]['count'])).toBe(0) // Ensures all notes within are deleted as well
 			})
 		})

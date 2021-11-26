@@ -16,6 +16,9 @@ import { Classroom } from '../../../modules/class/models/classroom.model'
 import { ApiProperty } from '@nestjs/swagger'
 import { Rating } from '../../../modules/ratings/models/rating.model'
 
+/**
+ * Model describing attributes for a Note in the database
+ */
 @Table({ tableName: 'notes', underscored: true })
 export class Note extends Model<Note> {
 	@ApiProperty()

@@ -15,6 +15,9 @@ import {
 import { User } from '../../class/models/user.model'
 import { Note } from '../../notes/models/notes.model'
 
+/**
+ * Model that describes a rating in the database
+ */
 @Table({ tableName: 'ratings', underscored: true })
 export class Rating extends Model<Rating> {
 	@ApiProperty()
