@@ -7,6 +7,7 @@ import { IConfigAttributes } from './common/interfaces/config/app-config.interfa
 import { limitRequests } from './middleware/ratelimit.middleware'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { PROJECT_VERSION } from './common/constants'
+import { runPreRunConditionChecks } from './pre-run-conditions/index.pre'
 
 const config: IConfigAttributes = getConfig()
 
@@ -40,6 +41,10 @@ async function bootstrap() {
 		}
 	})
 
+	// Check pre-conditions
+	await runPreRunConditionChecks()
+
+	// Start the application
 	await app.listen(config.listenPort)
 }
 bootstrap()
