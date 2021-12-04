@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [0.3.4]
+
+### Added
+
+- (SSPP-320): Implemented additional connectivity checks (pre-conditions) to verify support services are available before starting the application at all
+
 ## [0.3.3]
 
 ### Added

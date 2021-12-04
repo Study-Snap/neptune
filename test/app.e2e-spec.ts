@@ -94,6 +94,7 @@ describe('Neptune', () => {
 		await connection.query(`DELETE FROM ONLY classrooms`, { logging: false })
 		await connection.query(`DELETE FROM ONLY classrooms_users`, { logging: false })
 		await connection.query(`DELETE FROM ONLY users`, { logging: false })
+		await connection.query(`DELETE FROM ONLY ratings`, { logging: false })
 
 		// Add some test data for classrooms
 		for (const c of testClasses) {
