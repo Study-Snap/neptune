@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [0.3.5]
+
+### Fixed
+
+- (SSPP-323): Fixed issue related to ranking algorithm where notes were ranked incorrectly due to ultra-high awards for recently created notes that overpowered a lot of the other characteristics
+
+### Added
+
+- (SSPP-323): Implemented custom index template for logstash to use when inserting data from postgres into the elasticsearch index.
+    - This also includes a custom analyzer for comparing search queries with documents in the index
+
+
 ## [0.3.4]
 
 ### Added
