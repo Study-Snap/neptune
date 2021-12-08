@@ -51,7 +51,7 @@ export function compareNotesWithCombinedFeatures(a: Note, b: Note): number {
 	// First find our which is newer
 	const aCreated = new Date(a.createdAt)
 	const bCreated = new Date(b.createdAt)
-	aCreated < bCreated ? (aPoints += 30) : (bPoints += 30)
+	aCreated > bCreated ? (aPoints += 2) : (bPoints += 2)
 
 	// Now calculate points for each notes ratings
 	const aRatings: number[] = getRatingTotals(a.ratings)
