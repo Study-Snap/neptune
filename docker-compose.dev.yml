@@ -11,6 +11,20 @@ services:
       - 9200:9200
     networks: 
       - nep-dev-network
+  es_sidecar:
+    image: bash:latest
+    container_name: es_sidecar
+    restart: on-failure
+    environment:
+      ES_HOST: elasticsearch
+      ES_PORT: 9200
+    command: bash -c "/util/config-scripts/elastic-customizer.sh"
+    volumes:
+      - "./.docker/es-search/scripts/:/util/config-scripts/"
+    depends_on:
+      - elasticsearch
+    networks:
+      - nep-dev-network
   logstash:
     image: studysnap/logstash-pg-es:1.x
     container_name: sem_logstash
